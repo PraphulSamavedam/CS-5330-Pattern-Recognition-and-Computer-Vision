@@ -40,5 +40,5 @@
 
 # Build files
 build/*
-!build/Debug*
+! build/Debug*
 CMakeFiles
