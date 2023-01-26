@@ -42,3 +42,9 @@
 build/*
 ! build/Debug*
 CMakeFiles
+
+# Visual Studio
+.vs
+
+# Project Files
+*.pdb
