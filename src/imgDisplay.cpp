@@ -49,6 +49,8 @@ int main(int argc, char const *argv[])
 	cv::Mat greenOnlyImg;
 	cv::Mat blueOnlyImg;
 	cv::Mat redOnlyImg;
+	cv::Mat greyScaleImg;
+	cv::Mat blurredImg;
 	
 	printf("Displaying image in file %s", filepath);
 	std::string windowName = "Display: Color Image";
@@ -70,33 +72,51 @@ int main(int argc, char const *argv[])
 			cv::imshow("Red Channel", redOnlyImg);
 		}
 
+		if (!greyScaleImg.empty())
+		{
+			cv::imshow("GreyScale Channel", greyScaleImg);
+		}
+
+		if (!blurredImg.empty())
+		{
+			cv::imshow("Blurred Image", blurredImg);
+		}
+
 		cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
 		cv::imshow(windowName, image);
 		// Wait for the user to press some key
 		char keyPressed = cv::waitKey(0);
 		switch (keyPressed)
 		{
-		case 'q':
+		case 'q': // Quit the program
 			printf("Terminating the program as 'q' is pressed!\n");
 			cv::destroyAllWindows();
 			quit = true;
 			break;
-		case 'Q':
+		case 'Q': // Quit the program
 			printf("Terminating the program as 'Q' is pressed!\n");
 			cv::destroyAllWindows();
 			quit = true;
 			break;
-		case 'G':
+		case 'B': // Blue channel
+			image.copyTo(blueOnlyImg);
+			blueOnlyImage(image, blueOnlyImg);
+			break;
+		case 'b': // Blur the image
+			image.copyTo(blurredImg);
+			blur5x5(image, blurredImg);
+			break;
+		case 'G': // Green Channel
 			image.copyTo(greenOnlyImg);
 			greenOnlyImage(image, greenOnlyImg);
 			break;
-		case 'R':
+		case 'g': // Image grey scale
+			image.copyTo(blurredImg);
+			grey(image, blurredImg);
+			break;
+		case 'R': // Red channel
 			image.copyTo(redOnlyImg);
 			redOnlyImage(image, redOnlyImg);
-			break;
-		case 'B':
-			image.copyTo(blueOnlyImg);
-			blueOnlyImage(image, blueOnlyImg);
 			break;
 		default:
 			continue;
