@@ -466,11 +466,11 @@ int strongBlur(cv::Mat& src, cv::Mat& dst) {
 		{
 			// Update the intermediate matrix with appropriate 
 			interRowPtr[col][0] = (srcRowPtr[col - 2][0] + (4 * srcRowPtr[col - 1][0]) + (15 * srcRowPtr[col][0])
-				+ (4 * srcRowPtr[col + 1][0]) + srcRowPtr[col + 2][0]) / 10;
+				+ (4 * srcRowPtr[col + 1][0]) + srcRowPtr[col + 2][0]) / 25;
 			interRowPtr[col][1] = (srcRowPtr[col - 2][1] + (4 * srcRowPtr[col - 1][1]) + (15 * srcRowPtr[col][1])
-				+ (4 * srcRowPtr[col + 1][1]) + srcRowPtr[col + 2][1]) / 10;
+				+ (4 * srcRowPtr[col + 1][1]) + srcRowPtr[col + 2][1]) / 25;
 			interRowPtr[col][2] = (srcRowPtr[col - 2][2] + (4 * srcRowPtr[col - 1][2]) + (15 * srcRowPtr[col][2])
-				+ (4 * srcRowPtr[col + 1][2]) + srcRowPtr[col + 2][2]) / 10;
+				+ (4 * srcRowPtr[col + 1][2]) + srcRowPtr[col + 2][2]) / 25;
 		}
 	}
 
@@ -491,9 +491,9 @@ int strongBlur(cv::Mat& src, cv::Mat& dst) {
 		cv::Vec3b* dstRowPtr = dst.ptr<cv::Vec3b>(row);
 		for (int col = 0; col < src.cols; col++)
 		{
-			dstRowPtr[col][0] = (rowM2Ptr[col][0] + (2 * rowM1Ptr[col][0]) + (4 * rowPtr[col][0]) + (2 * rowP1Ptr[col][0]) + rowP2Ptr[col][0]) / 10;
-			dstRowPtr[col][1] = (rowM2Ptr[col][1] + (2 * rowM1Ptr[col][1]) + (4 * rowPtr[col][1]) + (2 * rowP1Ptr[col][1]) + rowP2Ptr[col][1]) / 10;
-			dstRowPtr[col][2] = (rowM2Ptr[col][2] + (2 * rowM1Ptr[col][2]) + (4 * rowPtr[col][2]) + (2 * rowP1Ptr[col][2]) + rowP2Ptr[col][2]) / 10;
+			dstRowPtr[col][0] = (rowM2Ptr[col][0] + (4 * rowM1Ptr[col][0]) + (15 * rowPtr[col][0]) + (4 * rowP1Ptr[col][0]) + rowP2Ptr[col][0]) / 25;
+			dstRowPtr[col][1] = (rowM2Ptr[col][1] + (4 * rowM1Ptr[col][1]) + (15 * rowPtr[col][1]) + (4 * rowP1Ptr[col][1]) + rowP2Ptr[col][1]) / 25;
+			dstRowPtr[col][2] = (rowM2Ptr[col][2] + (4 * rowM1Ptr[col][2]) + (15 * rowPtr[col][2]) + (4 * rowP1Ptr[col][2]) + rowP2Ptr[col][2]) / 25;
 		}
 	}
 	return 0;

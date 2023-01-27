@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 
 		if (negative_bool) {
 			cv::Mat negative_film = cv::Mat(frame.size(), frame.type());
-			negative_image(frame, negative_film);
+			negativeImage(frame, negative_film);
 			cv::namedWindow("Negative film", cv::WINDOW_AUTOSIZE);
 			cv::imshow("Negative film", negative_film);
 		}
@@ -169,7 +169,6 @@ int main(int argc, char* argv[]) {
 			negative_bool = true;
 			continue;
 		}
-
 	}
 
 	delete capture;

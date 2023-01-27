@@ -15,4 +15,4 @@ int cartoon(cv::Mat& src, cv::Mat& dst, int levels, int magThreshold);
 
 //Some additional functionalities
 int negativeImage(cv::Mat& src, cv::Mat& dst);
-int 
+int strongBlur(cv::Mat& src, cv::Mat& dst);
