@@ -105,7 +105,7 @@ int main(int argc, char* argvs[]) {
 	cv::imshow("Cartoon Image", scaled_cartoon_image);
 
 	cv::Mat edges = cv::Mat(original_image.size(), original_image.type());
-	laplacian_filter(original_image, edges);
+	PositiveLaplacianFilter(original_image, edges);
 	cv::imshow("Edges detected", edges);
 	
 	while (true) {

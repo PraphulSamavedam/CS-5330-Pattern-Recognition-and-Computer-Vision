@@ -44,7 +44,7 @@ int main(int argc, char* argvs[]) {
 		cv::imshow("Colour Video", frame);
 
 		laplacianImage = cv::Mat(frame.size(), frame.type());
-		laplacian_filter(frame, laplacianImage);
+		PositiveLaplacianFilter(frame, laplacianImage);
 		cv::imshow("Laplacian", laplacianImage);
 
 		cv::Mat boxBlurImage3x3 = cv::Mat::zeros(frame.size(), frame.type());

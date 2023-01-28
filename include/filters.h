@@ -1,6 +1,8 @@
 #include <opencv2/opencv.hpp>
 
-int blur5x5(cv::Mat& src, cv::Mat& dst);
+int greyscale(cv::Mat& src, cv::Mat& dst); // Task 4
+
+int blur5x5(cv::Mat& src, cv::Mat& dst); // Task 5
 int blur5x5_brute(cv::Mat& src, cv::Mat& dst);
 int sobelX3x3(cv::Mat& src, cv::Mat& dst);
 int sobelY3x3(cv::Mat& src, cv::Mat& dst);

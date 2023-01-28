@@ -1,22 +1,62 @@
-/*
-This file displays the first image passed as an argument to the application and ignores the other arguments. 
-This file is written by Samavedam Manikhanta Praphul.
+/**
+This file displays the first image passed as an argument to the application 
+and ignores the other arguments. 
+By pressing the keys, several effects are applied on the file read, 'q'/'Q' quits program.
+
+Written by: Samavedam Manikhanta Praphul.
 */
 
 #include <cstdio> // For printing messages/errors on screen.
 #include <cstring> // For easy string manipulation
 #include <opencv2/opencv.hpp> // For openCV functions
 #include <fstream> // For io operations like checking if file exists.
-#include "..\include\imageFilters.h"; // For image effects
+#include "..\include\filters.h" // For image effects which are done as part of tasks in the filtering assignment.
 
 #include "..\include\additionalEffects.h" // For additional effects.
 
-/* This function reads the first argument as the image file to be displayed and 
-based on the key pressed performs the actions.
-returns 0 for successful program completion
-returns -100 if no file has been provided as argument. 
-returns -404 if file doesn't exist
-returns -500 if the file is in improper format/file is corrupted.
+
+/** This function simply saves the image with filename passed if the image is non-empty. 
+@param src address of the Mat which needs to be saved.
+@param fileName name of the file relative the current path.
+@return 0 by default.
+*/
+int saveImage(cv::Mat& src,std::string fileName) {
+	if (!src.empty())
+	{
+		cv::imwrite(fileName, src);
+	}
+	return 0;
+}
+
+/** This function simply displays the image in the window with name passed if the image is non-empty.
+@param src address of the Mat which needs to be displayed.
+@param windowname name of the window in which the image needs to be displayed.
+@return 0 by default.
+*/
+int displayImage(cv::Mat& src, std::string windowName) {
+	if (!src.empty())
+	{
+		cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
+		cv::imshow(windowName, src);
+	}
+	return 0;
+}
+
+/** This function reads the first argument as the image file to be displayed and 
+* based on the key pressed performs the actions.
+* @return	0 for successful program completion
+*		 -100 if no file has been provided as argument. 
+*		 -404 if file doesn't exist.
+*		 -500 if the file is in improper format/file is corrupted.
+* @note Press the keys to view several effects and save them.
+*	Press 'R' for Red Channel version of the image. 
+*	Press 'G' for Green Channel version of the image. 
+*   Press 'B' for Blue Channel version of the image.
+*   Press 'b' for gaussian blur version of the image.
+*   Press 'n' for negative of the image.
+*   Press 'g' for greyscale of the image.
+*   Press 's' to save the opened filters into the output folder.
+*   Press 'q' to quit the program.
 */
 int main(int argc, char const *argv[])
 {
@@ -49,41 +89,23 @@ int main(int argc, char const *argv[])
 	cv::Mat greenOnlyImg;
 	cv::Mat blueOnlyImg;
 	cv::Mat redOnlyImg;
-	cv::Mat greyScaleImg;
+	cv::Mat negativeImg;
 	cv::Mat blurredImg;
+	cv::Mat greyImg;
 	
 	printf("Displaying image in file %s", filepath);
-	std::string windowName = "Display: Color Image";
 	bool quit = false;
+
 	while (true)
 	{	
-		if (!greenOnlyImg.empty())
-		{
-			cv::imshow("Green Channel", greenOnlyImg);
-		}
+		displayImage(image, "Original Image");
+		displayImage(blurredImg, "Blurred Image");
+		displayImage(blueOnlyImg, "Blue Channel");
+		displayImage(greenOnlyImg, "Green Channel");
+		displayImage(redOnlyImg, "Red Channel");
+		displayImage(negativeImg, "Negative Image");
+		displayImage(greyImg, "Greyscale Image");
 
-		if (!blueOnlyImg.empty())
-		{
-			cv::imshow("Blue Channel", blueOnlyImg);
-		}
-
-		if (!redOnlyImg.empty())
-		{
-			cv::imshow("Red Channel", redOnlyImg);
-		}
-
-		if (!greyScaleImg.empty())
-		{
-			cv::imshow("GreyScale Channel", greyScaleImg);
-		}
-
-		if (!blurredImg.empty())
-		{
-			cv::imshow("Blurred Image", blurredImg);
-		}
-
-		cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
-		cv::imshow(windowName, image);
 		// Wait for the user to press some key
 		char keyPressed = cv::waitKey(0);
 		switch (keyPressed)
@@ -98,25 +120,38 @@ int main(int argc, char const *argv[])
 			cv::destroyAllWindows();
 			quit = true;
 			break;
-		case 'B': // Blue channel
-			image.copyTo(blueOnlyImg);
-			blueOnlyImage(image, blueOnlyImg);
-			break;
 		case 'b': // Blur the image
 			image.copyTo(blurredImg);
 			blur5x5(image, blurredImg);
+			break;
+		case 'B': // Blue channel
+			image.copyTo(blueOnlyImg);
+			blueOnlyImage(image, blueOnlyImg);
 			break;
 		case 'G': // Green Channel
 			image.copyTo(greenOnlyImg);
 			greenOnlyImage(image, greenOnlyImg);
 			break;
-		case 'g': // Image grey scale
-			image.copyTo(blurredImg);
-			grey(image, blurredImg);
-			break;
 		case 'R': // Red channel
 			image.copyTo(redOnlyImg);
 			redOnlyImage(image, redOnlyImg);
+			break;
+		case 'n': // Negative Image
+			image.copyTo(negativeImg);
+			negativeImage(image, negativeImg);
+			break;
+		case 'g': // Greyscale Image
+			image.copyTo(greyImg);
+			greyScaleImpl(image, greyImg);
+			break;
+		case 's': // Save images
+			saveImage(image, "output/STILL_IMG.png");
+			saveImage(blurredImg, "output/STILL_IMG_BLUR.png");
+			saveImage(blueOnlyImg, "output/STILL_IMG_BLUE.png");
+			saveImage(greenOnlyImg, "output/STILL_IMG_GREEN.png");
+			saveImage(redOnlyImg, "output/STILL_IMG_RED.png");
+			saveImage(negativeImg, "output/STILL_IMG_NEG.png");
+			printf("\nSuccessfully saved the current frames\n***********************************\n");
 			break;
 		default:
 			continue;

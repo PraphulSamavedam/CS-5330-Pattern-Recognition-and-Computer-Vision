@@ -1,9 +1,13 @@
+/** This file has the implementations of the extension functions done in this filtering project.
+Wrtitten by Samavedam Manikhanta Praphul.
+ */
+
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
 
-int PositiveLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
-	/*This function convolves with positive Laplacian filter 
+
+/**This function convolves with positive Laplacian filter 
 	*							  | 0 -1  0 |
 	* Positive Laplacian filter = |-1  4 -1 | to detect edges in an image. 
 	*							  | 0 -1  0 |
@@ -15,6 +19,8 @@ int PositiveLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
 	*		 -101 if the source and destinations are of different types.
 	* @note: I have divided by 6 instead of 4 in the convolution. 
 	*/
+int PositiveLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
+	
 	if (src.size() != dst.size()){return -100;}
 	if (src.type() != dst.type()){return -101;}
 
@@ -35,8 +41,7 @@ int PositiveLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
 	return 0;
 }
 
-int NegativeLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
-	/*This function convolves with negative Laplacian filter
+/** This function convolves with negative Laplacian filter
 	*							  | 0  1  0 |
 	* Positive Laplacian filter = | 1 -4  1 | to detect edges in an image.
 	*							  | 0  1  0 |
@@ -48,6 +53,8 @@ int NegativeLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
 	*		 -101 if the source and destinations are of different types.
 	* @note: I have divided by 6 instead of 4 in the convolution.
 	*/
+int NegativeLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
+	
 	if (src.size() != dst.size()) { return -100; }
 	if (src.type() != dst.type()) { return -101; }
 
@@ -68,8 +75,7 @@ int NegativeLaplacianFilter(cv::Mat& src, cv::Mat& dst) {
 	return 0;
 }
 
-int boxBlur3x3(cv::Mat& src, cv::Mat& dst) {
-	/* This function applies box blur of 3x3 dimenstion to the image using 2 separable filters approach.
+/** This function applies box blur of 3x3 dimenstion to the image using 2 separable filters approach.
 	*		               | 1 1 1 |
 	*	 5x5 blur filter = | 1 1 1 |
 	*		               | 1 1 1 |
@@ -84,6 +90,8 @@ int boxBlur3x3(cv::Mat& src, cv::Mat& dst) {
 	*	[ 1, 1, 1]      and     | 1 |.
 	*						    | 1 |
 	*/
+int boxBlur3x3(cv::Mat& src, cv::Mat& dst) {
+	
 	if (src.size() != dst.size()) { return -100; }
 	if (src.type() != dst.type()) { return -101; }
 	cv::Mat interim;
@@ -125,8 +133,7 @@ int boxBlur3x3(cv::Mat& src, cv::Mat& dst) {
 	return 0;
 }
 
-int medianFilter3x3(cv::Mat& src, cv::Mat& dst){
-   /*This function convolves with Median filter to remove salt and pepper noise (almost).
+/** This function convolves with Median filter to remove salt and pepper noise (almost).
 	* Idea: is salt and pepper noises are peak noises which tremendously increase/decrease the pixel value,
 	* median value is unaffected by these sorts of salt and pepper noise.
 	* Hence median can be used to rid of salt and pepper noise.
@@ -138,6 +145,7 @@ int medianFilter3x3(cv::Mat& src, cv::Mat& dst){
 	*		 -101 if the source and destinations are of different types.
 	* @note: Used inefficient way O(NlogN) to find the median value.
 	*/
+int medianFilter3x3(cv::Mat& src, cv::Mat& dst){
 	/* This function removes salt pepper noise in the source image.*/
 	if (src.size() != dst.size()) { return -100; }
 	if (src.type() != dst.type()) { return -101; }
@@ -169,8 +177,7 @@ int medianFilter3x3(cv::Mat& src, cv::Mat& dst){
 	return 0;
 }
 
-int boxBlur3x3Brute(cv::Mat& src, cv::Mat& dst) {
-	/*This function blurs the image appplying the box filter on the 
+/** This function blurs the image appplying the box filter on the 
 	image following the brute force mechanism for cross checking the implementation.
 			 | 1 1 1| 
 	filter = | 1 1 1|
@@ -181,6 +188,7 @@ int boxBlur3x3Brute(cv::Mat& src, cv::Mat& dst) {
 	*		 -100 if the source and destinations are of different sizes.
 	*		 -101 if the source and destinations are of different types.
 	*/
+int boxBlur3x3Brute(cv::Mat& src, cv::Mat& dst) {
 	if (src.size() != dst.size()) { return -100; }
 	if (src.type() != dst.type()) { return -101; }
 	
@@ -206,8 +214,7 @@ int boxBlur3x3Brute(cv::Mat& src, cv::Mat& dst) {
 	return 0;
 }
 
-int boxBlur5x5(cv::Mat& src, cv::Mat& dst) {
-	/* This function applies box blur of 5x5 dimenstion to the image using 2 separable filters approach.
+/** This function applies box blur of 5x5 dimenstion to the image using 2 separable filters approach.
 	*		               |1 1 1 1 1|
 	*		               |1 1 1 1 1|
 	*	 5x5 blur filter = |1 1 1 1 1|
@@ -226,6 +233,8 @@ int boxBlur5x5(cv::Mat& src, cv::Mat& dst) {
 	*						| 1 |
 	*						| 1 |.
 	*/
+int boxBlur5x5(cv::Mat& src, cv::Mat& dst) {
+	
 	cv::Mat interim;
 	src.copyTo(interim);
 
@@ -269,14 +278,15 @@ int boxBlur5x5(cv::Mat& src, cv::Mat& dst) {
 	return 0;
 }
 
-int boxBlur5x5Brute(cv::Mat& src, cv::Mat& dst) {
-	/*This function blurs the image appplying the box filter on the image.
+/** This function blurs the image appplying the box filter on the image.
 	* 			| 1 1 1 1 1|
 	* 			| 1 1 1 1 1|
 	* filter =  | 1 1 1 1 1|
 	*			| 1 1 1 1 1|
 	*			| 1 1 1 1 1|
 	*/
+int boxBlur5x5Brute(cv::Mat& src, cv::Mat& dst) {
+
 	for (int row = 2; row < src.rows - 2; row++)
 	{ //Loop over all the rows
 		cv::Vec3b* srcRowPtr = src.ptr<cv::Vec3b>(row);
@@ -300,8 +310,7 @@ int boxBlur5x5Brute(cv::Mat& src, cv::Mat& dst) {
 	return 0;
 }
 
-int gaussianLaplacian(cv::Mat& src, cv::Mat& dst) {
-	/* This function is better at recognizing the edges in an image.
+/** This function is better at recognizing the edges in an image.
 	* Famously known as Laplacian over the Gaussian Filter (LoG  filter).
 	* Idea: Get rid of noise using Gaussian blur, then detect edges using Laplacian.
 	* Laplacian filter is the derivative of the Gaussian filter.
@@ -312,6 +321,7 @@ int gaussianLaplacian(cv::Mat& src, cv::Mat& dst) {
 	*		 -101 if the source and destinations are of different types.
 	* @note: I have OpenCV functions for this purpose.
 	*/
+int gaussianLaplacian(cv::Mat& src, cv::Mat& dst) {
 	if (src.size() != dst.size()){return -100;}
 	if (src.type() != dst.type()){return -101;}
 	cv::Mat interim;
@@ -323,3 +333,31 @@ int gaussianLaplacian(cv::Mat& src, cv::Mat& dst) {
 	cv::Laplacian(interim, dst, 5);
 	return 0;
 }
+
+/** This function provides a negative image of the image provided.
+* 
+*/
+cv::Mat negativeImage(cv::Mat &given_image) {
+    cv::Mat negative_copy;
+    negative_copy = cv::Mat::zeros(given_image.size(), CV_16SC3);
+    for (int row = 0; row < given_image.rows; row++) {
+        cv::Vec3b *rowptr = given_image.ptr<cv::Vec3b>(row);
+        // uchar *charptr = negative_copy.ptr<uchar>(row);
+        for (int column = 0; column < given_image.cols; column++) {
+            /* Inefficient way
+            src.at<uchar>(i,j) = 255 - src.at<uchar>(i,j);
+            */
+            /* Quicker method*/
+            rowptr[column][0] = 255 - rowptr[column][0];
+            rowptr[column][1] = 255 - rowptr[column][1];
+            rowptr[column][2] = 255 - rowptr[column][2];
+            /* Alternative way for quick method
+            charptr[3*j + 0] = 255 - charptr[3*j + 0];
+            charptr[3*j + 1] = 255 - charptr[3*j + 1];
+            charptr[3*j + 2] = 255 - charptr[3*j + 2];
+            */
+        }
+    }
+    return negative_copy;
+}
+
