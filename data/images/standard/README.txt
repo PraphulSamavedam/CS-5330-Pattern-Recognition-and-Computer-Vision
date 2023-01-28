@@ -1,0 +1,1 @@
+http://www.facweb.iitkgp.ac.in/~shamik/spring2008/sca/tutorials/download/pami.uwaterloo.ca/tizhoosh/images.htm

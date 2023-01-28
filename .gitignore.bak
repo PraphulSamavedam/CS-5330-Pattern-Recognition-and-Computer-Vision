@@ -45,8 +45,3 @@ CMakeFiles
 
 # Visual Studio
 .vs
-
-# Project Files
-*.pdb
-*.sln
-*.user
