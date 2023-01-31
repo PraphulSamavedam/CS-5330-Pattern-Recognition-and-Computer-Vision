@@ -50,3 +50,13 @@ CMakeFiles
 *.pdb
 *.sln
 *.user
+
+# Log files
+*.log
+*.iobj
+*.tlog*
+*.ipdb
+*.recipe
+
+# Secrets
+*secret*
