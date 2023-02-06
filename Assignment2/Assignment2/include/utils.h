@@ -1,0 +1,55 @@
+/**
+* This file has the utility functions definitions.
+* Written by: Samavedam Manikhanta Praphul
+*/
+
+#include <vector>
+
+/*This function loads the feature vector for the image passed.
+ * @param imagePath path of the image to be processed for this feature
+ * @param featuerVector vector of the features
+ * @returns	   0 if the processing is successful
+ *			-100 if the image reading is unsuccessful
+ *			-400 if the image is too small to process for this technique
+*/
+int baselineTechnique(char* imagePath, std::vector<float>& featureVector);
+
+/*This function provides the feature vector of the image passed based on the feature requested.
+	@param imagePath path of the image for which the features needs to be extracted
+	@param featureTechnique feature extraction technique
+	@param featureVector array of the feature considered
+	@returns   0 if features are computed
+			-404 if file doesn't exist at ImagePath
+*/
+int computeFeature(char* imagePath, char* featureTechnique, std::vector<float>& featureVector, int echoStatus);
+
+
+/* This function provides the float value of the sum of squared errors for all the entries in the feature vectors.
+* @param featureVector1 first feature vector
+* @param featureVector2 second feature vector
+* @returns -100 if the lengths of the feature vectors do not match
+*			float value of the sum of squared errors of all features in the feature vectors provided.
+* @note: return value = sum of (square(featureVector1[i] - featureVector2[i]))
+*/
+float aggSquareError(std::vector<float>& featureVector1, std::vector<float>& featureVector2);
+
+/*This function provides the distance metrics of the 2 images passed.
+*	@param distanceMetric distance metric which needs to be computed
+*	@param featureVector1 vector of the features to compare
+* *	@param featureVector2 vector of the features to be compared with
+*	@returns   0 if features are computed
+*			-100 if feature vectors do not match
+*/
+float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, std::vector<float>& featureVector2);
+
+
+/** This function returns the topK filesList which are closest to the targetFeatureVector provided
+	@param kFilesList vector of top K files closest to the targetfeatureVector
+	@param k the number of files which needs to selected.
+	@param distanceMetric based on which the files have to be selected. 
+	@param targetFeatureVector feature Vector against which the data needs to be compared. 
+	@param featureVectors vector of all potential featureVectors
+	@param allFilesList  the list of files from which top K needs to selected. 
+	@returns non-zero value if top K files are available.
+*/
+int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList);
