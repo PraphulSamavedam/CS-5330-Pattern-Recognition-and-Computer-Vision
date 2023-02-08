@@ -5,6 +5,11 @@
 
 #include <vector>
 
+/**This function asserts if number of bins passed is not positive and returns the perfect binsize to cover all values of 255.
+	@note set echoStatus for print.
+*/
+int getBinSize(int numberOfBins, bool echoStatus = false);
+
 /*This function loads the feature vector for the image passed.
  * @param imagePath path of the image to be processed for this feature
  * @param featuerVector vector of the features
@@ -21,7 +26,7 @@ int baselineTechnique(char* imagePath, std::vector<float>& featureVector);
 	@returns   0 if features are computed
 			-404 if file doesn't exist at ImagePath
 */
-int computeFeature(char* imagePath, char* featureTechnique, std::vector<float>& featureVector, int echoStatus);
+int computeFeature(char* imagePath, char* featureTechnique, std::vector<float>& featureVector, bool echoStatus = false);
 
 
 /* This function provides the float value of the sum of squared errors for all the entries in the feature vectors.
@@ -42,7 +47,6 @@ float aggSquareError(std::vector<float>& featureVector1, std::vector<float>& fea
 */
 float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, std::vector<float>& featureVector2);
 
-
 /** This function returns the topK filesList which are closest to the targetFeatureVector provided
 	@param kFilesList vector of top K files closest to the targetfeatureVector
 	@param k the number of files which needs to selected.
@@ -53,3 +57,15 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 	@returns non-zero value if top K files are available.
 */
 int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList);
+
+/** This function calculates the rg chromaticity of the image based on the imagePath and stores the  
+*/
+int rghistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins);
+
+/** This function calculates the rg chromaticity of the image using linear intermediate feature vector and direct update
+*/
+int modRGHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins);
+
+/** This function calculates the RGB histogram of the image using linear intermediate feature vector and direct update
+*/
+int rgbHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins);

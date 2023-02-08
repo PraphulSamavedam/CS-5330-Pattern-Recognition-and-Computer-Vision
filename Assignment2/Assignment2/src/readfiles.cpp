@@ -7,7 +7,6 @@
 #include <cstdlib> // C Standard lib 
 #include <dirent.h> // Required to iterate over the files in the directory
 #include <vector> //To store the files to process in the given directory 
-#include <iostream> //For String definition
 
 /*
   Given a directory on the command line, scans through the directory for image files.
