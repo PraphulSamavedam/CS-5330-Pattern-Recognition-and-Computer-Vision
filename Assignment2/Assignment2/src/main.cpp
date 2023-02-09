@@ -10,32 +10,25 @@
 #include <fstream> // Required to check if the file paths are valid.
 #include <cstdlib> // Required for parsing user input
 
+/*This main function drives the complete program.*/
 int main(int argc, char* argv[]) {
 	bool echoStatus = false;
 	bool resetFile = false;
-	if (argc<4)
+	if (argc < 5)
 	{
-		printf("Usage: %s <fileName> <imagesDatabasePath> <featuerTechnique> <distanceMetrics> <NumberOfSimilarImages> <resetFile> <echoStatus>\n Aborting with exit code: -100\n", argv[0]);
+		printf("Usage: %s <fileName> <imagesDatabasePath> <featuerTechnique> <distanceMetrics> <NumberOfSimilarImages> <[optional]resetFile> <[optional]echoStatus>\n Aborting with exit code: -100\n", argv[0]);
 		exit(-100);
 	}
-	if (argv[6] !=0)
-	{
-		resetFile = true;		
-	}
-	if (argv[7] != 0)
-	{
-		echoStatus = true;
-	}
-	
+
 	// Get the target file path
 	char targetFilePath[256];
-	std::strcpy(targetFilePath ,argv[1]);
-	printf("Read the target file as %s\n", targetFilePath);
+	std::strcpy(targetFilePath, argv[1]);
+	printf("Read the target file as '%s'\n", targetFilePath);
 
 	// Get the images database folder
 	char databasePath[512];
 	std::strcpy(databasePath, argv[2]);
-	printf("Read the imaegs Database folder as '%s'\n", databasePath);
+	printf("Read the i Database folder as '%s'\n", databasePath);
 
 	// Get the method of extracting features from the image
 	char featureTechnique[100];
@@ -52,12 +45,41 @@ int main(int argc, char* argv[]) {
 	sImgCnt = std::atoi(argv[5]);
 	printf("Read the number of similar images to be fetched as '%d'\n", sImgCnt);
 
+	// Get if the user requires to recalculate the feature vectors and store in file or use existing as it is.
+	/* Note: If the file does not exist, it is by default set as true. */
+	if (argv[6])
+	{
+		if (strcmp(argv[6], "0") != 0)
+		{
+			printf("Read the reset condition as 'true'\n");
+			resetFile = true;
+		}
+		else
+		{
+			printf("Read the reset condition as 'false'\n"); // Just to inform user
+			// resetFile = false; Not required as this is default
+		}
+	}
+
+	// Get if the user requires verbose of the operation
+	if (argv[7])
+	{
+		if (strcmp(argv[7], "0") != 0)
+		{
+			printf("Read the verbose condition as 'true'\n");
+			echoStatus = true;
+		}
+		else {
+			printf("Read the verbose condition as 'false'\n"); // Just to inform user
+			// echoStatus = true; Not required as this is default
+		}
+	}
+
 	//Compute the features of the target image
 	std::vector<float> targetImageFeatureVector;
-	printf("Computing the feature of the target Image...\n");
+	printf("Computing the feature of the target image\n...\n");
 	computeFeature(targetFilePath, featureTechnique, targetImageFeatureVector, echoStatus);
-	printf("\nSuccessfully computed the features of the target Image");
-
+	printf("Successfully computed the features of the target image.\n");
 
 	// To store the features in the <featureTechnique>.csv file
 	char fileName[512];
@@ -68,69 +90,86 @@ int main(int argc, char* argv[]) {
 	std::ifstream filestream;
 	filestream.open(fileName);
 	std::vector<char*> filesList;
-	// If file doesn't exist also then resetfile will be set irrespective if ti has been set or not.
-	if (!filestream) {
-		resetFile = true;
-	}
+	// If file doesn't exist also then resetfile will be set irrespective if it has been set or not.
+	if (!filestream) { resetFile = true; }
 
 	// If feature vectors need to be recalculated.
-	if(resetFile){
+	if (resetFile) {
 		// Get the list of image filenames to process
 		getFilesFromDirectory(databasePath, filesList, echoStatus);
 
-		if (echoStatus) { printf("Files list size: %zd\n", filesList.size());}
+		// Details of files which need to be process and the location of the feature vectors file.
+		if (echoStatus) { printf("Files list size: %zd\n", filesList.size()); }
 		if (echoStatus) { printf("Writing the feaures to %s\n", fileName); }
-		if (echoStatus) { printf("Processing for feature vector\n.."); }
+
 		for (int index = 0; index < filesList.size(); index++)
 		{
-			printf(".");
-			if (echoStatus) { printf("Processing %s file\n", filesList[index]); }
+			if (index % 20 == 0) { printf("."); }
+			if (echoStatus) { printf("Processing for feature vector of %s file\n", filesList[index]); }
 			//Compute the features of each image in the image database to write to the csv file
 			std::vector<float> imageFeatureVector;
 			computeFeature(filesList[index], featureTechnique, imageFeatureVector, echoStatus);
-			if (echoStatus) { printf("\n****\Computed feature Vector, proceeding to append data %s\n", filesList[index]); }
+			if (echoStatus) { printf("Computed feature vector, proceeding to append data %s\n", filesList[index]); }
+
 			// Write the feature vector to csv file
-			append_image_data_csv(fileName, filesList[index], imageFeatureVector, false);
+			if (index == 0)
+			{	// First entry should override the file contents to start afresh
+				append_image_data_csv(fileName, filesList[index], imageFeatureVector, true);
+			}
+			else { // Append to the file as it was created afresh for the first image.
+				append_image_data_csv(fileName, filesList[index], imageFeatureVector, false);
+			}
 		}
 		printf("\nProcessed all the files of folder:\n%s\n", databasePath);
-
 	}
-	
+
 	//Read the feature vectors from the file.
 	std::vector<std::vector<float>> featureVectors;
 	filesList.clear();
 	read_image_data_csv(fileName, filesList, featureVectors, 0);
 
 	// Obtain the top K files
-	std::vector<char*> kFilesList;
+	std::vector<char*> kFilesList; // For the top files list
+	std::vector<float> kDistancesList; // For the distances of the files from target image.
 	int status = 0;
-	getTopKElements(kFilesList, sImgCnt, distanceMetric, targetImageFeatureVector, featureVectors, filesList);
+	getTopKElements(kFilesList, kDistancesList, sImgCnt, distanceMetric, targetImageFeatureVector, featureVectors, filesList);
+
+	// Status check if operation is successful.
 	if (status != 0)
 	{
+		printf("Error Occurred, Code: %d\n", status);
 		return status;
 	}
 
-	printf("Closely Matching images are:");
+	// Checking if sufficient images have been fetched from files list provided. 
 	if (kFilesList.size() < sImgCnt)
 	{
-		printf("Error as kFiles are %zd while requested %d", kFilesList.size(), sImgCnt); 
+		printf("Error as kFiles are %zd while requested %d", kFilesList.size(), sImgCnt);
 		exit(-1000);
 	}
+
+	// Print and display the closely matching images.
+	printf("Closely Matching images are:\n");
 	std::string windowName;
+	std::vector<std::string> windowNames; // Required to save the images displayed
 	for (int index = 0; index < sImgCnt; index++)
 	{
-		/*windowName.clear();*/
-		printf("\nId: %d is %s", index,kFilesList[index]);
-		/*windowName.append("Result ");
+		windowName.clear();
+		printf("Id: %d is %s with distance: %0.4f\n", index, kFilesList[index], kDistancesList[index]);
+		windowName.append("Result ");
 		windowName.append(std::to_string(index));
 		windowName.append(": ");
-		windowName.append(kFilesList[index]);*/
-		//cv::Mat tmp = cv::imread(kFilesList[index], cv::WINDOW_AUTOSIZE);
-		//cv::imshow(windowName, tmp);
+		windowName.append(kFilesList[index]);
+		cv::Mat tmp = cv::imread(kFilesList[index], cv::WINDOW_AUTOSIZE);
+		cv::imshow(windowName, tmp);
 	}
 
+	// Display the target image for comparision reference
 	cv::Mat targetImage = cv::imread(targetFilePath, cv::WINDOW_AUTOSIZE);
-	cv::imshow("Target Image", targetImage);
+	cv::imshow("Target image", targetImage);
+
+	// Wait for user to press 'q' to exit program or close the target image.
+	//while (cv::getWindowProperty("Target image", 0) !=-1 )
 	while (true)
 	{
 		char key = cv::waitKey();
@@ -138,6 +177,22 @@ int main(int argc, char* argv[]) {
 		{
 			cv::destroyAllWindows();
 			break;
+		}
+		if (key == 's')
+		{
+			for (int index = 0; index < sImgCnt; index++)
+			{
+				char fileName[1024];
+				char* tmpFileName;
+				cv::Mat tmp = cv::imread(kFilesList[index]);
+				int status = getOnlyFileName(kFilesList[index], tmpFileName);
+				printf("TmpFileName: %s\n", tmpFileName);
+				sprintf_s(fileName, "output/ft_%s_DstMetric_%s_ID_%d_File_%s\n",
+					featureTechnique, distanceMetric, index,tmpFileName);
+				cv::imwrite(fileName, tmp);
+				printf("Saving %s .....\n", fileName);
+			}
+			printf_s("Successfully saved all the %d files fetched using CBIR", sImgCnt);
 		}
 	}
 	return 0;

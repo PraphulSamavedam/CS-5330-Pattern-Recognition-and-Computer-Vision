@@ -10,6 +10,9 @@
 */
 int getBinSize(int numberOfBins, bool echoStatus = false);
 
+
+int getOnlyFileName(char*& filePath,char* &fileName);
+
 /*This function loads the feature vector for the image passed.
  * @param imagePath path of the image to be processed for this feature
  * @param featuerVector vector of the features
@@ -17,7 +20,23 @@ int getBinSize(int numberOfBins, bool echoStatus = false);
  *			-100 if the image reading is unsuccessful
  *			-400 if the image is too small to process for this technique
 */
-int baselineTechnique(char* imagePath, std::vector<float>& featureVector);
+int baselineTechnique(cv::Mat& image, std::vector<float>& featureVector);
+
+/** This function calculates the rg chromaticity of the image based on the imagePath and stores the
+*/
+int rghistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins);
+
+/** This function calculates the rg chromaticity of the image using linear intermediate feature vector and direct update
+*/
+int modRGHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins);
+
+/** This function calculates the RGB histogram of the image using linear intermediate feature vector and direct update
+*/
+int rgbHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins, bool echoStatus);
+
+int twoHalvesApproaches(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+
+int textureAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16, bool echoStatus = false);
 
 /*This function provides the feature vector of the image passed based on the feature requested.
 	@param imagePath path of the image for which the features needs to be extracted
@@ -56,16 +75,4 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 	@param allFilesList  the list of files from which top K needs to selected. 
 	@returns non-zero value if top K files are available.
 */
-int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList);
-
-/** This function calculates the rg chromaticity of the image based on the imagePath and stores the  
-*/
-int rghistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins);
-
-/** This function calculates the rg chromaticity of the image using linear intermediate feature vector and direct update
-*/
-int modRGHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins);
-
-/** This function calculates the RGB histogram of the image using linear intermediate feature vector and direct update
-*/
-int rgbHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins);
+int getTopKElements(std::vector<char*>& kFilesList, std::vector<float>& kDistancesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList);

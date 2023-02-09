@@ -9,6 +9,7 @@
 #include <cmath>  // Required for the pow function
 #include <vector> // Required to process the vector features data
 #include <queue> // Required for sorting
+#include <..\include\filters.h> // Required for sobel and magnitude filters
 
 
 struct PairedData {
@@ -24,8 +25,7 @@ struct PairedData {
 	{
 	}
 };
-// this is an structure which implements the
-// operator overloading
+// This structure implements the operator overloading
 struct CompareValue {
 	bool operator()(PairedData const& p1, PairedData const& p2)
 	{
@@ -53,8 +53,29 @@ int getBinSize(int numberOfBins, bool echoStatus = false) {
 	}
 }
 
+int getOnlyFileName(char* &filePath, char* &fileName) {
+	// Get the last \ index and then populate the fileName
 
+	// Get the last '\' or '/' index in the filePath
+	int length = strlen(filePath);
+	int index = 0;
+	//std::string fileName;
+	for (int ind = length-1; ind > -1; ind--)
+	{
+		if (filePath[ind] == '\\' or filePath[ind] == '/') {
+			index = ind + 1;
+			break;
+		}
+	}
 
+	fileName = new char[256]; // To Ensure no prepopulated data is being used.
+	// Populating the fileName. 
+	for (int ind = index; ind < length; ind++) {
+		fileName[ind - index] = filePath[ind];
+	}
+	fileName[length - index] = '\0'; //To Mark the end
+	return 0;
+}
 
 /*This function loads the feature vector for the image passed.
  * @param imagePath path of the image to be processed for this feature
@@ -63,18 +84,12 @@ int getBinSize(int numberOfBins, bool echoStatus = false) {
  *			-100 if the image reading is unsuccessful
  *			-400 if the image is too small to process for this technique
 */
-int baselineTechnique(char* imagePath, std::vector<float>& featureVector) {
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
+int baselineTechnique(cv::Mat& image, std::vector<float>& featureVector) {
 	int midRow = image.rows / 2;
 	int midCol = image.cols / 2;
 	if (midRow < 4 or midCol < 4)
 	{
-		printf("Cannot process baseline technique for the image %s.\n", imagePath);
+		printf("Cannot process baseline technique for this image.\n");
 		exit(-400);
 	}
 	featureVector.clear();
@@ -91,15 +106,7 @@ int baselineTechnique(char* imagePath, std::vector<float>& featureVector) {
 	return 0;
 }
 
-
-int rghistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins = 16) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
+int rghistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16) {
 	// Histogram Configuration
 	int numberOfPixels = image.rows * image.cols;
 
@@ -137,14 +144,7 @@ int rghistogramTechnique(char* imagePath, std::vector<float>& featureVector, int
 	return 0;
 }
 
-int modRGHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins = 16) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
+int modRGHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16) {
 	// Histogram Configuration
 	int numberOfPixels = image.rows * image.cols;
 
@@ -181,15 +181,7 @@ int modRGHistogramTechnique(char* imagePath, std::vector<float>& featureVector, 
 	return 0;
 }
 
-int rgbHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
-
+int rgbHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
 	// Calcluate the Bin size to use
 	if (echoStatus) { printf("\nUsing %d bins for each color.\n", histBins); }
 	int binSize = getBinSize(histBins);
@@ -230,15 +222,7 @@ int rgbHistogramTechnique(char* imagePath, std::vector<float>& featureVector, in
 	return 0;
 }
 
-int twoHalvesApproaches(char* imagePath, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
-
+int twoHalvesApproaches(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
 	// Calcluate the Bin size to use
 	if (echoStatus) { printf("\nUsing %d bins for each color.\n", histBins); }
 	int binSize = getBinSize(histBins);
@@ -310,6 +294,39 @@ int twoHalvesApproaches(char* imagePath, std::vector<float>& featureVector, int 
 	return 0;
 }
 
+int textureAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector,int histBins=16, bool echoStatus = false) {
+	// Get the gradient magnitude of the image provided
+	// Get the vertical edges in the image using SobelX filter
+	cv::Mat sobelXImg = cv::Mat(image.size(), CV_16SC3);
+	sobelX3x3(image, sobelXImg);
+	// Get the horizontal edges in the image using SobelY filter
+	cv::Mat sobelYImg = cv::Mat(image.size(), CV_16SC3);
+	sobelY3x3(image, sobelYImg);
+	// Get the gradient magnitude of the image based on SobelX and SobelY filtered images
+	cv::Mat magnitudeImage = cv::Mat(image.size(), CV_8UC3);
+	magnitude(sobelXImg, sobelYImg, magnitudeImage);
+
+	// 1st feature vector capturing the texture of the complete image.
+	std::vector<float> firstFeatureVector;
+	rghistogramTechnique(magnitudeImage, firstFeatureVector, histBins);
+
+	// 2nd feature vector capturing the color of the complete image.
+	std::vector<float> secondFeatureVector;
+	rgbHistogramTechnique(image, secondFeatureVector, histBins/2, false);
+
+	// Collect the features of the image into the final feature vector 
+	for (int indx = 0; indx < firstFeatureVector.size(); indx++)
+	{
+		featureVector.push_back(firstFeatureVector[indx]/2);
+	}
+	for (int indx = 0; indx < secondFeatureVector.size(); indx++)
+	{
+		featureVector.push_back(secondFeatureVector[indx]/2);
+	}
+	// 
+	return 0;
+}
+
 /*This function provides the feature vector of the image passed based on the feature requested.
 	@param imagePath path of the image for which the features needs to be extracted
 	@param featureTechnique feature extraction technique
@@ -322,44 +339,54 @@ int computeFeature(char* imagePath, char* featureTechnique, std::vector<float>& 
 	std::ifstream filestream;
 	filestream.open(imagePath);
 	if (!filestream) {
-		printf("File does not exist");
+		printf("File does not exist.\n");
 		return status;
 	}
-	//printf("\n%s file exists.\n", imagePath);
-
+	cv::Mat image = cv::imread(imagePath);
+	if (image.data == NULL) {
+		printf("%s file exists but it is corrupted, kindly check.\n", imagePath);
+		exit(-100);
+	}
+	if (echoStatus) { printf("\n%s file exists.\n", imagePath); }
+	// Calculate the feature based on the selection
 	if (strcmp(featureTechnique, "Baseline") == 0)
 	{
-		status = baselineTechnique(imagePath, featureVector);
+		status = baselineTechnique(image, featureVector);
 	}
 	else if (strcmp(featureTechnique, "2DHistogram") == 0)
 	{
 		//printf("Calculating the histogram feature....");
-		status = rghistogramTechnique(imagePath, featureVector, 16);
+		status = rghistogramTechnique(image, featureVector, 16);
 	}
 	else if (strcmp(featureTechnique, "Q2DHistogram") == 0)
 	{
 		//printf("Calculating the histogram feature....");
-		status = modRGHistogramTechnique(imagePath, featureVector, 16);
+		status = modRGHistogramTechnique(image, featureVector, 16);
 	}
 	else if (strcmp(featureTechnique, "3DHistogram") == 0)
 	{
 		//printf("Calculating the histogram feature....");
-		status = rgbHistogramTechnique(imagePath, featureVector, 8, false);
+		status = rgbHistogramTechnique(image, featureVector, 8, false);
 	}
 	else if (strcmp(featureTechnique, "2HalvesHistogram") == 0)
 	{
 		//printf("Calculating the histogram feature....");
-		status = twoHalvesApproaches(imagePath, featureVector, 8, false);
+		status = twoHalvesApproaches(image, featureVector, 8, false);
+	}
+	else if (strcmp(featureTechnique, "TACHistogram") == 0)
+	{
+		//printf("Calculating the histogram feature....");
+		status = textureAndColorHistApproach(image, featureVector, 16, false);
 	}
 	else
 	{
 		status = -500;
 		printf("Erorr code: -500\nInvalid Feature technique '%s'\n", featureTechnique);
 	}
-	if (echoStatus) { printf("Feature Vector Calculated for %s\n", imagePath); }
+	if (echoStatus) { printf("\nFeature vector calculated for %s\n", imagePath); }
 	if (status != 0)
 	{
-		printf("Error code :'%d'\n while calculating the feature '%s' for\nimage: %s\n",
+		printf("\nError code :'%d'\n while calculating the feature '%s' for\nimage: %s\n",
 			status, featureTechnique, imagePath);
 		return status;
 	}
@@ -398,6 +425,33 @@ float histogramIntersectionError(std::vector<float>& featureVector1, std::vector
 	return 1 - result;
 }
 
+float entropyError(std::vector<float>& featureVector1.std::vector<float>& featureVector2) {
+	
+	return 0.0;
+}
+
+float modHistogramIntersectionError(std::vector<float>& featureVector1, std::vector<float>& featureVector2, std::vector<int>& featuesLengths, std::vector<float> weights) {
+	// Assuming the featureVectors are of same size
+	float result = 0.0;
+	//FeaturesLengths and weights must have the same length
+	assert(featuesLengths.size() == weights.size());
+	float totalWeight = 0.0;
+	// For each feature get the weight and calculate the weight of the histogram intersection.
+	for (int index = 0; index < featuesLengths.size(); index++)
+	{
+		int length = featuesLengths[index];
+		float weight = weights[index];
+		float featureResult = 0.0;
+		for (int index = 0; index < length; index++)
+		{
+			// Aggregrate the square of the error of the feature vectors
+			featureResult += MIN(featureVector1[index], featureVector2[index]);
+		}
+		result += (weight * featureResult);
+	}
+	return 1 - (result/totalWeight);
+}
+
 /*This function provides the distance metrics of the 2 images passed.
 *	@param distanceMetric distance metric which needs to be computed
 *	@param featureVector1 vector of the features to compare
@@ -416,7 +470,11 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 	{
 		return aggSquareError(featureVector1, featureVector2);
 	}
-	if (strcmp(distanceMetric, "HistogramError") == 0)
+	else if (strcmp(distanceMetric, "HistogramError") == 0)
+	{
+		return histogramIntersectionError(featureVector1, featureVector2);
+	}
+	else if (strcmp(distanceMetric, "EntropyeError") == 0)
 	{
 		return histogramIntersectionError(featureVector1, featureVector2);
 	}
@@ -428,8 +486,6 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 	return status;
 }
 
-
-
 /** This function returns the topK filesList which are closest to the targetFeatureVector provided
 	@param kFilesList vector of top K files closest to the targetfeatureVector
 	@param k the number of files which needs to selected.
@@ -438,7 +494,7 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 	@param allFilesList  the list of files from which top K needs to selected.
 	@returns non-zero value if top K files are available.
 */
-int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList) {
+int getTopKElements(std::vector<char*>& kFilesList, std::vector<float>& kDistancesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList) {
 	if (k > allFilesList.size())
 	{	// There can be atmost be all the files in the target vector kFilesList.
 		return -100;
@@ -464,12 +520,13 @@ int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric,
 
 	// Get the top K files names based on the difference
 	kFilesList.clear();
+	kDistancesList.clear(); // To ensure that we do not append the data.
 	for (int count = 0; count < k; count++)
 	{
 		PairedData data = diffQueue.top();
 		kFilesList.push_back(data.fileName);
+		kDistancesList.push_back(data.value);
 		diffQueue.pop();
 	}
 	return 0;
 }
-
