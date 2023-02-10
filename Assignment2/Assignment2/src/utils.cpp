@@ -4,309 +4,63 @@
 */
 
 #define _CRT_SECURE_NO_WARNINGS // To Suppress the strcpy issues.
-#include <opencv2/opencv.hpp> //For openCV operations like imread
 #include <fstream> // For io operations like checking if file exists.
-#include <cmath>  // Required for the pow function
+#include <opencv2/opencv.hpp> // For openCV operations like imread to check for file corruption.
 #include <vector> // Required to process the vector features data
 #include <queue> // Required for sorting
+#include <..\include\featureCalculations.h> // Required for feature vector calculations
+#include <..\include\distanceCalculations.h> // Required for distance calculations between feature vectors.
 
 
-struct PairedData {
-
+/** This custom structure is required to store the distance metric 
+associated with the filename.*/
+struct PairedData {	
 	float value;
-
 	char* fileName;
 
-	// this will used to initialize the variables
-	// of the structure
+	// Constructor to initialize values
 	PairedData(float difference, char* file_name)
-		: value(difference), fileName(file_name)
-	{
-	}
+	: value(difference), fileName(file_name)
+	{}
 };
-// this is an structure which implements the
-// operator overloading
+/* This structure implements the operator overloading
+ Used to sort the files along with distance metric */
 struct CompareValue {
 	bool operator()(PairedData const& p1, PairedData const& p2)
 	{
-		// return "true" if "p1" is ordered
-		// before "p2", for example:
-		return p1.value > p2.value;
+		// return "true" if "p1" has higher value than "p2".
+		return p1.value > p2.value; 
 	}
 };
 
-int getBinSize(int numberOfBins, bool echoStatus = false) {
-	// Number of Bins must be positive
-	assert(numberOfBins > 0);
-	if (echoStatus) { printf("Number of bins passed: %d", numberOfBins); }
-	if (256 % numberOfBins == 0)
-	{
-		// Perfect BinSize is possible to cover all scenarios
-		if (echoStatus) { printf("Perfect BinSizing: %d", 255 / numberOfBins); }
-		return 256 / numberOfBins;
-	}
-	else
-	{
-		if (echoStatus) { printf("Adjusted BinSizing: %d", 1 + (255 / numberOfBins)); }
-		// Ensure all levels are covered for this binSize
-		return 1 + (256 / numberOfBins);
-	}
-}
-
-
-
-
-/*This function loads the feature vector for the image passed.
- * @param imagePath path of the image to be processed for this feature
- * @param featuerVector vector of the features
- * @returns	   0 if the processing is successful
- *			-100 if the image reading is unsuccessful
- *			-400 if the image is too small to process for this technique
+/** This function returns only the fileName from the filePath provided.
+@param filePath path of the file whose name needs to be obtained. 
+@param fileName placeholder for result. 
+@return 0 for successfully obtaining the fileName.
+@note Assumes that the filePath is valid (doesn't validate filePath)
+	  Method: Parses the filePath to find the last folder separator like '/' or '\\' and
+	  populates from that index to end.
 */
-int baselineTechnique(char* imagePath, std::vector<float>& featureVector) {
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
-	int midRow = image.rows / 2;
-	int midCol = image.cols / 2;
-	if (midRow < 4 or midCol < 4)
-	{
-		printf("Cannot process baseline technique for the image %s.\n", imagePath);
-		exit(-400);
-	}
-	featureVector.clear();
-	for (int rowIncr = -4; rowIncr < 5; rowIncr++)
-	{
-		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(midRow + rowIncr);
-		for (int colIncr = -4; colIncr < 5; colIncr++)
-		{
-			featureVector.push_back(rowPtr[midCol + colIncr][0]); // Blue Channel value
-			featureVector.push_back(rowPtr[midCol + colIncr][1]); // Green Channel value
-			featureVector.push_back(rowPtr[midCol + colIncr][2]); // Red Channel value
-		}
-	}
-	return 0;
-}
+int getOnlyFileName(char* &filePath, char* &fileName) {
+	// Get the last \ index and then populate the fileName
 
-
-int rghistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins = 16) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
-	// Histogram Configuration
-	int numberOfPixels = image.rows * image.cols;
-
-	// Calculate r_value, g_value, b go for the image pixels. 
-	std::vector<std::vector<float>> histogramVector(histBins + 1, std::vector<float>(histBins + 1, 0.0));
-	featureVector.clear(); // To ensure that we load properly. 
-
-	for (int row = 0; row < image.rows; row++)
-	{	// 
-		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(row);
-		for (int col = 0; col < image.cols; col++)
-		{
-			//int B = rowPtr[col][0]; // Blue Channel 
-			//int G = rowPtr[col][1]; // Green Channel
-			//int R = rowPtr[col][2]; // Red Channel
-			int sum = rowPtr[col][0] + rowPtr[col][1] + rowPtr[col][2];
-			// Histogram of the rg chromaticity.  // Adding 10e-7 to ensure non-zero denominator.
-			float r_value = rowPtr[col][2] / (sum + 0.0000001);
-			float g_value = rowPtr[col][1] / (sum + 0.0000001);
-			int r_indx = r_value * (histBins);
-			int g_index = g_value * (histBins);
-			// Update the frequency of the color in the histogramVector
-			histogramVector[r_indx][g_index] += 1.0;
+	// Get the last '\' or '/' index in the filePath
+	int length = strlen(filePath);
+	int index = 0;
+	for (int ind = length-1; ind > -1; ind--)
+	{	// Parse from the end as we are interested in last separator
+		if (filePath[ind] == '\\' or filePath[ind] == '/') {
+			index = ind + 1;
+			break;
 		}
 	}
 
-	// Get histogram from the vector and store in the featureVector
-	for (int row = 0; row < histBins + 1; row++)
-	{
-		for (int col = 0; col < histBins + 1; col++) {
-			//printf("Histogram value with red_bin:%d, col:%d is %.04f", red_bin, col, histogramVector[red_bin][col]);
-			featureVector.push_back(histogramVector[row][col] / numberOfPixels);
-		}
+	fileName = new char[256]; // To Ensure no prepopulated data is being used.
+	// Populating the fileName. 
+	for (int ind = index; ind < length; ind++) {
+		fileName[ind - index] = filePath[ind];
 	}
-	return 0;
-}
-
-int modRGHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins = 16) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
-	// Histogram Configuration
-	int numberOfPixels = image.rows * image.cols;
-
-	// Calculate r_value, g_value, b go for the image pixels. 
-	std::vector<std::vector<float>> histogramVector(histBins, std::vector<float>(histBins, 0.0));
-	featureVector.clear(); // To ensure that we load properly. 
-
-	for (int row = 0; row < image.rows; row++)
-	{	// 
-		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(row);
-		for (int col = 0; col < image.cols; col++)
-		{
-			int B = rowPtr[col][0]; // Blue Channel 
-			int G = rowPtr[col][1]; // Green Channel
-			int R = rowPtr[col][2]; // Red Channel
-			// Histogram of the rg chromaticity. Adding 10e-7 to ensure non-zero denominator.
-			float r_value = R / (B + G + R + 0.0000001);
-			float g_value = G / (B + G + R + 0.0000001);
-			int r_indx = r_value * (histBins - 1);
-			int g_index = g_value * (histBins - 1);
-			// Update the frequency of the color in the histogramVector
-			histogramVector[r_indx][g_index] += 1.0;
-		}
-	}
-
-	// Get histogram from the vector and store in the featureVector
-	for (int row = 0; row < histBins; row++)
-	{
-		for (int col = 0; col < histBins; col++) {
-			//Normalize the value as we push
-			featureVector.push_back(histogramVector[row][col] / numberOfPixels);
-		}
-	}
-	return 0;
-}
-
-int rgbHistogramTechnique(char* imagePath, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
-
-	// Calcluate the Bin size to use
-	if (echoStatus) { printf("\nUsing %d bins for each color.\n", histBins); }
-	int binSize = getBinSize(histBins);
-	if (echoStatus) { printf("\nBinsize:%d", binSize); }
-
-	// Histogram Configuration
-	float numberOfPixels = image.rows * image.cols;
-
-	// 3D Array to store the frequencies of the color
-	std::vector<std::vector<std::vector<float>>> histogramVector(histBins, std::vector<std::vector<float>>(histBins, std::vector<float>(histBins, 0)));
-
-	// Iterate over all pixels for the frequency
-	for (int rowIncr = 0; rowIncr < image.rows; rowIncr++)
-	{	// 
-		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = 0; col < image.cols; col++)
-		{
-			// Calculating the bin for the color
-			int r = rowPtr[col][2]; // Red Channel
-			int g = rowPtr[col][1]; // Green Channel
-			int b = rowPtr[col][0]; // Blue Channel 
-			int R = (r / binSize);  // red bin
-			int G = (g / binSize);  // green bin
-			int B = (b / binSize);  // blue bin
-			//printf("\nR=%d, G=%d, B=%d", R, G, B);
-			histogramVector[R][G][B] += 1.0;
-		}
-	}
-
-	// Get histogram from the vector and store in the featureVector
-	for (int red_bin = 0; red_bin < histBins; red_bin++) {
-		for (int green_bin = 0; green_bin < histBins; green_bin++) {
-			for (int blue_bin = 0; blue_bin < histBins; blue_bin++) {
-				featureVector.push_back(histogramVector[red_bin][green_bin][blue_bin] / numberOfPixels);
-			}
-		}
-	}
-	return 0;
-}
-
-int twoHalvesApproaches(char* imagePath, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
-	// Check if the image is missing. 
-	cv::Mat image = cv::imread(imagePath);
-	if (image.data == NULL)
-	{
-		printf("%s file is corrupted, kindly check.\n", imagePath);
-		exit(-100);
-	}
-
-	// Calcluate the Bin size to use
-	if (echoStatus) { printf("\nUsing %d bins for each color.\n", histBins); }
-	int binSize = getBinSize(histBins);
-	if (echoStatus) { printf("\nBinsize:%d", binSize); }
-
-	// Histogram Configuration
-	float numberOfPixels = image.rows * image.cols;
-
-	// 3D Array to store the frequencies of the color
-	std::vector<std::vector<std::vector<float>>> histogramVector1(histBins, std::vector<std::vector<float>>(histBins, std::vector<float>(histBins, 0)));
-
-	// Iterate over hirst half for histogram
-	for (int rowIncr = 0; rowIncr < image.rows/2; rowIncr++)
-	{	// 
-		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = 0; col < image.cols; col++)
-		{
-			// Calculating the bin for the color
-			int r = rowPtr[col][2]; // Red Channel
-			int g = rowPtr[col][1]; // Green Channel
-			int b = rowPtr[col][0]; // Blue Channel 
-			int R = (r / binSize);  // red bin
-			int G = (g / binSize);  // green bin
-			int B = (b / binSize);  // blue bin
-			//printf("\nR=%d, G=%d, B=%d", R, G, B);
-			histogramVector1[R][G][B] += 1.0;
-		}
-	}
-
-	// Get histogram from the vector and store in the featureVector
-	for (int red_bin = 0; red_bin < histBins; red_bin++) {
-		for (int green_bin = 0; green_bin < histBins; green_bin++) {
-			for (int blue_bin = 0; blue_bin < histBins; blue_bin++) {
-				featureVector.push_back(histogramVector1[red_bin][green_bin][blue_bin] / numberOfPixels);
-			}
-		}
-	}
-
-	// Ensure the frequency is reset.
-	std::vector<std::vector<std::vector<float>>> histogramVector2(histBins, std::vector<std::vector<float>>(histBins, std::vector<float>(histBins, 0)));
-
-	// Iterate over second half for the histogram
-	for (int rowIncr = image.rows/2; rowIncr < image.rows; rowIncr++)
-	{	// 
-		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = 0; col < image.cols; col++)
-		{
-			// Calculating the bin for the color
-			int r = rowPtr[col][2]; // Red Channel
-			int g = rowPtr[col][1]; // Green Channel
-			int b = rowPtr[col][0]; // Blue Channel 
-			int R = (r / binSize);  // red bin
-			int G = (g / binSize);  // green bin
-			int B = (b / binSize);  // blue bin
-			//printf("\nR=%d, G=%d, B=%d", R, G, B);
-			histogramVector2[R][G][B] += 1.0;
-		}
-	}
-
-	// Get histogram from the vector and store in the featureVector
-	for (int red_bin = 0; red_bin < histBins; red_bin++) {
-		for (int green_bin = 0; green_bin < histBins; green_bin++) {
-			for (int blue_bin = 0; blue_bin < histBins; blue_bin++) {
-				featureVector.push_back(histogramVector2[red_bin][green_bin][blue_bin] / numberOfPixels);
-			}
-		}
-	}
-
+	fileName[length - index] = '\0'; //To mark the end.
 	return 0;
 }
 
@@ -321,82 +75,58 @@ int computeFeature(char* imagePath, char* featureTechnique, std::vector<float>& 
 	int status = -404;
 	std::ifstream filestream;
 	filestream.open(imagePath);
+
 	if (!filestream) {
-		printf("File does not exist");
+		printf("File does not exist.\n");
 		return status;
 	}
-	//printf("\n%s file exists.\n", imagePath);
-
+	cv::Mat image = cv::imread(imagePath);
+	if (image.data == NULL) {
+		printf("%s file exists but it is corrupted, kindly check.\n", imagePath);
+		exit(-100);
+	}
+	if (echoStatus) { printf("\n%s file exists.\n", imagePath); }
+	// Calculate the feature based on the selection
 	if (strcmp(featureTechnique, "Baseline") == 0)
 	{
-		status = baselineTechnique(imagePath, featureVector);
+		status = baselineTechnique(image, featureVector);
 	}
 	else if (strcmp(featureTechnique, "2DHistogram") == 0)
 	{
-		//printf("Calculating the histogram feature....");
-		status = rghistogramTechnique(imagePath, featureVector, 16);
+		status = rgHistogramTechnique(image, featureVector, 16);
 	}
 	else if (strcmp(featureTechnique, "Q2DHistogram") == 0)
 	{
-		//printf("Calculating the histogram feature....");
-		status = modRGHistogramTechnique(imagePath, featureVector, 16);
+		status = modRGHistogramTechnique(image, featureVector, 16);
 	}
 	else if (strcmp(featureTechnique, "3DHistogram") == 0)
 	{
 		//printf("Calculating the histogram feature....");
-		status = rgbHistogramTechnique(imagePath, featureVector, 8, false);
+		status = rgbHistogramTechnique(image, featureVector, 8, false);
 	}
 	else if (strcmp(featureTechnique, "2HalvesHistogram") == 0)
 	{
-		//printf("Calculating the histogram feature....");
-		status = twoHalvesApproaches(imagePath, featureVector, 8, false);
+		status = twoHalvesApproach(image, featureVector, 8, false);
+	}
+	else if (strcmp(featureTechnique, "TACHistogram") == 0)
+	{
+		status = textureAndColorHistApproach(image, featureVector, 16, false);
 	}
 	else
 	{
 		status = -500;
 		printf("Erorr code: -500\nInvalid Feature technique '%s'\n", featureTechnique);
 	}
-	if (echoStatus) { printf("Feature Vector Calculated for %s\n", imagePath); }
+	if (echoStatus) { printf("\nFeature vector calculated for %s\n", imagePath); }
 	if (status != 0)
 	{
-		printf("Error code :'%d'\n while calculating the feature '%s' for\nimage: %s\n",
+		printf("\nError code :'%d'\n while calculating the feature '%s' for\nimage: %s\n",
 			status, featureTechnique, imagePath);
 		return status;
 	}
 	return 0;
 }
 
-
-/* This function provides the float value of the sum of squared errors for all the entries in the feature vectors.
-* @param featureVector1 first feature vector
-* @param featureVector2 second feature vector
-* @returns -100 if the lengths of the feature vectors do not match
-*			float value of the sum of squared errors of all features in the feature vectors provided.
-* @note: return value = sum of (square(featureVector1[i] - featureVector2[i]))
-*/
-float aggSquareError(std::vector<float>& featureVector1, std::vector<float>& featureVector2) {
-	// Assuming the featureVectors are of same size
-	float result = 0.0;
-	int length = featureVector1.size();
-	for (int index = 0; index < length; index++)
-	{
-		// Aggregrate the square of the error of the feature vectors
-		result += ((featureVector1[index] - featureVector2[index]) * (featureVector1[index] - featureVector2[index]));
-	}
-	return result;
-}
-
-float histogramIntersectionError(std::vector<float>& featureVector1, std::vector<float>& featureVector2) {
-	// Assuming the featureVectors are of same size
-	float result = 0.0;
-	int length = featureVector1.size();
-	for (int index = 0; index < length; index++)
-	{
-		// Aggregrate the square of the error of the feature vectors
-		result += MIN(featureVector1[index], featureVector2[index]);
-	}
-	return 1 - result;
-}
 
 /*This function provides the distance metrics of the 2 images passed.
 *	@param distanceMetric distance metric which needs to be computed
@@ -407,38 +137,42 @@ float histogramIntersectionError(std::vector<float>& featureVector1, std::vector
 */
 float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, std::vector<float>& featureVector2) {
 	int status = -100;
-	if (featureVector1.size() != featureVector2.size())
-	{
-		// Cannot compute the distance metric for feature vectors of different sizes.
-		return status;
-	}
+
+	// Cannot compute the distance metric for feature vectors of different sizes.
+	assert(featureVector1.size(), featureVector2.size());
+
+	// Switch to appropriate distance Metric
 	if (strcmp(distanceMetric, "AggSquareError") == 0)
 	{
 		return aggSquareError(featureVector1, featureVector2);
 	}
-	if (strcmp(distanceMetric, "HistogramError") == 0)
+	else if (strcmp(distanceMetric, "HistogramError") == 0)
+	{
+		return histogramIntersectionError(featureVector1, featureVector2);
+	}
+	else if (strcmp(distanceMetric, "EntropyeError") == 0)
 	{
 		return histogramIntersectionError(featureVector1, featureVector2);
 	}
 	if (status != 0)
 	{
-		printf("Error processing %s for feature vectors", distanceMetric);
-		status = -500;
+		printf("Unsupported distance Metric:%s\n", distanceMetric);
+		printf("Error code: -500 (for distance Metric)");
+		exit(- 500);
 	}
 	return status;
 }
 
-
-
 /** This function returns the topK filesList which are closest to the targetFeatureVector provided
-	@param kFilesList vector of top K files closest to the targetfeatureVector
+	@param kFilesList vector of top K files closest to the target feature vector.
+	@param kDistancesList vector of top K distances closest to the target feature vector.
 	@param k the number of files which needs to selected.
 	@param targetFeatureVector feature Vector against which the data needs to be compared.
 	@param featureVectors vector of all potential featureVectors
 	@param allFilesList  the list of files from which top K needs to selected.
 	@returns non-zero value if top K files are available.
 */
-int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList) {
+int getTopKElements(std::vector<char*>& kFilesList, std::vector<float>& kDistancesList, int k, char* distanceMetric, std::vector<float>& targetfeatureVector, std::vector<std::vector<float>>& featureVectors, std::vector<char*>& allFilesList) {
 	if (k > allFilesList.size())
 	{	// There can be atmost be all the files in the target vector kFilesList.
 		return -100;
@@ -452,6 +186,7 @@ int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric,
 
 	// Priority Queue to get the top K elements tuple
 	std::priority_queue<PairedData, std::vector<PairedData>, CompareValue> diffQueue;
+
 	float difference = 0.0;
 	for (int index = 0; index < featureVectors.size(); index++)
 	{
@@ -463,13 +198,14 @@ int getTopKElements(std::vector<char*>& kFilesList, int k, char* distanceMetric,
 	}
 
 	// Get the top K files names based on the difference
-	kFilesList.clear();
+	kFilesList.clear(); // To ensur that we do not append the data errornously.
+	kDistancesList.clear(); // To ensure that we do not append the data errorneously. 
 	for (int count = 0; count < k; count++)
 	{
 		PairedData data = diffQueue.top();
 		kFilesList.push_back(data.fileName);
+		kDistancesList.push_back(data.value);
 		diffQueue.pop();
 	}
 	return 0;
 }
-

@@ -1,4 +1,4 @@
-/*
+/* Borrowed from 
 Bruce A. Maxwell
 
 CS 5330 Computer Vision
@@ -10,7 +10,8 @@ CPP functions for reading CSV files with a specific format
 
 The function returns a std::vector of char* for the filenames and a 2D std::vector of floats for the data
 */
-#define _CRT_SECURE_NO_WARNINGS // To supress 
+
+#define _CRT_SECURE_NO_WARNINGS // To supress strcpy warnings
 
 #include <cstdio>
 #include <cstring>
@@ -159,7 +160,7 @@ int append_image_data_csv( char *filename, char *image_filename, std::vector<flo
 
   The function returns a non-zero value if something goes wrong.
  */
-int read_image_data_csv( char *filename, std::vector<char *> &filenames, std::vector<std::vector<float>> &data, int echo_file ) {
+int read_image_data_csv( char *filename, std::vector<char *> &filenames, std::vector<std::vector<float>> &data, bool echo_file ) {
   FILE *fp;
   float fval;
   char img_file[256];
@@ -202,7 +203,7 @@ int read_image_data_csv( char *filename, std::vector<char *> &filenames, std::ve
   if(echo_file) {
     for(int i=0;i<data.size();i++) {
       for(int j=0;j<data[i].size();j++) {
-	printf("%.4f  ", data[i][j] );
+	    printf("%.4f  ", data[i][j] );
       }
       printf("\n");
     }

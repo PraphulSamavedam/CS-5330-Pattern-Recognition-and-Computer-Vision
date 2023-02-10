@@ -1,5 +1,6 @@
-/*  
+/*  Written by: Samavedam Manikhanta Praphul
   @note Inspired from sample code shared by Bruce A.Maxwell to identify image fils in a directory
+  Tweaked to get the list of the files from the directory read instead of printing the path on screen. 
 */
 #define _CRT_SECURE_NO_WARNINGS //To Supress strcpy, strcpy warnings
 #include <cstdio> // Standard IO lib
