@@ -24,7 +24,7 @@ int baselineTechnique(cv::Mat& image, std::vector<float>& featureVector);
 
 /** This function calculates the rg chromaticity of the image based on the imagePath and stores the
 */
-int rgHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins);
+int rg2DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins);
 
 /** This function calculates the rg chromaticity of the image using linear intermediate feature vector and direct update
 */
@@ -32,11 +32,11 @@ int modRGHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, i
 
 /** This function calculates the RGB histogram of the image using linear intermediate feature vector and direct update
 */
-int rgbHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins, bool echoStatus);
+int rgb3DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins, bool echoStatus);
 
 int twoHalvesApproaches(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
 
-int textureAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16, bool echoStatus = false);
+int gradientAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16, bool echoStatus = false);
 
 /*This function provides the feature vector of the image passed based on the feature requested.
 	@param imagePath path of the image for which the features needs to be extracted

@@ -173,12 +173,13 @@ int main(int argc, char* argv[]) {
 	cv::imshow("Target image", targetImage);
 
 	// Wait for user to press 'q' to exit program or close the target image.
-	//while (cv::getWindowProperty("Target image", 0) !=-1 )
+	// while (cv::getWindowProperty("Target image", 0) !=-1 )
 	while (true)
 	{
 		char key = cv::waitKey();
 		if (key == 'q')
 		{
+			printf("Termintating the program as 'q' has been pressed.\n");
 			cv::destroyAllWindows();
 			break;
 		}

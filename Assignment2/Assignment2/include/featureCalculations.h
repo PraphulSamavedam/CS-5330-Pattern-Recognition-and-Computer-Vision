@@ -43,7 +43,7 @@ int baselineTechnique(cv::Mat& image, std::vector<float>& featureVector, int num
  *			where R, G, B are values of the pixel in Red, Green and Blue Channels.
  * @returns	   0 if the processing is successful
 */
-int rgHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16, bool echoStatus = false);
+int rg2DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16, bool echoStatus = false);
 
 
 /** This function provides the normalized histogram in RGB space of complete image passed as the feature vector.
@@ -63,7 +63,7 @@ int rgHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int 
  *	Finally the normalize the histogram before pushing to feature vector.
  * @returns	   0 if the processing is successful
 */
-int rgbHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+int rgb3DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
 
 
 /*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
@@ -78,7 +78,7 @@ int rgbHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int
  *		 Feature Vector for either half will hold the value in r, g, b values
  *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
- *		 This implementation is independent of the rgbHistogramTechnique, rgHistogramTechniques.
+ *		 This implementation is independent of the rgb3DHistogramTechnique, rgHistogramTechniques.
  * Method: break the image into two halves, one for the top and other for the bottom.
  * for each half of the image,
  *		for each pixel, the bin to which the value belongs is determined by
@@ -88,44 +88,31 @@ int rgbHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int
  *	Finally the normalize the histogram before pushing to feature vector in the order of top half first and bottom half last.
  * @returns	   0 if the processing is successful
 */
-int twoHalvesApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+int twoHalvesUpperBottomApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
 
 /*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
- * @param histBins[default=8] number of bins to be used for each color.
- * @param echoStatus[default=false] set this bool to enable verbose
+ * @param histBins number of bins to be used for each color.
+ * @param echoStatus set this bool to enable verbose
  * @note featureVector will be cleared before loading the featureVector details.
  *		 This function will append the normalized histograms of two halves to the featureVector.
- *		 First half will have RGB histogram of the top half of the image.
- *		 Next half will have RGB histogram of bottom half of the image.
+ *		 First half will have RGB histogram of the left half of the image.
+ *		 Next half will have RGB histogram of the right half of the image.
  *		 Feature Vector for either half will hold the value in r, g, b values
  *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
- * Method: This function reuses the rgbHistogramTechnique by processing it for first half and second half
- * and pushing the results back to the feature vector.
+ *		 This implementation is independent of the rgb3DHistogramTechnique, rgHistogramTechniques.
+ * Method: break the image into two halves, one for the top and other for the bottom.
+ * for each half of the image,
+ *		for each pixel, the bin to which the value belongs is determined by
+ *			r_index  = R/binSize.
+ *			g_index  = G/binSize.
+ *			b_index  = B/binSize. where R, G, B are values of the pixel in Red, Green and Blue Channels.
+ *	Finally the normalize the histogram before pushing to feature vector in the order of left half first and right half last.
  * @returns	   0 if the processing is successful
 */
-int twoHalvesRGBApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
-
-
-/*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
- * @param image address of the cv::Mat object to be processed for this feature
- * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
- * @param histBins[default=16] number of bins to be used for each color.
- * @param echoStatus[default=false] set this bool to enable verbose
- * @note featureVector will be cleared before loading the featureVector details.
- *		 This function will append the normalized histograms of two halves to the featureVector.
- *		 First half will have RGB histogram of the top half of the image.
- *		 Next half will have RGB histogram of bottom half of the image.
- *		 Feature Vector for either half will hold the value in r, g, b values
- *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
- *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
- * Method: This function reuses the rgHistogramTechnique by processing it for first half and second half
- * and pushing the results back to the feature vector.
- * @returns	   0 if the processing is successful
-*/
-int twoHalvesRGChromApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+int twoHalvesLeftRightApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
 
 /** This function computes and provides the normalized values of
 internally computed 2 histograms as feature vectors.
@@ -150,7 +137,70 @@ This function provides equal weights to both feature vectors.
  * Push these two feature vectors in the same order with weighs as 0.5 and 0.5 respectively.
  * @returns	   0 if the processing is successful
 */
-int textureAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16, bool echoStatus = false);
+int gradientAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16, bool echoStatus = false);
 
-/** This */
-int modRGHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 16);
+/** This function utilizes both the hitograms of 4 quarters and also the gradient Magnitude for the whole image.
+ * @param image address of the cv::Mat object to be processed for this feature
+ * @param featuerVector vector to store the normalized histogram of the 4 quarters of the image in RGB space
+ * @param histBins number of bins to be used for each color.
+ * @param echoStatus set this bool to enable verbose
+ * @note featureVector will be cleared before loading the featureVector details.
+ *		 This function will append the normalized histograms of gradient magnitude and RGB colorspace to the featureVector.
+ *		 Quarters to process will start from top left , traverse to right and then moves down to reach the bottom right.
+ *		 Feature Vector for either half will hold the value in r, g, b values
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
+ *		 This function also utilizes the filters openCV's Laplacian for the texture estimation.
+*/
+int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+
+/** This function utilizes histograms of the center image 25x25 area and textures with 65%, 35% weightage.
+ * @param image address of the cv::Mat object to be processed for this feature
+ * @param featureVector vector to store the normalized histogram of the 4 quarters of the image in RGB space
+ * @param histBins number of bins to be used for each color.
+ * @param echoStatus set this bool to enable verbose
+ * @note featureVector will be cleared before loading the featureVector details.
+ *		 This function will append the normalized histograms of center part of image and RGB colorspace to the featureVector.
+ *		 Feature Vector for either half will hold the value in r, g, b values
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0), (0,1,1),...(1,0,0), (1,0,1),....
+ *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
+ *		 This function uses OpenCV's laplacian function for edge detection as the texture.
+*/
+int centerColorAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+
+
+/*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
+ * @param image address of the cv::Mat object to be processed for this feature
+ * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
+ * @param histBins[default=8] number of bins to be used for each color.
+ * @param echoStatus[default=false] set this bool to enable verbose
+ * @note featureVector will be cleared before loading the featureVector details.
+ *		 This function will append the normalized histograms of two halves to the featureVector.
+ *		 First half will have RGB histogram of the top half of the image.
+ *		 Next half will have RGB histogram of bottom half of the image.
+ *		 Feature Vector for either half will hold the value in r, g, b values
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
+ * Method: This function reuses the rgb3DHistogramTechnique by processing it for first half and second half
+ * and pushing the results back to the feature vector.
+ * @returns	   0 if the processing is successful
+*/
+int twoHalvesRGBApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+
+/*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
+ * @param image address of the cv::Mat object to be processed for this feature
+ * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
+ * @param histBins[default=16] number of bins to be used for each color.
+ * @param echoStatus[default=false] set this bool to enable verbose
+ * @note featureVector will be cleared before loading the featureVector details.
+ *		 This function will append the normalized histograms of two halves to the featureVector.
+ *		 First half will have RGB histogram of the top half of the image.
+ *		 Next half will have RGB histogram of bottom half of the image.
+ *		 Feature Vector for either half will hold the value in r, g, b values
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
+ * Method: This function reuses the rg2DHistogramTechnique by processing it for first half and second half
+ * and pushing the results back to the feature vector.
+ * @returns	   0 if the processing is successful
+*/
+int twoHalvesRGChromApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);

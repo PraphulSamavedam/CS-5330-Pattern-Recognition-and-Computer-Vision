@@ -1,6 +1,6 @@
 /**
 * Written by: Samavedam Manikhanta Praphul
-* This file has the primary functions which are called from the main function.
+* This file has the primary functions like computing the feature and distance metric based on the parameter passed. 
 */
 
 #define _CRT_SECURE_NO_WARNINGS // To Suppress the strcpy issues.
@@ -86,32 +86,45 @@ int computeFeature(char* imagePath, char* featureTechnique, std::vector<float>& 
 		exit(-100);
 	}
 	if (echoStatus) { printf("\n%s file exists.\n", imagePath); }
-	// Calculate the feature based on the selection
+
+	// Calculate the feature based on the selection 
+	// Command Design Pattern inspiration
 	if (strcmp(featureTechnique, "Baseline") == 0)
 	{
 		status = baselineTechnique(image, featureVector);
 	}
 	else if (strcmp(featureTechnique, "2DHistogram") == 0)
 	{
-		status = rgHistogramTechnique(image, featureVector, 16);
-	}
-	else if (strcmp(featureTechnique, "Q2DHistogram") == 0)
-	{
-		status = modRGHistogramTechnique(image, featureVector, 16);
+		status = rg2DHistogramTechnique(image, featureVector, 16);
 	}
 	else if (strcmp(featureTechnique, "3DHistogram") == 0)
 	{
-		//printf("Calculating the histogram feature....");
-		status = rgbHistogramTechnique(image, featureVector, 8, false);
+		status = rgb3DHistogramTechnique(image, featureVector, 8, false);
 	}
-	else if (strcmp(featureTechnique, "2HalvesHistogram") == 0)
+	else if (strcmp(featureTechnique, "2HalvesUBHistogram") == 0)
 	{
-		status = twoHalvesApproach(image, featureVector, 8, false);
+		status = twoHalvesUpperBottomApproach(image, featureVector, 8, false);
+	}
+	else if (strcmp(featureTechnique, "2HalvesLRHistogram") == 0)
+	{
+		status = twoHalvesLeftRightApproach(image, featureVector, 8, false);
 	}
 	else if (strcmp(featureTechnique, "TACHistogram") == 0)
 	{
-		status = textureAndColorHistApproach(image, featureVector, 16, false);
+		status = gradientAndColorHistApproach(image, featureVector, 8, false);
 	}
+	else if (strcmp(featureTechnique, "Q4TextureHistogram") == 0)
+	{
+		status = quartersAndTextureApproach(image, featureVector, 8, false);
+	}
+	else if (strcmp(featureTechnique, "CustomHistogram") == 0)
+	{
+		status = centerColorAndTextureApproach(image, featureVector, 8, false);
+	}
+	/*else if (strcmp(featureTechnique, "Q2DHistogram") == 0)
+{
+	status = modRGHistogramTechnique(image, featureVector, 16);
+}*/
 	else
 	{
 		status = -500;
@@ -150,10 +163,23 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 	{
 		return histogramIntersectionError(featureVector1, featureVector2);
 	}
-	else if (strcmp(distanceMetric, "EntropyeError") == 0)
+	else if (strcmp(distanceMetric, "EntropyError") == 0)
 	{
 		return histogramIntersectionError(featureVector1, featureVector2);
 	}
+	else if (strcmp(distanceMetric, "W82HistogramError") == 0)
+	{
+		// This function applies 80% weightage to first half of histogram and 20% weightage to second half
+		std::vector<int> lengths;
+		lengths.push_back(featureVector1.size() / 2);
+		lengths.push_back(featureVector1.size() / 2);
+		std::vector<float> weights;
+		weights.push_back(0.8);
+		weights.push_back(0.2);
+		return weightedHistogramIntersectionError(featureVector1, featureVector2, lengths, weights);
+	}
+
+
 	if (status != 0)
 	{
 		printf("Unsupported distance Metric:%s\n", distanceMetric);
