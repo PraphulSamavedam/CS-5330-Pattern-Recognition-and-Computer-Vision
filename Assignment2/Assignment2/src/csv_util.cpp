@@ -1,4 +1,4 @@
-/*
+/* Borrowed from 
 Bruce A. Maxwell
 
 CS 5330 Computer Vision
@@ -10,7 +10,8 @@ CPP functions for reading CSV files with a specific format
 
 The function returns a std::vector of char* for the filenames and a 2D std::vector of floats for the data
 */
-#define _CRT_SECURE_NO_WARNINGS // To supress 
+
+#define _CRT_SECURE_NO_WARNINGS // To supress strcpy warnings
 
 #include <cstdio>
 #include <cstring>

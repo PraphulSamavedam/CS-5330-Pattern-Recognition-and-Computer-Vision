@@ -24,7 +24,7 @@ int baselineTechnique(cv::Mat& image, std::vector<float>& featureVector);
 
 /** This function calculates the rg chromaticity of the image based on the imagePath and stores the
 */
-int rghistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins);
+int rgHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins);
 
 /** This function calculates the rg chromaticity of the image using linear intermediate feature vector and direct update
 */

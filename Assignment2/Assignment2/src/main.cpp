@@ -1,6 +1,8 @@
-/** This file dictates the order of execution in the program
+/** Written by: Samavedam Manikhanta Praphul
+This file dictates the order of execution in the program
 
 */
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <opencv2/opencv.hpp> // Required for openCV functions
 #include <vector> // Required to store the feature vector if the image passed.
@@ -102,6 +104,8 @@ int main(int argc, char* argv[]) {
 		if (echoStatus) { printf("Files list size: %zd\n", filesList.size()); }
 		if (echoStatus) { printf("Writing the feaures to %s\n", fileName); }
 
+		printf("Processing feature vectors of the files in %s folder\n", databasePath);
+		//Compute the feature vectors of images in the folder and store in the <featureVector.csv> file.
 		for (int index = 0; index < filesList.size(); index++)
 		{
 			if (index % 20 == 0) { printf("."); }
