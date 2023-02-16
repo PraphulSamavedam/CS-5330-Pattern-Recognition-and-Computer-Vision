@@ -28,7 +28,6 @@ int getBinSize(int numberOfBins, bool echoStatus = false);
 */
 int baselineTechnique(cv::Mat& image, std::vector<float>& featureVector, int numOfCntrPixels = 9, bool echoStatus = false);
 
-
 /*This function provides the normalized histogram of rg chromaticity of complete image passed as the feature vector.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featuerVector vector to store the normalized histogram of the image in rg chromaticity space.
@@ -64,7 +63,6 @@ int rg2DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, in
  * @returns	   0 if the processing is successful
 */
 int rgb3DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
-
 
 /*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
  * @param image address of the cv::Mat object to be processed for this feature
@@ -168,6 +166,83 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
 */
 int centerColorAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
 
+/**This function will be calculated by thresholding based on H,S,V values provided to find particular color
+and then calculated the histogram of the image in RGB space to obtain the featureVector.
+ * @param image address of the cv::Mat object to be processed for this feature
+ * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
+ * @param histBins number of bins to be used for each color.
+ * @param echoStatus set this bool to enable verbose
+ * @note featureVector will be cleared before loading the featureVector details.
+ *		 This function will append the normalized histograms of the masked image obtained.
+ *		 Feature Vector will hold the value in r, g, b values
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
+ * Method: This function first converts the image from BGR to HSV colorspace and then depending upon
+ * minimum and maximum values provided to obtain mask image, then dilate the masked image to fill any holes.
+ * Finally the function reuses the rgb3DHistogramTechnique to feature vector and
+ * push the results back to the feature vector.
+ * @returns	   0 if the processing is successful.
+
+*/
+int specificColorApproach(cv::Mat& image, std::vector<float>& featureVector, int hueMin = 0, int hueMax = 180, int satMin = 0, int satMax = 255, int valMin = 0, int valMax = 255, int histbins = 8, bool echoStatus = false);
+
+/** This function computes and provides the normalized values of
+internally computed 2 histograms as feature vectors.
+This function provides equal weights to both feature vectors.
+* 1. gradient magnitude to find texture in the image and
+* 2. color RGB histogram to find the color distribution in the image.
+ * @param image address of the cv::Mat object to be processed for this feature
+ * @param featuerVector vector to store the center normalized histogram of the image in RGB space
+		  for the computed histograms.
+ * @param histBins number of bins to be used for each color.
+ * @param echoStatus set this bool to enable verbose
+ * @note featureVector will be cleared before loading the featureVector details.
+ *		 This function will append the normalized histograms of gradient magnitude and RGB colorspace to the featureVector.
+ *		 First half will have RGB histogram of the gradient magnitude of the image.
+ *		 Next half will have RGB histogram of the image.
+ *		 Feature Vector for either half will hold the value in r, g, b values
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
+ *		 This function also utilizes the filters SobelX, SobelY, gradientMagnitude from previous assignment.
+ * Method: Generate the gradient magnitude of the image passed and obtain its histogram in rg chromaticity space
+ * using existing function, obtain the color histogram of the original image in RGB color space using half nuber of bins.
+ * Push these two feature vectors in the same order with weighs as 0.5 and 0.5 respectively.
+ * @returns	   0 if the processing is successful
+*/
+int edgesAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false);
+
+/**This function uses Yellow coor values on the specificColorApproach.
+* @param image address of the image
+* @param featureVector address of the feature vector.
+* @param histBins[default=8] number of bins to be used for each bin.
+* @param echoStatus[default=false] set this bool to enable verbose.
+* @returns 0 if featureVector is properly populated
+*		  non zero values in case of error.
+* @note the values used to obtain the yellowColor of the banana is obtained by experimenting with pic.0343.jpg
+*/
+int customApproachforBanana(cv::Mat& image, std::vector<float>& featureVector, int histbins = 8, bool echoStatus = false);
+
+/**This function uses Blue coor values on the specificColorApproach.
+* @param image address of the image
+* @param featureVector address of the feature vector.
+* @param histBins[default=8] number of bins to be used for each bin.
+* @param echoStatus[default=false] set this bool to enable verbose.
+* @returns 0 if featureVector is properly populated
+*		  non zero values in case of error.
+* @note the values used to obtain the Blue color of the blue bins is obtained by experimenting with pic.0287.jpg
+*/
+int customApproachforBlueBins(cv::Mat& image, std::vector<float>& featureVector, int histbins = 8, bool echoStatus = false);
+
+/**This function uses Green color values on the specificColorApproach.
+* @param image address of the image
+* @param featureVector address of the feature vector.
+* @param histBins[default=8] number of bins to be used for each bin.
+* @param echoStatus[default=false] set this bool to enable verbose.
+* @returns 0 if featureVector is properly populated
+*		  non zero values in case of error.
+* @note the values used to obtain the Green color of the blue bins is obtained by experimenting with pictures ranging 0746 - 0755
+*/
+int customApproachforGreenBins(cv::Mat& image, std::vector<float>& featureVector, int histbins = 8, bool echoStatus = false);
 
 /*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
  * @param image address of the cv::Mat object to be processed for this feature

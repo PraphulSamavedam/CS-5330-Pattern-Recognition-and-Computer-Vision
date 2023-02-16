@@ -86,7 +86,7 @@ float entropyError(std::vector<float>& featureVector1, std::vector<float>& featu
 	{
 		double probability1 = featureVector1[index];
 		if (probability1 != 0.0) {
-			entropy1 += (probability1*log(probability1));
+			entropy1 += (probability1 * log(probability1));
 		}
 		double probability2 = featureVector2[index];
 		if (probability2 != 0.0) {
@@ -94,6 +94,25 @@ float entropyError(std::vector<float>& featureVector1, std::vector<float>& featu
 		}
 	}
 	return abs(entropy1 - entropy2);
+}
+
+/** This function provides the difference of the feature vectors as the result assuming that the 2 features are
+* normalized contour area of the image and normalized height/width ratio.
+* @param featureVector1 normalized feature vector of image1.
+* @param featureVector2 normalized feature vector of image2.
+* @returns the maskedBoundaryError as sum of the maximum overlap of the common areas.
+* @note function assume that the feature vectors are of same length.
+*		function assumes the feature vectors are 2 features: normalized contour area, normalized height/width ratio.
+* Method: Error  = 2- sum{min(feature overlap), for 2 features in the feature vector.
+*/
+float maskedBoundaryError(std::vector<float>& featureVector1, std::vector<float>& featureVector2) {
+	int length = featureVector1.size();
+	float result = 0.0;
+	for (int ind = 0; ind < length; ind++)
+	{
+		result += std::min(featureVector1[ind], featureVector2[ind]);
+	}
+	return 2 - result;
 }
 
 /** This function provides the weighted histogram difference of the feature vectors as the result.

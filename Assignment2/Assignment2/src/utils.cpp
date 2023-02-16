@@ -1,5 +1,4 @@
-/**
-* Written by: Samavedam Manikhanta Praphul
+/** Written by: Samavedam Manikhanta Praphul
 * This file has the primary functions like computing the feature and distance metric based on the parameter passed. 
 */
 
@@ -117,7 +116,19 @@ int computeFeature(char* imagePath, char* featureTechnique, std::vector<float>& 
 	{
 		status = quartersAndTextureApproach(image, featureVector, 8, false);
 	}
-	else if (strcmp(featureTechnique, "CustomHistogram") == 0)
+	else if (strcmp(featureTechnique, "customApproachforBanana") == 0)
+	{
+		status = customApproachforBanana(image, featureVector, 8, false);
+	}
+	else if (strcmp(featureTechnique, "customApproachforBlueBins") == 0)
+	{
+		status = customApproachforBlueBins(image, featureVector, 8, false);
+	}
+	else if (strcmp(featureTechnique, "customApproachforGreenBins") == 0)
+	{
+		status = customApproachforGreenBins(image, featureVector, 8, false);
+	}
+	else if (strcmp(featureTechnique, "CenterColorAndTextureApproach") == 0)
 	{
 		status = centerColorAndTextureApproach(image, featureVector, 8, false);
 	}
@@ -165,7 +176,11 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 	}
 	else if (strcmp(distanceMetric, "EntropyError") == 0)
 	{
-		return histogramIntersectionError(featureVector1, featureVector2);
+		return entropyError(featureVector1, featureVector2);
+	}
+	else if (strcmp(distanceMetric, "MeanSquareError") == 0)
+	{
+		return meanSquaredError(featureVector1, featureVector2);
 	}
 	else if (strcmp(distanceMetric, "W82HistogramError") == 0)
 	{
@@ -178,6 +193,13 @@ float computeMetric(char* distanceMetric, std::vector<float>& featureVector1, st
 		weights.push_back(0.2);
 		return weightedHistogramIntersectionError(featureVector1, featureVector2, lengths, weights);
 	}
+
+	else if (strcmp(distanceMetric, "MaskedBoundError") == 0)
+	{
+		return maskedBoundaryError(featureVector1, featureVector2);
+	}
+
+
 
 
 	if (status != 0)

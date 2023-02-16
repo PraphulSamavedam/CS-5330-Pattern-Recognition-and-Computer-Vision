@@ -34,7 +34,7 @@ int getBinSize(int numberOfBins, bool echoStatus = false) {
 /*This function provides the nxn square pixel values at the center as the feature vector for the image passed.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featuerVector vector to store the center n**2 pixel values.
- * @param numOfCntrPixels[default=9] dimension of the square which needs to be extracted. indx.e. for 9x9 it is 9.
+ * @param numOfCntrPixels[default=9] dimension of the square which needs to be extracted. i.e. for 9x9 it is 9.
  * @param echoStatus[default=false] set this bool to enable verbose.
  * @note: numOfCntrPixels needs to be odd.
  *		  featureVector will be cleared before loading the new featureVector details.
@@ -89,7 +89,7 @@ int baselineTechnique(cv::Mat& image, std::vector<float>& featureVector, int num
  * @param echoStatus [default=false] set this bool to enable verbose.
  * @note: featureVector will be cleared before loading the new featureVector details.
  *		  featureVector holds the value in r, g values
- *		indx.e. order will be in (0,0), (0,1),...,(1,0), (1,1)...
+ *		i.e. order will be in (0,0), (0,1),...,(1,0), (1,1)...
  *		  r_index is incremented when color lies in that bin based on bin calculated by
  *			r_index  = (R * histBins)/(B+G+R+0.0000001). 1.0e-7 is offset to ensure non-zero denominator.
  *			g_index  = (G * histBins)/(B+G+R+0.0000001). 1.0e-7 is offset to ensure non-zero denominator.
@@ -152,7 +152,7 @@ int rg2DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, in
  * @param echoStatus set this bool to enable verbose
  * @note: featureVector will be cleared before loading the new featureVector details.
  *		  featureVector holds the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		  This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  * Method: for each pixel, the bin to which the value belongs is determined by
  *			r_index  = R/binSize.
@@ -224,7 +224,7 @@ int rgb3DHistogramTechnique(cv::Mat& image, std::vector<float>& featureVector, i
  *		 First half will have RGB histogram of the top half of the image.
  *		 Next half will have RGB histogram of bottom half of the image.
  *		 Feature Vector for either half will hold the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  *		 This implementation is independent of the rgb3DHistogramTechnique, rgHistogramTechniques.
  * Method: break the image into two halves, one for the top and other for the bottom.
@@ -310,6 +310,7 @@ int twoHalvesUpperBottomApproach(cv::Mat& image, std::vector<float>& featureVect
 	return 0;
 }
 
+
 /*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
@@ -320,7 +321,7 @@ int twoHalvesUpperBottomApproach(cv::Mat& image, std::vector<float>& featureVect
  *		 First half will have RGB histogram of the left half of the image.
  *		 Next half will have RGB histogram of the right half of the image.
  *		 Feature Vector for either half will hold the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  *		 This implementation is independent of the rgb3DHistogramTechnique, rgHistogramTechniques.
  * Method: break the image into two halves, one for the top and other for the bottom.
@@ -339,7 +340,7 @@ int twoHalvesLeftRightApproach(cv::Mat& image, std::vector<float>& featureVector
 	if (echoStatus) { printf("Binsize:%d\n", binSize); }
 
 	// Histogram Configuration
-	float normalizationFactor = (image.rows * image.cols); 
+	float normalizationFactor = (image.rows * image.cols);
 	// normalization factor is number of Pixels to ensure min(histograms) do not exceed 0.5
 
 	// 3D Array to store the frequencies of the color
@@ -349,7 +350,7 @@ int twoHalvesLeftRightApproach(cv::Mat& image, std::vector<float>& featureVector
 	for (int rowIncr = 0; rowIncr < image.rows; rowIncr++)
 	{	// Row pointer for quicker access 
 		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = 0; col < image.cols/2; col++)
+		for (int col = 0; col < image.cols / 2; col++)
 		{
 			// Calculating the bin for the color
 			int r = rowPtr[col][2]; // Red Channel
@@ -381,7 +382,7 @@ int twoHalvesLeftRightApproach(cv::Mat& image, std::vector<float>& featureVector
 	for (int rowIncr = 0; rowIncr < image.rows; rowIncr++)
 	{	// Row pointer for quicker access 
 		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = image.cols/2; col < image.cols; col++)
+		for (int col = image.cols / 2; col < image.cols; col++)
 		{
 			// Calculating the bin for the color
 			int r = rowPtr[col][2]; // Red Channel
@@ -407,9 +408,10 @@ int twoHalvesLeftRightApproach(cv::Mat& image, std::vector<float>& featureVector
 	return 0;
 }
 
+
 /** This function computes and provides the normalized values of
 internally computed 2 histograms as feature vectors.
-This function provides equal weights to both feature vectors. 
+This function provides equal weights to both feature vectors.
 * 1. gradient magnitude to find texture in the image and
 * 2. color RGB histogram to find the color distribution in the image.
  * @param image address of the cv::Mat object to be processed for this feature
@@ -422,11 +424,11 @@ This function provides equal weights to both feature vectors.
  *		 First half will have RGB histogram of the gradient magnitude of the image.
  *		 Next half will have RGB histogram of the image.
  *		 Feature Vector for either half will hold the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  *		 This function also utilizes the filters SobelX, SobelY, gradientMagnitude from previous assignment.
  * Method: Generate the gradient magnitude of the image passed and obtain its histogram in rg chromaticity space
- * using existing function, obtain the color histogram of the original image in RGB color space using half nuber of bins. 
+ * using existing function, obtain the color histogram of the original image in RGB color space using half nuber of bins.
  * Push these two feature vectors in the same order with weighs as 0.5 and 0.5 respectively.
  * @returns	   0 if the processing is successful
 */
@@ -463,7 +465,8 @@ int gradientAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVect
 	return 0;
 }
 
-/** This function utilizes both the hitograms of 4 quarters and also the gradient Magnitude for the whole image.
+
+/** This function utilizes both the hitograms of 4 quarters and also the Laplaciant for the whole image.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featuerVector vector to store the normalized histogram of the 4 quarters of the image in RGB space
  * @param histBins number of bins to be used for each color.
@@ -472,7 +475,7 @@ int gradientAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVect
  *		 This function will append the normalized histograms of gradient magnitude and RGB colorspace to the featureVector.
  *		 Quarters to process will start from top left , traverse to right and then moves down to reach the bottom right.
  *		 Feature Vector for either half will hold the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  *		 This function also utilizes the filters openCV's Laplacian for the texture estimation.
 */
@@ -483,7 +486,7 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
 	int binSize = getBinSize(histBins);
 	if (echoStatus) { printf("Binsize:%d\n", binSize); }
 
-	float normalizationFactor = (image.rows * image.cols)*2;
+	float normalizationFactor = (image.rows * image.cols) * 2;
 
 	// 3D Array to store the frequencies of the color
 	std::vector<std::vector<std::vector<float>>> histogramVector1(histBins, std::vector<std::vector<float>>(histBins, std::vector<float>(histBins, 0)));
@@ -491,7 +494,7 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
 	for (int rowIncr = 0; rowIncr < (image.rows / 2); rowIncr++)
 	{	// Row pointer for quicker access 
 		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = 0; col < image.cols/2; col++)
+		for (int col = 0; col < image.cols / 2; col++)
 		{
 			// Calculating the bin for the color
 			int r = rowPtr[col][2]; // Red Channel
@@ -522,7 +525,7 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
 	for (int rowIncr = 0; rowIncr < (image.rows / 2); rowIncr++)
 	{	// Row pointer for quicker access 
 		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = image.cols/2; col < image.cols; col++)
+		for (int col = image.cols / 2; col < image.cols; col++)
 		{
 			// Calculating the bin for the color
 			int r = rowPtr[col][2]; // Red Channel
@@ -545,7 +548,7 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
 			}
 		}
 	}
-	
+
 	// 3D Array to store the frequencies of the color
 	std::vector<std::vector<std::vector<float>>> histogramVector3(histBins, std::vector<std::vector<float>>(histBins, std::vector<float>(histBins, 0)));
 	// Iterate over second quarter for histogram
@@ -582,7 +585,7 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
 	for (int rowIncr = image.rows / 2; rowIncr < image.rows; rowIncr++)
 	{	// Row pointer for quicker access 
 		cv::Vec3b* rowPtr = image.ptr<cv::Vec3b>(rowIncr);
-		for (int col = image.cols / 2; col < image.cols ; col++)
+		for (int col = image.cols / 2; col < image.cols; col++)
 		{
 			// Calculating the bin for the color
 			int r = rowPtr[col][2]; // Red Channel
@@ -615,12 +618,13 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
 
 	for (int index = 0; index < lastFeatureVector.size(); index++)
 	{
-		featureVector.push_back(lastFeatureVector[index]/normalizationFactor);
+		featureVector.push_back(lastFeatureVector[index] / normalizationFactor);
 	}
 	return 0;
 }
 
-/** This function utilizes histograms of the center image 25x25 area and textures with 65%, 35% weightage.
+
+/** This function utilizes histograms of the center image 15x15 area and textures with 30%, 70% weightage.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featureVector vector to store the normalized histogram of the 4 quarters of the image in RGB space
  * @param histBins number of bins to be used for each color.
@@ -633,18 +637,18 @@ int quartersAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector
  *		 This function uses OpenCV's laplacian function for edge detection as the texture.
 */
 int centerColorAndTextureApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
-	
-	std::vector<float> centerColorFeatureVector; 
+
+	std::vector<float> centerColorFeatureVector;
 
 	float normalizationFactor = (image.rows * image.cols) * 2;
-	baselineTechnique(image, centerColorFeatureVector, 25, 0);
-	
+	baselineTechnique(image, centerColorFeatureVector, 15, 0);
+
 	featureVector.clear();
 	for (int indx = 0; indx < centerColorFeatureVector.size(); indx++)
 	{
-		featureVector.push_back((0.7* centerColorFeatureVector[indx]) / normalizationFactor);
+		featureVector.push_back((0.3 * centerColorFeatureVector[indx]) / normalizationFactor);
 	}
-	
+
 	// Get the gradient magnitude of the image provided
 	// Get the edges using the Laplacian images.
 	cv::Mat laplacianImg;
@@ -656,10 +660,11 @@ int centerColorAndTextureApproach(cv::Mat& image, std::vector<float>& featureVec
 
 	for (int indx = 0; indx < textureHistogramFeatureVector.size(); indx++)
 	{
-		featureVector.push_back((0.3*textureHistogramFeatureVector[indx])/normalizationFactor);
+		featureVector.push_back((0.7 * textureHistogramFeatureVector[indx]) / normalizationFactor);
 	}
 	return 0;
 }
+
 
 /** This function computes and provides the normalized values of
 internally computed 2 histograms as feature vectors.
@@ -676,7 +681,7 @@ This function provides equal weights to both feature vectors.
  *		 First half will have RGB histogram of the gradient magnitude of the image.
  *		 Next half will have RGB histogram of the image.
  *		 Feature Vector for either half will hold the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  *		 This function also utilizes the filters SobelX, SobelY, gradientMagnitude from previous assignment.
  * Method: Generate the gradient magnitude of the image passed and obtain its histogram in rg chromaticity space
@@ -685,10 +690,10 @@ This function provides equal weights to both feature vectors.
  * @returns	   0 if the processing is successful
 */
 int edgesAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector, int histBins = 8, bool echoStatus = false) {
-	
+
 	// Obtain greyscale  of the image
 	cv::Mat grayscaleImage = cv::Mat(image.size(), CV_8UC1);
-	cv::cvtColor(image, grayscaleImage,cv::COLOR_BGR2GRAY);
+	cv::cvtColor(image, grayscaleImage, cv::COLOR_BGR2GRAY);
 
 	//Reduce the noise in the image using blur operation
 	cv::Mat blurImg;
@@ -722,6 +727,124 @@ int edgesAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector,
 	return 0;
 }
 
+
+/**This function will be calculated by thresholding based on H,S,V values provided to find particular color
+and then calculated the histogram of the image in RGB space to obtain the featureVector.
+ * @param image address of the cv::Mat object to be processed for this feature
+ * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
+ * @param histBins number of bins to be used for each color.
+ * @param echoStatus set this bool to enable verbose
+ * @note featureVector will be cleared before loading the featureVector details.
+ *		 This function will append the normalized histograms of the masked image obtained.
+ *		 Feature Vector will hold the value in r, g, b values
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
+ * Method: This function first converts the image from BGR to HSV colorspace and then depending upon
+ * minimum and maximum values provided to obtain mask image, then dilate the masked image to fill any holes.
+ * Finally the function reuses the rgb3DHistogramTechnique to feature vector and
+ * push the results back to the feature vector.
+ * @returns	   0 if the processing is successful.
+
+*/
+int specificColorApproach(cv::Mat& image, std::vector<float>& featureVector, int hueMin = 0, int hueMax = 180, int satMin = 0, int satMax = 255, int valMin = 0, int valMax = 255, int histbins = 8, bool echoStatus = false) {
+
+	// Obtain the HSV format of the image 
+	cv::Mat hsvImg = cv::Mat(image.rows, image.cols, CV_8UC3);
+	cv::cvtColor(image, hsvImg, cv::COLOR_BGR2HSV);
+
+	// Min and Max thresholds to be used to extract the specific color
+	cv::Scalar minValues = cv::Scalar(hueMin, satMin, valMin);
+	cv::Scalar maxValues = cv::Scalar(hueMax, satMax, valMax);
+
+	//Obtain the mask of the image. 
+	cv::Mat maskImg;
+	cv::inRange(hsvImg, minValues, maxValues, maskImg);
+
+	// Using Dilation to fill holes by 3x3 matrix
+	cv::Mat dilatedImg;
+	maskImg.copyTo(dilatedImg);
+	cv::dilate(dilatedImg, maskImg, cv::Mat());
+
+	// Get the contours of the images in the threshold image
+	std::vector<std::vector<cv::Point> > contours;
+	cv::findContours(dilatedImg, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+	////Add the 3D Histogram distribution 
+	rgb3DHistogramTechnique(image, featureVector, histbins, echoStatus);
+
+	// Add the normalized area, normalized lengths, normalized widths in the contours.
+	float area = 0; // Total area matching in the contours
+	float height = 0; // Total height of the contours
+	float width = 0; // Total wdith of the contours
+	for (size_t i = 0; i < contours.size(); i++)
+	{
+		cv::Rect boundRect = boundingRect(contours[i]);
+		if (boundRect.area() > 10000)
+		{
+			area += boundRect.area();
+			height += boundRect.height;
+			width += boundRect.width;
+		}
+	}
+
+	// Adding the normalized area, lengths and widths as features
+	featureVector.push_back(area / (image.rows * image.cols)); //Normalized Area
+	height /= image.rows;
+	width /= image.cols;
+	//featureVector.push_back(height / image.rows); // Normalized height
+	//featureVector.push_back(width / image.cols);  // Normalized width
+	//width = std::max(1.0f, width); // Ensure non zero division
+	featureVector.push_back(height / width); // Width to height ratio is another feature.
+
+	return 0;
+}
+
+
+/**This function uses Yellow coor values on the specificColorApproach.
+* @param image address of the image
+* @param featureVector address of the feature vector.
+* @param histBins[default=8] number of bins to be used for each bin.
+* @param echoStatus[default=false] set this bool to enable verbose.
+* @returns 0 if featureVector is properly populated
+*		  non zero values in case of error.
+* @note the values used to obtain the yellowColor of the banana is obtained by experimenting with pic.0343.jpg
+*/
+int customApproachforBanana(cv::Mat& image, std::vector<float>& featureVector, int histbins = 8, bool echoStatus = false) {
+	// Min and Max thresholds to be used to extract the yellow Color based on experiment with pic.0343.jpg
+	return specificColorApproach(image, featureVector, 22, 50, 110, 255, 120, 255, histbins, false);
+}
+
+
+/**This function uses Blue coor values on the specificColorApproach.
+* @param image address of the image
+* @param featureVector address of the feature vector.
+* @param histBins[default=8] number of bins to be used for each bin.
+* @param echoStatus[default=false] set this bool to enable verbose.
+* @returns 0 if featureVector is properly populated
+*		  non zero values in case of error.
+* @note the values used to obtain the Blue color of the blue bins is obtained by experimenting with pic.0287.jpg
+*/
+int customApproachforBlueBins(cv::Mat& image, std::vector<float>& featureVector, int histbins = 8, bool echoStatus = false) {
+	// Min and Max thresholds to be used to extract the Blue Color based on experiment with pic.0287.jpg
+	return specificColorApproach(image, featureVector, 95, 160, 110, 255, 110, 255, histbins, false);
+}
+
+
+/**This function uses Green color values on the specificColorApproach.
+* @param image address of the image
+* @param featureVector address of the feature vector.
+* @param histBins[default=8] number of bins to be used for each bin.
+* @param echoStatus[default=false] set this bool to enable verbose.
+* @returns 0 if featureVector is properly populated
+*		  non zero values in case of error.
+* @note the values used to obtain the Green color of the blue bins is obtained by experimenting with pictures ranging 0746 - 0755
+*/
+int customApproachforGreenBins(cv::Mat& image, std::vector<float>& featureVector, int histbins = 8, bool echoStatus = false) {
+	// Min and Max thresholds to be used to extract the Blue Color based on experiment with pic.0287.jpg
+	return specificColorApproach(image, featureVector, 63, 94, 51, 236, 41, 243, histbins, false);
+}
+
+
 /*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
@@ -732,7 +855,7 @@ int edgesAndColorHistApproach(cv::Mat& image, std::vector<float>& featureVector,
  *		 First half will have RGB histogram of the top half of the image.
  *		 Next half will have RGB histogram of bottom half of the image.
  *		 Feature Vector for either half will hold the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  * Method: This function reuses the rgb3DHistogramTechnique by processing it for first half and second half
  * and pushing the results back to the feature vector.
@@ -769,6 +892,7 @@ int twoHalvesRGBApproach(cv::Mat& image, std::vector<float>& featureVector, int 
 	return 0;
 }
 
+
 /*This function provides the normalized histogram as 2 separate halves in RGB space of complete image passed as the feature vector.
  * @param image address of the cv::Mat object to be processed for this feature
  * @param featuerVector vector to store the normalized histogram of the image in RGB space of two halves.
@@ -779,7 +903,7 @@ int twoHalvesRGBApproach(cv::Mat& image, std::vector<float>& featureVector, int 
  *		 First half will have RGB histogram of the top half of the image.
  *		 Next half will have RGB histogram of bottom half of the image.
  *		 Feature Vector for either half will hold the value in r, g, b values
- *			indx.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
+ *			i.e. order will be in (0,0, 0), (0,0,1),...,(0,1,0),(0,1,1),...(1,0,0), (1,0,1),....
  *		 This function utilizes the getBinSize(histBins) function to get appropriate binSize.
  * Method: This function reuses the rg2DHistogramTechnique by processing it for first half and second half
  * and pushing the results back to the feature vector.
