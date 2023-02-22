@@ -33,21 +33,28 @@ int main(int argc, char* argv[])
 		exit(-100);
 	}
 
+	bool debug = true;
+	if (debug) { printf("Read the original image.\n"); }
+
 	// Displaying the image read.
-	//cv::imshow("Original Image", image);
+	cv::imshow("Original Image", image);
+	
 
 	// Remove any salt and pepper noise from the image.
 	cv::Mat noSnPImg;
 	cv::medianBlur(image, noSnPImg, 5);
+	if (debug){ printf("Removed salt and pepper noise.\n");}
 
 	// Blur the image to smoothen the edges
 	cv::Mat blurImg;
 	cv::GaussianBlur(noSnPImg, blurImg, cv::Size(7, 7), 0.1);
+	if (debug) { printf("Blurrred image.\n"); }
 
 	// Convert  to HSV for using cv function
 	cv::Mat hsvImg;
 	image.copyTo(hsvImg);
 	cv::cvtColor(blurImg, hsvImg, cv::COLOR_BGR2HSV);
+	if (debug) { printf("Converted blurred image into HSV.\n"); }
 	//cv::imshow("HSV Image", hsvImg);
 	
 	// HSV values are explored using the sample images provided.
@@ -81,6 +88,7 @@ int main(int argc, char* argv[])
 	int grayscaleThreshold = 124; // Value is based on the experimentation with sample images
 	thresholdImage(image, grayThImg, grayscaleThreshold);
     cv::imshow("Thresholded Grayscale Image", grayThImg);
+	if (debug) { printf("Thresholded greyscale image.\n"); }
 
 	cv::Mat grayThImg2;
 	thresholdImage(blurImg, grayThImg2, grayscaleThreshold);
@@ -89,24 +97,33 @@ int main(int argc, char* argv[])
 
 	// Erosion of binary image
 	cv::Mat erroredImage;
-	erosion(grayThImg, erroredImage, 7, 4);
+	erosion(grayThImg, erroredImage, 4, 8);
 	cv::imshow("Eroded Image", erroredImage);
-
 
 	// Dilation of binary image
 	cv::Mat cleanImg;
-	dilation(erroredImage, cleanImg, 7, 8);
+	dilation(erroredImage, cleanImg, 4, 4);
 	cv::imshow("Clearned Image", cleanImg);
+	if (debug) { printf("Cleaned the binary image.\n"); }
 
-	// Connected component analysis to regions
-	cv::Mat regions = cv::Mat(cleanImg.size(), CV_32S);
-	cv::connectedComponents(cleanImg, regions);
+	// Connected component analysis to find regions
+	cv::Mat labels = cv::Mat(cleanImg.size(), CV_8UC1);
+	cv::Mat stats = cv::Mat(cleanImg.size(), CV_8UC1);
+	cv::Mat centroids = cv::Mat(cleanImg.size(), CV_8UC1);
+	cv::connectedComponentsWithStats(cleanImg, labels, stats, centroids);
 	
 	// Segment the detected foreground pixels into regions. 
-	cv::Mat regionsImg = cv::Mat::zeros(cleanImg.size(), CV_8SC3);
-	segmentationStack(cleanImg, regionsImg);
-	cv::imshow("Segmented Image", regionsImg);
+	cv::Mat regionMap = cv::Mat::zeros(cleanImg.size(), CV_8SC1);
+	regionGrowing(cleanImg, regionMap,8);
+	if (debug) { printf("Segmented the binary image.\n"); }
 
+	// Color the detected Segments
+	cv::Mat segmentColoredImg = cv::Mat::zeros(cleanImg.size(), CV_8SC3);
+	colorSegmentation(regionMap, segmentColoredImg);
+	cv::imshow("Segmented Image", segmentColoredImg);
+
+	vector<double> featureVector;
+	getFeatures(regionMap, 2, featureVector);
 
 	while (true) {
 		char key = cv::waitKey(0);

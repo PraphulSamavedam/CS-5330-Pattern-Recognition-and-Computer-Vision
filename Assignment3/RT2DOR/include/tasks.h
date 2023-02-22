@@ -4,6 +4,7 @@
 */
 
 #include <opencv2/opencv.hpp>
+#include <vector>
 
 /* This image is thresholded in the range of hueMin, hueMax; satMin, satMax;
 and valMin , valMax; from the source image.
@@ -77,4 +78,22 @@ int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connec
 * @note AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in exactly 0 or 255.
 */
-int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue = 4,int foreGround = 255);
+int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue = 4,int foreGround = 255);
+
+/** This function colors the image based on the region Map provided. All the regions with same ID is colored with same random color.
+* @param regionMap address of the regionMap image
+* @paaram dstImage address of the destination image
+* @note: AssertionError if the regionMap and dstImage have different 2D dimensions.
+*		 AssertionError if the regionMap doesn't have depth of 1 color.
+*		 AssertionError if the dstImage doesn't have depth of 3 colors/channels.
+*/
+int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage);
+
+/**This function populates the feature vectors in the featureVector for the specific region in the region map.
+* @param regionMap address of the mapped regions
+* @param regionID ID of the region whose features needs to be calculated.
+* @param featureVector address of the feature vecotr which needs to have the features of the selected region.
+* @returns 0 if the feature is properly extracted. 
+*		non zero if the operation is failure.
+*/
+int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVector);

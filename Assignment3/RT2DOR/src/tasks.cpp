@@ -322,14 +322,14 @@ int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connec
 /** This function find the conencted foreground regions in a binary image using stack.
 * Assumes the foreground to be white (255), background color as 255 - foreGround.
 * @param srcImg address of the source binary image
-* @param dstImg address of the destination binary image
+* @param dstImg address of the destination binary image having the region labels
 * @param connectValue[default=4] set value as 4 or 8 to mark 4-connected, 8-connected technique
 * @param foreGround[default=255] value of the foreground pixel value.
 * @returns 0 if the segmentation is successful.
 * @note AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in exactly 0 or 255.
 */
-int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGround)
+int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGround)
 {
 	// It can either be 4-connected or 8-connected approach.
 	assert(connectValue == 4 or connectValue == 8);
@@ -337,15 +337,15 @@ int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int fo
 	// Foreground color can only be 255 or 0.
 	assert(foreGround == 255 or foreGround == 0);
 
-	// Destination needs to have three channels
-	assert (dstImg.depth() == 3);
+	// Destination needs to binary image
+	assert(dstImg.depth() == 1);
 
 	// Destination and source images need to be of same size.
 	assert(srcImg.size() == dstImg.size());
 
 	int backGround = 255 - foreGround;
 	int counter = 1;
-
+	bool debug = false;
 	cv::Mat tmp = cv::Mat::zeros(srcImg.size(), CV_8UC1);
 
 	std::stack<std::tuple<int, int>> pixelStack;
@@ -355,11 +355,13 @@ int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int fo
 	{
 		uchar* srcPtr = srcImg.ptr<uchar>(row);
 		uchar* rowPtr = tmp.ptr<uchar>(row);
+		if (debug) { printf("Processing row:%d\n", row); }
 		for (int col = 0; col < srcImg.cols; col++)
 		{
 			// Check if it is foreground pixel and is unlabelled
 			if (srcPtr[col] == foreGround and rowPtr[col] == 0)
 			{
+				if (debug) { printf("Pixel (row,col):(%d,%d) is foreground\n", row, col); }
 				rowPtr[col] = counter;
 				pixelStack.push(std::make_tuple(row, col));
 
@@ -371,7 +373,7 @@ int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int fo
 					int c = std::get<1>(t);
 
 					// Neighbour pixel is foreground and unlabelled.
-					if (r != 0) { 
+					if (r != 0) {
 						// Not first row, so previous row exists
 						if (srcImg.at<uchar>(r - 1, c) == foreGround and tmp.at<uchar>(r - 1, c) == 0)
 						{
@@ -379,7 +381,7 @@ int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int fo
 							pixelStack.push(std::make_tuple(r - 1, c));
 						}
 					}
-					if (r != srcImg.rows - 1) { 
+					if (r != srcImg.rows - 1) {
 						// Not the last row so next row exists
 						if (srcImg.at<uchar>(r + 1, c) == foreGround and tmp.at<uchar>(r + 1, c) == 0)
 						{
@@ -442,20 +444,45 @@ int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int fo
 						}
 					}
 				}
-				
+
+				if (debug) { printf("Region grown for %d\n", counter - 1); }
 				counter += 1;
+			}
+			else {
+				if (debug) { printf("Pixel (row,col):(%d,%d) is background\n", row, col); }
 			}
 		}
 	}
-	printf("Computed regions are %d\n", counter-1);
+	printf("Computed regions are %d\n", counter - 1);
+	tmp.copyTo(dstImg);
 
+	return 0;
+}
+
+
+
+/** This function colors the image based on the region Map provided. All the regions with same ID is colored with same random color.
+* @param regionMap address of the regionMap image
+* @paaram dstImage address of the destination image
+* @note: AssertionError if the regionMap and dstImage have different 2D dimensions.
+*		 AssertionError if the regionMap doesn't have depth of 1 color.
+*		 AssertionError if the dstImage doesn't have depth of 3 colors/channels.
+*/
+int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage) {
 	srand(300); // Setting the seed as 100 for replicability of the code.
-	dstImg = cv::Mat::zeros(srcImg.size(), CV_8UC3);
+
+	assert(regionMap.size() == dstImage.size());
+
+	assert(dstImage.depth() == 3);
+
+	dstImage = cv::Mat::zeros(regionMap.size(), CV_8UC3);
+
+	// Map for coloring the regions with same ID a single color.
 	std::map<int, cv::Vec3b> regionColorMap;
-	for (int row = 0; row < srcImg.rows; row++) {
-		uchar* srcPtr = tmp.ptr<uchar>(row);
-		cv::Vec3b* dstPtr = dstImg.ptr<cv::Vec3b>(row);
-		for (int col = 0; col < srcImg.cols; col++)
+	for (int row = 0; row < regionMap.rows; row++) {
+		uchar* srcPtr = regionMap.ptr<uchar>(row);
+		cv::Vec3b* dstPtr = dstImage.ptr<cv::Vec3b>(row);
+		for (int col = 0; col < regionMap.cols; col++)
 		{
 			if (srcPtr[col] != 0) {
 				if (regionColorMap.find(int(srcPtr[col])) == regionColorMap.end()) {
@@ -471,6 +498,38 @@ int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int fo
 			}
 		}
 	}
+	return 0;
+}
+
+int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVector)
+{
+	// Tmp Mat to store the binary image
+	cv::Mat tmp = cv::Mat::zeros(regionMap.size(), CV_8UC1);
+
+	// Only the specific region ID is marked as foreground, else everything is background
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		uchar* srcPtr = regionMap.ptr<uchar>(row);
+		uchar* dstPtr = tmp.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] == regionID) {
+				dstPtr[col] == 255;
+			}
+		}
+	}
+	cv::imshow("Region specific Image",tmp);
+	cv::Moments Moments = cv::moments(tmp, true);
+
+	//Obtain axis of least momentum  ToDo from Here
+	std::vector<std::tuple<double, int, int>> momentsWithCenter;
+
+	printf("Mu11 values for region %d:\n", regionID);
+	std::cout << Moments.mu11 << std::endl;
+
+	// std::cout << points << std::endl;
 
 	return 0;
 }
+
+
