@@ -1,10 +1,10 @@
 /*
 * Written by : Samavedam Manikhanta Praphul
-* This file defines the entry point for the application -- RT2DObjRecognition.cpp
+* This file defines the entry point for the application -- RT2DOR.cpp
 */
 
 #define _CRT_SECURE_NO_WARNINGS
-//#include "../include/RT2DObjRecognition.h"
+//#include "../include/RT2DOR.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "../include/tasks.h"
@@ -87,35 +87,26 @@ int main(int argc, char* argv[])
 	//cv::imshow("Thresholded Grayscale Blur Image", grayThImg2);
 	
 
-	cv::Mat erodeImg;
-	cv::erode(grayThImg, erodeImg, cv::Mat());
-	cv::imshow("CV::Erode Image", erodeImg);
-
 	// Erosion of binary image
 	cv::Mat erroredImage;
-	erosion(grayThImg, erroredImage, 1, 4);
+	erosion(grayThImg, erroredImage, 7, 4);
 	cv::imshow("Eroded Image", erroredImage);
 
-	cv::Mat dilImg;
-	cv::dilate(grayThImg, dilImg, cv::Mat());
-	cv::imshow("CV::Dilated Image", dilImg);
 
 	// Dilation of binary image
-	cv::Mat dilatedImage;
-	dilation(grayThImg, dilatedImage, 1, 8);
-	cv::imshow("Dilated Image", dilatedImage);
+	cv::Mat cleanImg;
+	dilation(erroredImage, cleanImg, 7, 8);
+	cv::imshow("Clearned Image", cleanImg);
 
-	// Revert the erosion with same connect
-	cv::Mat nochangeImg;
-	dilation(erroredImage, nochangeImg, 1, 8);
-	cv::imshow("No Changes Image", nochangeImg);
-
-	// Proper clean up of the image.
-	cv::Mat cleanedImg;
-	dilation(erroredImage, cleanedImg, 1, 4);
-	cv::imshow("CV::Erode Image", cleanedImg);
-
+	// Connected component analysis to regions
+	cv::Mat regions = cv::Mat(cleanImg.size(), CV_32S);
+	cv::connectedComponents(cleanImg, regions);
 	
+	// Segment the detected foreground pixels into regions. 
+	cv::Mat regionsImg = cv::Mat::zeros(cleanImg.size(), CV_8SC3);
+	segmentationStack(cleanImg, regionsImg);
+	cv::imshow("Segmented Image", regionsImg);
+
 
 	while (true) {
 		char key = cv::waitKey(0);

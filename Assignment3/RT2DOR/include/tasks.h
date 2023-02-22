@@ -5,14 +5,14 @@
 
 #include <opencv2/opencv.hpp>
 
-/* This image is thresholded in the range of hueMin, hueMax; satMin, satMax; 
+/* This image is thresholded in the range of hueMin, hueMax; satMin, satMax;
 and valMin , valMax; from the source image.
 */
-int thresholdImage(cv::Mat& srcImg ,int hueMin, int hueMax, int satMin, int satMax, int valMin, int valMax, cv::Mat& thresholdedImg);
+int thresholdImage(cv::Mat& srcImg, int hueMin, int hueMax, int satMin, int satMax, int valMin, int valMax, cv::Mat& thresholdedImg);
 
 /*This function masks the source image by marking the image above threshold as black below as white.
 */
-int thresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg ,int greyScaleThreshold);
+int thresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg, int greyScaleThreshold);
 
 /** This function returns only the fileName from the filePath provided.
 @param filePath path of the file whose name needs to be obtained.
@@ -66,3 +66,15 @@ int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectV
 *		AssertionError if foreGround or backGround values are not in range [0,255].
 */
 int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connectValue = 4, int foreGround = 255, int backGround = 0);
+
+/** This function find the conencted foreground regions in a binary image using stack.
+* Assumes the foreground to be white (255), background color as 255 - foreGround.
+* @param srcImg address of the source binary image
+* @param dstImg address of the destination binary image
+* @param connectValue[default=4] set value as 4 or 8 to mark 4-connected, 8-connected technique
+* @param foreGround[default=255] value of the foreground pixel value.
+* @returns 0 if the segmentation is successful.
+* @note AssertionError if connectValue not in (4,8)
+*		AssertionError if foreGround or backGround values are not in exactly 0 or 255.
+*/
+int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue = 4,int foreGround = 255);

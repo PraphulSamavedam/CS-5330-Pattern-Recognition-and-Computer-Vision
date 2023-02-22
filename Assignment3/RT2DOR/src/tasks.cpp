@@ -4,6 +4,11 @@
 */
 
 #include <opencv2/opencv.hpp>
+#include "../include/tasks.h"
+#include <stack> // Required for the stack operations in segmentation
+#include <tuple> // Required for tupling the row and column in the stack
+#include <map> // Required to map the color with the segmented region
+#include <cstdlib> // Required for random number generation.
 
 /* This image is thresholded in the range of hueMin, hueMax; satMin, satMax;
 and valMin , valMax; from the source image.
@@ -110,7 +115,7 @@ int getOnlyFileName(char*& filePath, char*& fileName) {
 * @note AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in range [0,255].
 */
-int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue = 4, int foreGround = 255, int backGround = 0) {
+int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue, int foreGround, int backGround) {
 
 	//Supports only 4-connected or 8-connected approach
 	assert(connectValue == 4 || connectValue == 8);
@@ -239,7 +244,7 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue = 4, i
 *		AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in range [0,255].
 */
-int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectValue = 4, int foreGround = 255, int backGround = 0) {
+int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectValue, int foreGround, int backGround) {
 	// Supports only 4-connected or 8-connected erosion. 
 	assert(connectValue == 4 || connectValue == 8);
 
@@ -283,7 +288,7 @@ int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectV
 *		AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in range [0,255].
 */
-int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connectValue = 4, int foreGround = 255, int backGround = 0) {
+int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connectValue, int foreGround, int backGround) {
 	// Supports only 4-connected or 8-connected erosion. 
 	assert(connectValue == 4 || connectValue == 8);
 
@@ -312,4 +317,160 @@ int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connec
 
 	return 0;
 
+}
+
+/** This function find the conencted foreground regions in a binary image using stack.
+* Assumes the foreground to be white (255), background color as 255 - foreGround.
+* @param srcImg address of the source binary image
+* @param dstImg address of the destination binary image
+* @param connectValue[default=4] set value as 4 or 8 to mark 4-connected, 8-connected technique
+* @param foreGround[default=255] value of the foreground pixel value.
+* @returns 0 if the segmentation is successful.
+* @note AssertionError if connectValue not in (4,8)
+*		AssertionError if foreGround or backGround values are not in exactly 0 or 255.
+*/
+int segmentationStack(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGround)
+{
+	// It can either be 4-connected or 8-connected approach.
+	assert(connectValue == 4 or connectValue == 8);
+
+	// Foreground color can only be 255 or 0.
+	assert(foreGround == 255 or foreGround == 0);
+
+	// Destination needs to have three channels
+	assert (dstImg.depth() == 3);
+
+	// Destination and source images need to be of same size.
+	assert(srcImg.size() == dstImg.size());
+
+	int backGround = 255 - foreGround;
+	int counter = 1;
+
+	cv::Mat tmp = cv::Mat::zeros(srcImg.size(), CV_8UC1);
+
+	std::stack<std::tuple<int, int>> pixelStack;
+
+	// Iterate over the pixels for the connected regions. 
+	for (int row = 0; row < srcImg.rows; row++)
+	{
+		uchar* srcPtr = srcImg.ptr<uchar>(row);
+		uchar* rowPtr = tmp.ptr<uchar>(row);
+		for (int col = 0; col < srcImg.cols; col++)
+		{
+			// Check if it is foreground pixel and is unlabelled
+			if (srcPtr[col] == foreGround and rowPtr[col] == 0)
+			{
+				rowPtr[col] = counter;
+				pixelStack.push(std::make_tuple(row, col));
+
+				while (!pixelStack.empty())
+				{
+					std::tuple<int, int> t = pixelStack.top();
+					pixelStack.pop();
+					int r = std::get<0>(t);
+					int c = std::get<1>(t);
+
+					// Neighbour pixel is foreground and unlabelled.
+					if (r != 0) { 
+						// Not first row, so previous row exists
+						if (srcImg.at<uchar>(r - 1, c) == foreGround and tmp.at<uchar>(r - 1, c) == 0)
+						{
+							tmp.at<uchar>(r - 1, c) = counter;
+							pixelStack.push(std::make_tuple(r - 1, c));
+						}
+					}
+					if (r != srcImg.rows - 1) { 
+						// Not the last row so next row exists
+						if (srcImg.at<uchar>(r + 1, c) == foreGround and tmp.at<uchar>(r + 1, c) == 0)
+						{
+							tmp.at<uchar>(r + 1, c) = counter;
+							pixelStack.push(std::make_tuple(r + 1, c));
+						}
+					}
+					if (c != 0) { // Not first col, so previous col exists
+						if (srcImg.at<uchar>(r, c - 1) == foreGround and tmp.at<uchar>(r, c - 1) == 0)
+						{
+							tmp.at<uchar>(r, c - 1) = counter;
+							pixelStack.push(std::make_tuple(r, c - 1));
+						}
+					}
+					if (c != srcImg.cols - 1)
+					{ // Not the last col so next col exists
+						if (srcImg.at<uchar>(r, c + 1) == foreGround and tmp.at<uchar>(r, c + 1) == 0)
+						{
+							tmp.at<uchar>(r, c + 1) = counter;
+							pixelStack.push(std::make_tuple(r, c + 1));
+						}
+					}
+
+					// Additional diagonal neighbours in case of 8- connected
+					if (connectValue == 8) {
+						if (r != 0)
+						{ // Not the first row, so previous row is accessible
+							if (c != 0) { // Not first coloumn, so previous col is accessible
+								if (srcImg.at<uchar>(r - 1, c - 1) == foreGround and tmp.at<uchar>(r - 1, c - 1) == 0)
+								{
+									tmp.at<uchar>(r - 1, c - 1) = counter;
+									pixelStack.push(std::make_tuple(r - 1, c - 1));
+								}
+							}
+							if (c != srcImg.cols - 1)
+							{
+								if (srcImg.at<uchar>(r - 1, c + 1) == foreGround and tmp.at<uchar>(r - 1, c + 1) == 0)
+								{
+									tmp.at<uchar>(r - 1, c + 1) = counter;
+									pixelStack.push(std::make_tuple(r - 1, c + 1));
+								}
+							}
+						}
+						if (r != srcImg.rows - 1)
+						{ // Not the last row, so next row is accessible
+							if (c != 0) { // Not first coloumn, so previous col is accessible
+								if (srcImg.at<uchar>(r + 1, c - 1) == foreGround and tmp.at<uchar>(r + 1, c - 1) == 0)
+								{
+									tmp.at<uchar>(r + 1, c - 1) = counter;
+									pixelStack.push(std::make_tuple(r + 1, c - 1));
+								}
+							}
+							if (c != srcImg.cols - 1) { // No the last column, so next column is accessible
+								if (srcImg.at<uchar>(r + 1, c + 1) == foreGround and tmp.at<uchar>(r + 1, c + 1) == 0)
+								{
+									tmp.at<uchar>(r + 1, c + 1) = counter;
+									pixelStack.push(std::make_tuple(r + 1, c + 1));
+								}
+							}
+						}
+					}
+				}
+				
+				counter += 1;
+			}
+		}
+	}
+	printf("Computed regions are %d\n", counter-1);
+
+	srand(300); // Setting the seed as 100 for replicability of the code.
+	dstImg = cv::Mat::zeros(srcImg.size(), CV_8UC3);
+	std::map<int, cv::Vec3b> regionColorMap;
+	for (int row = 0; row < srcImg.rows; row++) {
+		uchar* srcPtr = tmp.ptr<uchar>(row);
+		cv::Vec3b* dstPtr = dstImg.ptr<cv::Vec3b>(row);
+		for (int col = 0; col < srcImg.cols; col++)
+		{
+			if (srcPtr[col] != 0) {
+				if (regionColorMap.find(int(srcPtr[col])) == regionColorMap.end()) {
+					int red = rand() % 255;
+					int green = rand() % 255;
+					int blue = rand() % 255;
+					dstPtr[col] = cv::Vec3b(blue, green, red);
+					regionColorMap[int(srcPtr[col])] = cv::Vec3b(blue, green, red);
+				}
+				else {
+					dstPtr[col] = regionColorMap[int(srcPtr[col])];
+				}
+			}
+		}
+	}
+
+	return 0;
 }
