@@ -78,7 +78,16 @@ int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connec
 * @note AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in exactly 0 or 255.
 */
-int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue = 4,int foreGround = 255);
+int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue = 4,int foreGround = 255, bool debug = false);
+
+/** This function provides the binary image wtih top N regions if they are present in the binary image.
+* @param address of the regionMap which is segmented image with single channel with details of the region label.
+* @param address of the destinationImage
+* @param NumberOfRegions[default=5] number of the top regions (area-wise) which need to be present in the destination image.
+* @param debug[default=false] set this to have print statements to debug
+* @return 0 if we have processed the binary image for the top N regions.
+*/
+int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions = 5, bool debug = false);
 
 /** This function colors the image based on the region Map provided. All the regions with same ID is colored with same random color.
 * @param regionMap address of the regionMap image

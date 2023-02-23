@@ -325,11 +325,12 @@ int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connec
 * @param dstImg address of the destination binary image having the region labels
 * @param connectValue[default=4] set value as 4 or 8 to mark 4-connected, 8-connected technique
 * @param foreGround[default=255] value of the foreground pixel value.
+* @param debug[default=false] set this for debug print.
 * @returns 0 if the segmentation is successful.
 * @note AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in exactly 0 or 255.
 */
-int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGround)
+int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGround, bool debug)
 {
 	// It can either be 4-connected or 8-connected approach.
 	assert(connectValue == 4 or connectValue == 8);
@@ -345,8 +346,6 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 
 	int backGround = 255 - foreGround;
 	int counter = 1;
-	bool debug = false;
-	cv::Mat tmp = cv::Mat::zeros(srcImg.size(), CV_8UC1);
 
 	std::stack<std::tuple<int, int>> pixelStack;
 
@@ -354,15 +353,15 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 	for (int row = 0; row < srcImg.rows; row++)
 	{
 		uchar* srcPtr = srcImg.ptr<uchar>(row);
-		uchar* rowPtr = tmp.ptr<uchar>(row);
-		if (debug) { printf("Processing row:%d\n", row); }
+		short* dstPtr = dstImg.ptr<short>(row);
+		if (debug) { printf("Processing row: %d\n", row); }
 		for (int col = 0; col < srcImg.cols; col++)
 		{
 			// Check if it is foreground pixel and is unlabelled
-			if (srcPtr[col] == foreGround and rowPtr[col] == 0)
+			if (srcPtr[col] == foreGround and dstPtr[col] == 0)
 			{
 				if (debug) { printf("Pixel (row,col):(%d,%d) is foreground\n", row, col); }
-				rowPtr[col] = counter;
+				dstPtr[col] = counter;
 				pixelStack.push(std::make_tuple(row, col));
 
 				while (!pixelStack.empty())
@@ -375,32 +374,32 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 					// Neighbour pixel is foreground and unlabelled.
 					if (r != 0) {
 						// Not first row, so previous row exists
-						if (srcImg.at<uchar>(r - 1, c) == foreGround and tmp.at<uchar>(r - 1, c) == 0)
+						if (srcImg.at<uchar>(r - 1, c) == foreGround and dstImg.at<short>(r - 1, c) == 0)
 						{
-							tmp.at<uchar>(r - 1, c) = counter;
+							dstImg.at<short>(r - 1, c) = counter;
 							pixelStack.push(std::make_tuple(r - 1, c));
 						}
 					}
 					if (r != srcImg.rows - 1) {
 						// Not the last row so next row exists
-						if (srcImg.at<uchar>(r + 1, c) == foreGround and tmp.at<uchar>(r + 1, c) == 0)
+						if (srcImg.at<uchar>(r + 1, c) == foreGround and dstImg.at<short>(r + 1, c) == 0)
 						{
-							tmp.at<uchar>(r + 1, c) = counter;
+							dstImg.at<short>(r + 1, c) = counter;
 							pixelStack.push(std::make_tuple(r + 1, c));
 						}
 					}
 					if (c != 0) { // Not first col, so previous col exists
-						if (srcImg.at<uchar>(r, c - 1) == foreGround and tmp.at<uchar>(r, c - 1) == 0)
+						if (srcImg.at<uchar>(r, c - 1) == foreGround and dstImg.at<short>(r, c - 1) == 0)
 						{
-							tmp.at<uchar>(r, c - 1) = counter;
+							dstImg.at<short>(r, c - 1) = counter;
 							pixelStack.push(std::make_tuple(r, c - 1));
 						}
 					}
 					if (c != srcImg.cols - 1)
 					{ // Not the last col so next col exists
-						if (srcImg.at<uchar>(r, c + 1) == foreGround and tmp.at<uchar>(r, c + 1) == 0)
+						if (srcImg.at<uchar>(r, c + 1) == foreGround and dstImg.at<short>(r, c + 1) == 0)
 						{
-							tmp.at<uchar>(r, c + 1) = counter;
+							dstImg.at<short>(r, c + 1) = counter;
 							pixelStack.push(std::make_tuple(r, c + 1));
 						}
 					}
@@ -410,17 +409,17 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 						if (r != 0)
 						{ // Not the first row, so previous row is accessible
 							if (c != 0) { // Not first coloumn, so previous col is accessible
-								if (srcImg.at<uchar>(r - 1, c - 1) == foreGround and tmp.at<uchar>(r - 1, c - 1) == 0)
+								if (srcImg.at<uchar>(r - 1, c - 1) == foreGround and dstImg.at<short>(r - 1, c - 1) == 0)
 								{
-									tmp.at<uchar>(r - 1, c - 1) = counter;
+									dstImg.at<short>(r - 1, c - 1) = counter;
 									pixelStack.push(std::make_tuple(r - 1, c - 1));
 								}
 							}
 							if (c != srcImg.cols - 1)
 							{
-								if (srcImg.at<uchar>(r - 1, c + 1) == foreGround and tmp.at<uchar>(r - 1, c + 1) == 0)
+								if (srcImg.at<uchar>(r - 1, c + 1) == foreGround and dstImg.at<short>(r - 1, c + 1) == 0)
 								{
-									tmp.at<uchar>(r - 1, c + 1) = counter;
+									dstImg.at<short>(r - 1, c + 1) = counter;
 									pixelStack.push(std::make_tuple(r - 1, c + 1));
 								}
 							}
@@ -428,16 +427,16 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 						if (r != srcImg.rows - 1)
 						{ // Not the last row, so next row is accessible
 							if (c != 0) { // Not first coloumn, so previous col is accessible
-								if (srcImg.at<uchar>(r + 1, c - 1) == foreGround and tmp.at<uchar>(r + 1, c - 1) == 0)
+								if (srcImg.at<uchar>(r + 1, c - 1) == foreGround and dstImg.at<short>(r + 1, c - 1) == 0)
 								{
-									tmp.at<uchar>(r + 1, c - 1) = counter;
+									dstImg.at<short>(r + 1, c - 1) = counter;
 									pixelStack.push(std::make_tuple(r + 1, c - 1));
 								}
 							}
 							if (c != srcImg.cols - 1) { // No the last column, so next column is accessible
-								if (srcImg.at<uchar>(r + 1, c + 1) == foreGround and tmp.at<uchar>(r + 1, c + 1) == 0)
+								if (srcImg.at<uchar>(r + 1, c + 1) == foreGround and dstImg.at<short>(r + 1, c + 1) == 0)
 								{
-									tmp.at<uchar>(r + 1, c + 1) = counter;
+									dstImg.at<short>(r + 1, c + 1) = counter;
 									pixelStack.push(std::make_tuple(r + 1, c + 1));
 								}
 							}
@@ -453,13 +452,93 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 			}
 		}
 	}
-	printf("Computed regions are %d\n", counter - 1);
-	tmp.copyTo(dstImg);
+	if (debug) { printf("Computed regions are %d\n", counter); }
 
 	return 0;
 }
 
+class Compare {
+public:
+	bool operator()(std::tuple<int, int> first, std::tuple<int, int> second)
+	{
+		if (std::get<1>(first) < std::get<1>(second)) {
+			return true;
+		}
+		else {
+			return false;
+		}
 
+
+	}
+};
+
+int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool debug)
+{
+	// Binary image is required
+	assert(regionMap.depth() == 1);
+
+	assert(regionMap.size() == dstImg.size());
+
+	std::priority_queue<std::tuple<int, int>, std::vector<std::tuple<int, int>>, Compare> pQueue;
+
+	std::map<int, int> regionAreaMap;
+	
+	// Loop through the image for the number of pixels with that region ID.
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] != 0) {
+				if (regionAreaMap.find(int(srcPtr[col])) == regionAreaMap.end())
+				{
+					regionAreaMap[int(srcPtr[col])] = 1;
+				}
+				else {
+					regionAreaMap[int(srcPtr[col])] += 1;
+				}
+			}
+		}
+	}
+
+	
+	int count = 1;
+	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
+	{
+		pQueue.push(std::make_tuple(it->first, it->second));
+		count += 1;
+		if (debug) { std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl; }
+	}
+
+	int maxRegionsPossible = MIN(count, NumberOfRegions);
+	// Map of the region ID with area and the new regionID
+	std::map<int, std::tuple<uchar, int>> regionIDBinValueMap;
+	int counter = 1;
+	while (counter <= maxRegionsPossible) {
+		regionIDBinValueMap[std::get<0>(pQueue.top())] = std::make_tuple(255, counter);
+		if (debug){ std::cout << "Top Region: " << std::get<0>(pQueue.top()) << " Area: " << std::get<1>(pQueue.top()) << std::endl; }
+		pQueue.pop();
+		counter += 1;
+	}
+	
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = dstImg.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			dstPtr[col] = std::get<0>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Pre - Region Image value: %d, ", srcPtr[col]);
+			//printf("Destination Value: %d ", dstPtr[col]);
+			srcPtr[col] = std::get<1>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Post Region Image value: %d, \n", srcPtr[col]);
+			
+		}
+	}
+
+	if (debug) { printf("Segmented the image into %d regions", maxRegionsPossible); }
+	return maxRegionsPossible;
+}
 
 /** This function colors the image based on the region Map provided. All the regions with same ID is colored with same random color.
 * @param regionMap address of the regionMap image
@@ -469,7 +548,7 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 *		 AssertionError if the dstImage doesn't have depth of 3 colors/channels.
 */
 int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage) {
-	srand(300); // Setting the seed as 100 for replicability of the code.
+	srand(100); // Setting the seed as 100 for replicability of the code.
 
 	assert(regionMap.size() == dstImage.size());
 
@@ -478,9 +557,9 @@ int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage) {
 	dstImage = cv::Mat::zeros(regionMap.size(), CV_8UC3);
 
 	// Map for coloring the regions with same ID a single color.
-	std::map<int, cv::Vec3b> regionColorMap;
+	std::map<int, cv::Vec3s> regionColorMap;
 	for (int row = 0; row < regionMap.rows; row++) {
-		uchar* srcPtr = regionMap.ptr<uchar>(row);
+		short* srcPtr = regionMap.ptr<short>(row);
 		cv::Vec3b* dstPtr = dstImage.ptr<cv::Vec3b>(row);
 		for (int col = 0; col < regionMap.cols; col++)
 		{
@@ -518,14 +597,18 @@ int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVe
 			}
 		}
 	}
-	cv::imshow("Region specific Image",tmp);
+	//cv::imshow("Region specific Image",tmp);
+	//cv::imshow("Segmented Image", tmp);
 	cv::Moments Moments = cv::moments(tmp, true);
+	
+	double pixels = Moments.m00;
 
-	//Obtain axis of least momentum  ToDo from Here
-	std::vector<std::tuple<double, int, int>> momentsWithCenter;
+	// Obtain axis of least momentum
+	long double mu_11 = Moments.mu11 * Moments.m00; // mu_11 = sigma(x - x_bar)(y - y_bar)/m00
+	long double mu_20 = Moments.mu20 * Moments.m00; // mu_20 = sigma(x - x_bar)^2/m00
+	long double mu_02 = Moments.mu02 * Moments.m00; // mu_02 = sigma(y - y_bar)^2/m00
 
-	printf("Mu11 values for region %d:\n", regionID);
-	std::cout << Moments.mu11 << std::endl;
+	double alpha = 0.5 * atan((2*mu_11)/(mu_20 - mu_02)); // Alpha = tan-1(2*mu11/mu20-mu02)
 
 	// std::cout << points << std::endl;
 

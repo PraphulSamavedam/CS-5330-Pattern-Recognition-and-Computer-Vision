@@ -93,16 +93,15 @@ int main(int argc, char* argv[])
 	cv::Mat grayThImg2;
 	thresholdImage(blurImg, grayThImg2, grayscaleThreshold);
 	//cv::imshow("Thresholded Grayscale Blur Image", grayThImg2);
-	
 
 	// Erosion of binary image
 	cv::Mat erroredImage;
-	erosion(grayThImg, erroredImage, 4, 8);
+	erosion(grayThImg, erroredImage, 1, 4);
 	cv::imshow("Eroded Image", erroredImage);
 
 	// Dilation of binary image
 	cv::Mat cleanImg;
-	dilation(erroredImage, cleanImg, 4, 4);
+	dilation(erroredImage, cleanImg, 1, 8);
 	cv::imshow("Clearned Image", cleanImg);
 	if (debug) { printf("Cleaned the binary image.\n"); }
 
@@ -113,14 +112,19 @@ int main(int argc, char* argv[])
 	cv::connectedComponentsWithStats(cleanImg, labels, stats, centroids);
 	
 	// Segment the detected foreground pixels into regions. 
-	cv::Mat regionMap = cv::Mat::zeros(cleanImg.size(), CV_8SC1);
+	cv::Mat regionMap = cv::Mat::zeros(cleanImg.size(), CV_32SC1);
 	regionGrowing(cleanImg, regionMap,8);
-	if (debug) { printf("Segmented the binary image.\n"); }
+
+	// Restrict the segmentation to top N regions only.
+	cv::Mat segImg = cv::Mat::zeros(cleanImg.size(), CV_8UC1);
+	int segments = topNSegments(regionMap, segImg, 3);
+	if (debug) { printf("Segmented the binary image to have top %d regions.\n", segments); }
+	cv::imshow("Top N segmented Image", segImg);
 
 	// Color the detected Segments
-	cv::Mat segmentColoredImg = cv::Mat::zeros(cleanImg.size(), CV_8SC3);
+	cv::Mat segmentColoredImg = cv::Mat::zeros(cleanImg.size(), CV_32SC3);
 	colorSegmentation(regionMap, segmentColoredImg);
-	cv::imshow("Segmented Image", segmentColoredImg);
+	cv::imshow("Colored Segmented Image", segmentColoredImg);
 
 	vector<double> featureVector;
 	getFeatures(regionMap, 2, featureVector);
