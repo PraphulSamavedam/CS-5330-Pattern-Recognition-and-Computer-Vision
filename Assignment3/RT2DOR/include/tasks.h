@@ -98,7 +98,10 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions = 5, b
 */
 int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage);
 
-int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions);
+int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID, bool debug = false);
+
+
+int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions, bool debug = false);
 
 /**This function populates the feature vectors in the featureVector for the specific region in the region map.
 * @param regionMap address of the mapped regions

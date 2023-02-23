@@ -14,6 +14,12 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
+	// Main configuration variables.
+	int windowSize = cv::WINDOW_GUI_EXPANDED;
+	int grayscaleThreshold = 124; // Value is based on the experimentation with sample images
+	int numberOfErosions = 5;
+	int numberOfSegments = 1;
+
 	if (argc<2)
 	{
 		printf("Missing required arguments.\n");
@@ -37,6 +43,7 @@ int main(int argc, char* argv[])
 	if (debug) { printf("Read the original image.\n"); }
 
 	// Displaying the image read.
+	cv::namedWindow("Original Image", windowSize);
 	cv::imshow("Original Image", image);
 	
 
@@ -81,12 +88,13 @@ int main(int argc, char* argv[])
 	cv::Mat maskedImg2;
 	image.copyTo(maskedImg2);
 	thresholdImage(blurImg, hueMin, hueMax, satMin, satMax, valMin, valMax, maskedImg2);
-	//cv::imshow("Thresholded HSV Blur Image", maskedImg2);
+	cv::namedWindow("Thresholded HSV Blur Image", windowSize);
+	cv::imshow("Thresholded HSV Blur Image", maskedImg2);
 
 	// Thresholding based on the grayscale value above threshold using function from 
 	cv::Mat grayThImg;
-	int grayscaleThreshold = 124; // Value is based on the experimentation with sample images
 	thresholdImage(image, grayThImg, grayscaleThreshold);
+	cv::namedWindow("Thresholded Grayscale Image", windowSize);
     cv::imshow("Thresholded Grayscale Image", grayThImg);
 	if (debug) { printf("Thresholded greyscale image.\n"); }
 
@@ -96,12 +104,14 @@ int main(int argc, char* argv[])
 
 	// Erosion of binary image
 	cv::Mat erroredImage;
-	erosion(grayThImg, erroredImage, 1, 4);
+	erosion(grayThImg, erroredImage, numberOfErosions, 4);
+	cv::namedWindow("Erorded Image", windowSize);
 	cv::imshow("Eroded Image", erroredImage);
 
 	// Dilation of binary image
 	cv::Mat cleanImg;
-	dilation(erroredImage, cleanImg, 1, 8);
+	dilation(erroredImage, cleanImg, numberOfErosions, 8);
+	cv::namedWindow("Clearned Image", windowSize);
 	cv::imshow("Clearned Image", cleanImg);
 	if (debug) { printf("Cleaned the binary image.\n"); }
 
@@ -117,21 +127,24 @@ int main(int argc, char* argv[])
 
 	// Restrict the segmentation to top N regions only.
 	cv::Mat segImg = cv::Mat::zeros(cleanImg.size(), CV_8UC1);
-	int segments = topNSegments(regionMap, segImg, 3);
+	
+	int segments = topNSegments(regionMap, segImg, 1);
 	if (debug) { printf("Segmented the binary image to have top %d regions.\n", segments); }
+	cv::namedWindow("Top N segmented Image", windowSize);
 	cv::imshow("Top N segmented Image", segImg);
 
 	// Color the detected Segments
 	cv::Mat segmentColoredImg = cv::Mat::zeros(cleanImg.size(), CV_32SC3);
 	colorSegmentation(regionMap, segmentColoredImg);
+	cv::namedWindow("Colored Segmented Image", windowSize);
 	cv::imshow("Colored Segmented Image", segmentColoredImg);
 
-	/*vector<double> featureVector;
-	getFeatures(regionMap, 2, featureVector);*/
 	cv::Mat ImgWithBoxes;
 	image.copyTo(ImgWithBoxes);
 	drawBoundingBoxes(regionMap, ImgWithBoxes, segments);
-	cv::imshow(" For god sake", ImgWithBoxes);
+	printf("Size: %d %d", ImgWithBoxes.rows, ImgWithBoxes.cols);
+	cv::namedWindow("With Boxes", windowSize);
+	cv::imshow("With Boxes", ImgWithBoxes);
 
 
 

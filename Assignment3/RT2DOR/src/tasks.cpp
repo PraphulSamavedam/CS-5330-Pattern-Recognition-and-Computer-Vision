@@ -616,11 +616,9 @@ int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVe
 	return 0;
 }
 
-int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID) {
+int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID, bool debug) {
 
-	cv::imshow("Input", outputImg);
-
-		// Tmp Mat to store the binary image
+	// Tmp Mat to store the binary image
 	cv::Mat tmp = cv::Mat::zeros(regionMap.size(), CV_8UC1);
 
 	int minRow = INT_MAX;
@@ -645,21 +643,17 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 		}
 	}
 
-
-	cv::imshow("Region specific Image",tmp);
-	cv::waitKey(0);
-
 	cv::Moments Moments = cv::moments(tmp, true);
 
-	//First calculate alpha - angle of least central moment
-	//alpha = arctan(2*m11/m20-m02)
+	// First calculate alpha - angle of least central moment
+	// alpha = arctan(2*m11/m20-m02)
 	float nu11 = Moments.nu11;
 	float nu20 = Moments.nu20;
 	float nu02 = Moments.nu02;
 	float theta = atan(2 * nu11 / (nu20 - nu02)) / 2.0;
 
-	printf("Angle Theta: %.04f\n",theta);
-	//compute xbar and ybar(center point)
+	if (debug) { printf("Angle Theta: %.04f\n", theta); }
+	// compute xbar and ybar(center point)
 	float m10 = Moments.m10;
 	float m01 = Moments.m01;
 	float m00 = Moments.m00;
@@ -667,12 +661,9 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 	float ybar = m01 / m00;
 
 	cv::Point2f centroid(xbar, ybar);
-	printf("Centroid: %.02f, %0.2f\n", xbar, ybar);
-	//    outputImg.at<cv::Vec3b>(xbar,ybar)[0] = 0;
-	//    outputImg.at<cv::Vec3b>(xbar,ybar)[1] = 255;
-	//    outputImg.at<cv::Vec3b>(xbar,ybar)[2] = 0;
+	if (debug) { printf("Centroid: %.02f, %0.2f\n", xbar, ybar); }
 
-		// Compute the width and height of the bounding box
+	// Compute the width and height of the bounding box
 	float sin_theta = sin(theta);
 	float cos_theta = cos(theta);
 	float a = Moments.mu20 * cos_theta * cos_theta + 2.0 * Moments.mu11 * sin_theta * cos_theta + Moments.mu02 * sin_theta * sin_theta;
@@ -681,29 +672,35 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 	float height = sqrt(b);*/
 	float width = (maxCol - minCol);
 	float height = (maxRow - minRow);
-	printf("Height: %.02f, %0.2f\n", width, height);
+	if (debug) { printf("Height: %.02f, %0.2f\n", width, height); }
 
 	// Create a rotated rectangle with the center point of the contour, width, height, and orientation angle
 	cv::RotatedRect box(centroid, cv::Size2f(width, height), theta * 180.0 / CV_PI);
 
+	// Create orientation line
+	cv::Point2f orientationAxis[2];
+	for (int i = 0; i < 2; i++)
+	{
+		int x = xbar + ((1 - (2 * i)) * (100) * sin_theta);
+		int y = ybar + ((1 - (2 * i)) * (100) * cos_theta);
+		orientationAxis[i] = cv::Point2f(x, y);
+	}
+	cv::line(outputImg, orientationAxis[0], orientationAxis[1], cv::Scalar(255, 255, 255), 2);
 
 	cv::Point2f vertices[4];
 	box.points(vertices);
 
-	std::cout << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl;
-	char name[100];
+	if (debug) { std::cout << "Vertices: " << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl; }
+
 	for (int i = 0; i < 4; i++) {
 		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);	
 	}
-	sprintf(name, "Region :%d", regionID);
-	cv::imshow(name, outputImg);
-	cv::waitKey(0);
 
 	return 0;
 }
 
 
-int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions) {
+int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions, bool debug) {
 
 
 	//for each region send regionMap,outputImg and region id
