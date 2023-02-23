@@ -3,6 +3,7 @@
 * This file provides the signatures of several functions required in the project.
 */
 
+#define _CRT_SECURE_NO_WARNINGS // To supress spritnf_s
 #include <opencv2/opencv.hpp>
 #include "../include/tasks.h"
 #include <stack> // Required for the stack operations in segmentation
@@ -593,7 +594,7 @@ int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVe
 		for (int col = 0; col < regionMap.cols; col++)
 		{
 			if (srcPtr[col] == regionID) {
-				dstPtr[col] == 255;
+				dstPtr[col] = 255;
 			}
 		}
 	}
@@ -614,5 +615,107 @@ int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVe
 
 	return 0;
 }
+
+int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID) {
+
+	cv::imshow("Input", outputImg);
+
+		// Tmp Mat to store the binary image
+	cv::Mat tmp = cv::Mat::zeros(regionMap.size(), CV_8UC1);
+
+	int minRow = INT_MAX;
+	int maxRow = -INT_MAX;
+	int minCol = INT_MAX;
+	int maxCol = -INT_MAX;
+
+	// Only the specific region ID is marked as foreground, else everything is background
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = tmp.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] == regionID) {
+				dstPtr[col] = 255;
+				minRow = MIN(row, minRow);
+				maxRow = MAX(row, maxRow);
+				minCol = MIN(col, minCol);
+				maxCol = MAX(col, maxCol);
+			}
+		}
+	}
+
+
+	cv::imshow("Region specific Image",tmp);
+	cv::waitKey(0);
+
+	cv::Moments Moments = cv::moments(tmp, true);
+
+	//First calculate alpha - angle of least central moment
+	//alpha = arctan(2*m11/m20-m02)
+	float nu11 = Moments.nu11;
+	float nu20 = Moments.nu20;
+	float nu02 = Moments.nu02;
+	float theta = atan(2 * nu11 / (nu20 - nu02)) / 2.0;
+
+	printf("Angle Theta: %.04f\n",theta);
+	//compute xbar and ybar(center point)
+	float m10 = Moments.m10;
+	float m01 = Moments.m01;
+	float m00 = Moments.m00;
+	float xbar = m10 / m00;
+	float ybar = m01 / m00;
+
+	cv::Point2f centroid(xbar, ybar);
+	printf("Centroid: %.02f, %0.2f\n", xbar, ybar);
+	//    outputImg.at<cv::Vec3b>(xbar,ybar)[0] = 0;
+	//    outputImg.at<cv::Vec3b>(xbar,ybar)[1] = 255;
+	//    outputImg.at<cv::Vec3b>(xbar,ybar)[2] = 0;
+
+		// Compute the width and height of the bounding box
+	float sin_theta = sin(theta);
+	float cos_theta = cos(theta);
+	float a = Moments.mu20 * cos_theta * cos_theta + 2.0 * Moments.mu11 * sin_theta * cos_theta + Moments.mu02 * sin_theta * sin_theta;
+	float b = Moments.mu20 * sin_theta * sin_theta - 2.0 * Moments.mu11 * sin_theta * cos_theta + Moments.mu02 * cos_theta * cos_theta;
+	/*float width = sqrt(a);
+	float height = sqrt(b);*/
+	float width = (maxCol - minCol);
+	float height = (maxRow - minRow);
+	printf("Height: %.02f, %0.2f\n", width, height);
+
+	// Create a rotated rectangle with the center point of the contour, width, height, and orientation angle
+	cv::RotatedRect box(centroid, cv::Size2f(width, height), theta * 180.0 / CV_PI);
+
+
+	cv::Point2f vertices[4];
+	box.points(vertices);
+
+	std::cout << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl;
+	char name[100];
+	for (int i = 0; i < 4; i++) {
+		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);	
+	}
+	sprintf(name, "Region :%d", regionID);
+	cv::imshow(name, outputImg);
+	cv::waitKey(0);
+
+	return 0;
+}
+
+
+int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions) {
+
+
+	//for each region send regionMap,outputImg and region id
+	for (int i = 1; i <= numberOfRegions; i++) {
+
+		drawBoundingBoxForARegion(regionMap, outputImg, i);
+
+	}
+
+
+	return 0;
+}
+
 
 

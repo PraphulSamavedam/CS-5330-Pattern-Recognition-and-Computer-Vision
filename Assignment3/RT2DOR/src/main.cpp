@@ -126,8 +126,14 @@ int main(int argc, char* argv[])
 	colorSegmentation(regionMap, segmentColoredImg);
 	cv::imshow("Colored Segmented Image", segmentColoredImg);
 
-	vector<double> featureVector;
-	getFeatures(regionMap, 2, featureVector);
+	/*vector<double> featureVector;
+	getFeatures(regionMap, 2, featureVector);*/
+	cv::Mat ImgWithBoxes;
+	image.copyTo(ImgWithBoxes);
+	drawBoundingBoxes(regionMap, ImgWithBoxes, segments);
+	cv::imshow(" For god sake", ImgWithBoxes);
+
+
 
 	while (true) {
 		char key = cv::waitKey(0);
