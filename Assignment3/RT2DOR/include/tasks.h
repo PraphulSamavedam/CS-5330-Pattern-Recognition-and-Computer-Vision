@@ -100,14 +100,29 @@ int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage);
 
 int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID, bool debug = false);
 
-
 int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions, bool debug = false);
+
+/*
+   This function creates a binary Image
+   Only the specific region ID is marked as foreground, else everything is background.
+   This function is an internal helper function.
+*/
+int binaryImageWithARegion(cv::Mat& regionMap, cv::Mat& binaryOutputImage, cv::Moments& Moments, std::pair<double, double>& Dimensions, int& regionPixelCount, int regionID);
 
 /**This function populates the feature vectors in the featureVector for the specific region in the region map.
 * @param regionMap address of the mapped regions
-* @param regionID ID of the region whose features needs to be calculated.
+* @param regionID  ID of the region whose features needs to be calculated.
 * @param featureVector address of the feature vecotr which needs to have the features of the selected region.
 * @returns 0 if the feature is properly extracted. 
 *		non zero if the operation is failure.
 */
-int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVector);
+int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<double>& featureVector);
+
+/**This function populates the feature vectors in the featureVector for the all the regions in the region map.
+* @param regionMap address of the mapped regions
+* @param featureVector address of the feature vecotr which needs to have the features
+* @param numberOfRegions number of the regions to be identified in the regionMap.
+* @returns 0 if the feature is properly extracted.
+*		non zero if the operation is failure.
+*/
+int getFeatures(cv::Mat& regionMap, std::vector<float>& featureVector, int numberOfRegions);

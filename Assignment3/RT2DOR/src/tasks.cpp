@@ -11,6 +11,7 @@
 #include <map> // Required to map the color with the segmented region
 #include <cstdlib> // Required for random number generation.
 
+
 /* This image is thresholded in the range of hueMin, hueMax; satMin, satMax;
 and valMin , valMax; from the source image.
 @param srcImg address of the source image
@@ -74,6 +75,7 @@ int thresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg, int greyScaleThresh
 
 }
 
+
 /** This function returns only the fileName from the filePath provided.
 @param filePath path of the file whose name needs to be obtained.
 @param fileName placeholder for result.
@@ -104,6 +106,7 @@ int getOnlyFileName(char*& filePath, char*& fileName) {
 	fileName[length - index] = '\0'; //To mark the end.
 	return 0;
 }
+
 
 /**  This function does the Grass Fire transformation to obtain the distance of the pixel from the background.
 * Assumes the foreground to be white (255), background to be black (0)
@@ -232,6 +235,7 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue, int f
 	return 0;
 }
 
+
 /** This function makes a foreground pixel into a background pixel based on the connect method chosen.
 * Assumes the foreground to be white (255), background to be black (0)
 * @param srcImg address of the source binary image
@@ -276,6 +280,7 @@ int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectV
 
 }
 
+
 /** This function makes a background pixel into a foreground pixel based on the connect method chosen.
 * Assumes the foreground to be white (255), background to be black (0)
 * @param srcImg address of the source binary image
@@ -319,6 +324,7 @@ int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connec
 	return 0;
 
 }
+
 
 /** This function find the conencted foreground regions in a binary image using stack.
 * Assumes the foreground to be white (255), background color as 255 - foreGround.
@@ -541,6 +547,7 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool 
 	return maxRegionsPossible;
 }
 
+
 /** This function colors the image based on the region Map provided. All the regions with same ID is colored with same random color.
 * @param regionMap address of the regionMap image
 * @paaram dstImage address of the destination image
@@ -581,40 +588,122 @@ int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage) {
 	return 0;
 }
 
-int getFeatures(cv::Mat& regionMap, int regionID, std::vector<double>& featureVector)
-{
-	// Tmp Mat to store the binary image
-	cv::Mat tmp = cv::Mat::zeros(regionMap.size(), CV_8UC1);
+
+/*
+   This function creates a binary Image
+   Only the specific region ID is marked as foreground, else everything is background.
+   This function is an internal helper function.
+*/
+int binaryImageWithARegion(cv::Mat& regionMap, cv::Mat& binaryOutputImage, cv::Moments& Moments, std::pair<double, double>& Dimensions, int& regionPixelCount, int regionID) {
+
+	//expects binaryOutputImage is 8UC1
+	//expects regionMap is 32SC1
+
+	//Initializing minRow, maxRow, minCol, maxCol
+	int minRow = INT_MAX;
+	int maxRow = -INT_MAX;
+	int minCol = INT_MAX;
+	int maxCol = -INT_MAX;
+	regionPixelCount = 0;
 
 	// Only the specific region ID is marked as foreground, else everything is background
 	for (int row = 0; row < regionMap.rows; row++)
 	{
-		uchar* srcPtr = regionMap.ptr<uchar>(row);
-		uchar* dstPtr = tmp.ptr<uchar>(row);
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = binaryOutputImage.ptr<uchar>(row);
 		for (int col = 0; col < regionMap.cols; col++)
 		{
 			if (srcPtr[col] == regionID) {
 				dstPtr[col] = 255;
+				minRow = MIN(row, minRow);
+				maxRow = MAX(row, maxRow);
+				minCol = MIN(col, minCol);
+				maxCol = MAX(col, maxCol);
+				regionPixelCount += 1;
 			}
 		}
 	}
-	//cv::imshow("Region specific Image",tmp);
-	//cv::imshow("Segmented Image", tmp);
-	cv::Moments Moments = cv::moments(tmp, true);
-	
-	double pixels = Moments.m00;
 
-	// Obtain axis of least momentum
-	long double mu_11 = Moments.mu11 * Moments.m00; // mu_11 = sigma(x - x_bar)(y - y_bar)/m00
-	long double mu_20 = Moments.mu20 * Moments.m00; // mu_20 = sigma(x - x_bar)^2/m00
-	long double mu_02 = Moments.mu02 * Moments.m00; // mu_02 = sigma(y - y_bar)^2/m00
+	double width = (maxCol - minCol);
+	double height = (maxRow - minRow);
 
-	double alpha = 0.5 * atan((2*mu_11)/(mu_20 - mu_02)); // Alpha = tan-1(2*mu11/mu20-mu02)
+	//first element in pair is width and sencond is height
+	Dimensions.first = width;
+	Dimensions.second = height;
 
-	// std::cout << points << std::endl;
+	//compute moments
+	Moments = cv::moments(binaryOutputImage, true);
 
 	return 0;
 }
+
+
+/**This function populates the feature vectors in the featureVector for the specific region in the region map.
+* @param regionMap address of the mapped regions
+* @param regionID  ID of the region whose features needs to be calculated.
+* @param featureVector address of the feature vecotr which needs to have the features of the selected region.
+* @returns 0 if the feature is properly extracted.
+*		non zero if the operation is failure.
+*/
+int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<float>& featureVector) {
+
+	// Tmp Mat to store the binary image
+	cv::Mat tmp = cv::Mat::zeros(regionMap.size(), CV_8UC1);
+
+	std::pair<double, double> dimensionsOfRegion;
+	int regionPixelCount = 0;
+	cv::Moments Moments;
+	binaryImageWithARegion(regionMap, tmp, Moments, dimensionsOfRegion, regionPixelCount, regionID);
+
+	//compute h/w ratio
+	float width = dimensionsOfRegion.first;
+	float height = dimensionsOfRegion.second;
+	float hw_ratio = height / width;
+
+
+
+	//compute percent fill ratio
+	float area = height * width;
+	float percentFill = regionPixelCount / area;
+
+
+
+	//compute HuMoments
+	double huMoments[7];
+	cv::HuMoments(Moments, huMoments);
+
+
+	//push all the featuers feature Vector
+	featureVector.push_back(hw_ratio);
+	featureVector.push_back(percentFill);
+	for (float huMoment : huMoments) {
+		featureVector.push_back(huMoment);
+	}
+
+
+	return 0;
+}
+
+
+/** This function populates the feature vectors in the featureVector for the all the regions in the region map.
+* @param regionMap address of the mapped regions
+* @param featureVector address of the feature vecotr which needs to have the features
+* @param numberOfRegions number of the regions to be identified in the regionMap.
+* @returns 0 if the feature is properly extracted.
+*		non zero if the operation is failure.
+*/
+int getFeatures(cv::Mat& regionMap, std::vector<float>& featureVector, int numberOfRegions)
+{
+
+	//for each region send regionMap and regionID, featureVector
+	for (int i = 1; i <= numberOfRegions; i++) {
+		getFeaturesForARegion(regionMap, i, featureVector);
+	}
+
+
+	return 0;
+}
+
 
 int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID, bool debug) {
 
@@ -693,7 +782,7 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 	if (debug) { std::cout << "Vertices: " << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl; }
 
 	for (int i = 0; i < 4; i++) {
-		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);	
+		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);
 	}
 
 	return 0;
@@ -713,6 +802,3 @@ int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegion
 
 	return 0;
 }
-
-
-
