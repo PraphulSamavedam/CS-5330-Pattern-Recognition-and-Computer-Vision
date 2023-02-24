@@ -178,12 +178,10 @@ int append_image_data_csv(char* filename, char* image_filename, char* image_labe
 		exit(-1);
 	}
 
-	// write the filename
+	// write the filename and label
 	strcpy(buffer, image_filename);
-	std::fwrite(buffer, sizeof(char), strlen(buffer), fp);
-
-	// write the label
-	strcpy(buffer, image_label);
+	strcat(buffer, ",");
+	strcat(buffer, image_label);
 	std::fwrite(buffer, sizeof(char), strlen(buffer), fp);
 
 	// write the feature vector to the CSV file
@@ -308,6 +306,7 @@ int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vect
 		if (getstring(fp, img_label)) {
 			break;
 		}
+
 		if (echo_file) { printf("Evaluting %s\n", filename); }
 
 		// read the whole feature file into memory
@@ -327,7 +326,7 @@ int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vect
 
 		char* lname = new char[strlen(img_label) + 1];
 		strcpy(lname, img_label);
-		filenames.push_back(lname);
+		labelnames.push_back(lname);
 	}
 	fclose(fp);
 

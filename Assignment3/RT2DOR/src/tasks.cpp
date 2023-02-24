@@ -676,8 +676,9 @@ int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<float>& 
 	//push all the featuers feature Vector
 	featureVector.push_back(hw_ratio);
 	featureVector.push_back(percentFill);
-	for (float huMoment : huMoments) {
-		featureVector.push_back(huMoment);
+	for (double huMoment : huMoments) {
+		float value = -1 * copysign(1.0, huMoment) * log10(abs(huMoment));
+		featureVector.push_back(value);
 	}
 
 
