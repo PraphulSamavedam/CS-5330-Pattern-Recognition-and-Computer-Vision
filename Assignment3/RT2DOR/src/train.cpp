@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	int grayscaleThreshold = 124; // Value is based on the experimentation with sample images
 	int numberOfErosions = 1;
 	int numberOfSegments = 3;
-	bool displaySteps = false;
+	bool displaySteps = true;
 
 	if (argc<2)
 	{
@@ -45,16 +45,16 @@ int main(int argc, char* argv[])
 		strcpy(csvFilePath, argv[2]);
 	}
 	strcpy(csvFilePath, "../data/db/features.csv");
+	printf("Processed for the files list\n");
 
 	for (int index = 0; index < filesList.size(); index++)
 	{
 		// Get the features for each file
 		vector<float> featureVector;
-		getFeaturesForImage(filesList[index], featureVector, 124, 1, 4, 8, 3, false);
+		getFeaturesForImage(filesList[index], featureVector, 124, 1, 4, 8, 1, false, false);
 
 		cv::Mat image = cv::imread(filesList[index]);
-		cv::imshow("Image", image);
-		cv::waitKey(10);
+		
 		// Request for the label from the user
 		char label[256];
 		printf("Enter the label for %s:\n", filesList[index]);

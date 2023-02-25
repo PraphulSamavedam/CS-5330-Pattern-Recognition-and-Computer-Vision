@@ -5,9 +5,9 @@
 
 #include "../include/utils.h"
 
-int getFeaturesForImage(char* filePath, std::vector<float> &featureVector,
+int getFeaturesForImage(char* filePath, std::vector<float>& featureVector,
 	int grayscaleThreshold, int numberOfErosions, int erosionConnectValue,
-	int dilationConnectValue, int numberOfSegments, 
+	int dilationConnectValue, int numberOfSegments,
 	bool debug, bool displayIntermediateImages)
 {
 	int windowSize = cv::WINDOW_KEEPRATIO;
@@ -38,7 +38,7 @@ int getFeaturesForImage(char* filePath, std::vector<float> &featureVector,
 
 	// Thresholding based on the grayscale value above threshold using function from 
 	cv::Mat binaryImg;
-	thresholdImage(blurredImg, binaryImg, grayscaleThreshold);
+	thresholdImage(image, binaryImg, grayscaleThreshold);
 	if (debug) { printf("Thresholded greyscale image to obtain binary image.\n"); }
 	if (displayIntermediateImages) {
 		cv::namedWindow("Binary Image", windowSize);
@@ -49,8 +49,10 @@ int getFeaturesForImage(char* filePath, std::vector<float> &featureVector,
 	// Erosion of binary image
 	cv::Mat erroredImage;
 	erosion(binaryImg, erroredImage, numberOfErosions, erosionConnectValue);
-	if (debug) { printf("Erroded the binary image %d times following %d-connected technique\n"
-		, numberOfErosions, erosionConnectValue); }
+	if (debug) {
+		printf("Erroded the binary image %d times following %d-connected technique\n"
+			, numberOfErosions, erosionConnectValue);
+	}
 	if (displayIntermediateImages)
 	{
 		cv::namedWindow("Erorded Image", windowSize);
@@ -81,6 +83,23 @@ int getFeaturesForImage(char* filePath, std::vector<float> &featureVector,
 	if (displayIntermediateImages) {
 		cv::namedWindow("Top N segmented binary Image", windowSize);
 		cv::imshow("Top N segmented binary Image", segImg);
+	}
+
+	// Color the detected Segments
+	cv::Mat segmentColoredImg = cv::Mat::zeros(cleanImg.size(), CV_32SC3);
+	colorSegmentation(regionMap, segmentColoredImg);
+	if (displayIntermediateImages) {
+		cv::namedWindow("Colored Segmented Image", windowSize);
+		cv::imshow("Colored Segmented Image", segmentColoredImg);
+	}
+
+	// Draw bounding boxes.
+	cv::Mat ImgWithBoxes;
+	image.copyTo(ImgWithBoxes);
+	drawBoundingBoxes(regionMap, ImgWithBoxes, segments);
+	if (displayIntermediateImages) {
+		cv::namedWindow("With Boxes", windowSize);
+		cv::imshow("With Boxes", ImgWithBoxes);
 	}
 
 	// Get the features of the segmented Image.

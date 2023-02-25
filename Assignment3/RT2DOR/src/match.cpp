@@ -35,12 +35,14 @@ int computeStandardDeviations(std::vector<std::vector<float>>& data, std::vector
 		std::cout << "For feature vector : " << j << std::endl;
 		sum = 0.0;
 		mean = 0.0;
+		std::cout << "Moments: " << std::endl;
 		for (int i = 0; i < data.size(); i++) {
 			sum += data[i][j];
+			std::cout << " " << data[i][j];
 		}
-
+		std::cout << std::endl;
 		mean = sum / n;
-		std::cout << "mean : " << mean << std::endl;
+		//std::cout << "mean : " << mean << std::endl;
 
 		sum = 0.0;
 		for (int i = 0; i < data.size(); i++) {
@@ -48,7 +50,7 @@ int computeStandardDeviations(std::vector<std::vector<float>>& data, std::vector
 		}
 
 		variance = sum / n;
-		std::cout << "variance : " << variance << std::endl;
+		//std::cout << "variance : " << variance << std::endl;
 		stdDev = sqrt(variance);
 		standardDeviations.push_back(stdDev);
 	}
@@ -57,20 +59,33 @@ int computeStandardDeviations(std::vector<std::vector<float>>& data, std::vector
 }
 
 
+int sumSquaredError(std::vector<float>& x, std::vector<float>& y, float& distance) {
+	distance = 0;
+
+	for (int i = 0; i < x.size(); i++) {
+		distance += ((x[i] - y[i]) * (x[i] - y[i]));
+		std::cout << "x_i: " << x[i] << "y_i: " << y[i] << std::endl;
+	}
+	std::cout << "distance : " << distance << std::endl;
+
+	return 0;
+}
 
 int eucledianDistance(std::vector<float>& x, std::vector<float>& y, std::vector<float>& standardDeviations, float& distance) {
 	distance = 0;
 
 	for (int i = 0; i < x.size(); i++) {
-		std::cout << "std : " << standardDeviations[i] << std::endl;
 		distance += abs((x[i] - y[i]) / standardDeviations[i]);
 		
 	}
 
 	std::cout << "distance : " << distance << std::endl;
+	//sumSquaredError(x, y, distance);
 
 	return 0;
 }
+
+
 
 
 
@@ -82,7 +97,7 @@ class Compare {
 public:
 	bool operator()(std::tuple<char*, char*, float> first, std::tuple<char*, char*, float> second)
 	{
-		if (std::get<2>(first) < std::get<2>(second)) {
+		if (std::get<2>(first) > std::get<2>(second)) {
 			return true;
 		}
 		else {
@@ -120,7 +135,7 @@ int identifyMatches(char* targetImage, char* featureVectorFile, char* distanceMe
 	//conditional feature computing based on various feature sets
 	std::vector<float> targetFeatureVector;
 
-	getFeaturesForImage(targetImage, targetFeatureVector);
+	getFeaturesForImage(targetImage, targetFeatureVector,124, 1, 4, 8, 1, false, false);
 
 	std::vector<char*> filenames;
 	std::vector<char*> labels;
@@ -146,7 +161,14 @@ int identifyMatches(char* targetImage, char* featureVectorFile, char* distanceMe
 		//change distance based on the distance metric being used
 		float distance = 0.0;
 
-
+		if (datapoint == 21) {
+			printf("Feature Vector as read from file:\n");
+			for (float value: data[datapoint])
+			{
+				std::cout << value << std::endl;
+			}
+			
+		}
 		
 		eucledianDistance(data[datapoint], targetFeatureVector, stdDeviations, distance);
 		
@@ -160,7 +182,7 @@ int identifyMatches(char* targetImage, char* featureVectorFile, char* distanceMe
 		printf("Distance: %.04f \n", distance);
 		pq.push(std::make_tuple(filenames[datapoint], labels[datapoint], distance ));
 	}
-
+	std::cout << "Top N images are:" << std::endl;
 	while (N-- && !pq.empty()) {
 
 		nMatches.push_back(std::get<0>(pq.top()));
@@ -211,7 +233,7 @@ int main(int argc, char* argv[]) {
 
 	identifyMatches(targetImage, featureVectorFile, distanceMetric, N, nMatches);
 
-	showTopMatchedImages(nMatches);
+	//showTopMatchedImages(nMatches);
 
 
 	return 0;

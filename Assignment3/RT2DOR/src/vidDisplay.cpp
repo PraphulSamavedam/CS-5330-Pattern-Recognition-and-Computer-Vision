@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
 	int windowSize = cv::WINDOW_GUI_EXPANDED;
 	int grayscaleThreshold = 124; // Value is based on the experimentation with sample images
 	int numberOfErosions = 5;
-	int numberOfSegments = 3;
-	bool displaySteps = true;
+	int numberOfSegments = 1;
+	bool displaySteps = false;
 
 	if (argc<2)
 	{

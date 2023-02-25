@@ -599,6 +599,11 @@ int binaryImageWithARegion(cv::Mat& regionMap, cv::Mat& binaryOutputImage, cv::M
 	//expects binaryOutputImage is 8UC1
 	//expects regionMap is 32SC1
 
+	assert(regionMap.depth() == 1);
+	assert(binaryOutputImage.depth() == 1);
+
+	assert(regionMap.size() == binaryOutputImage.size());
+
 	//Initializing minRow, maxRow, minCol, maxCol
 	int minRow = INT_MAX;
 	int maxRow = -INT_MAX;
@@ -655,6 +660,7 @@ int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<float>& 
 	cv::Moments Moments;
 	binaryImageWithARegion(regionMap, tmp, Moments, dimensionsOfRegion, regionPixelCount, regionID);
 
+
 	//compute h/w ratio
 	float width = dimensionsOfRegion.first;
 	float height = dimensionsOfRegion.second;
@@ -678,6 +684,7 @@ int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<float>& 
 	featureVector.push_back(percentFill);
 	for (double huMoment : huMoments) {
 		float value = -1 * copysign(1.0, huMoment) * log10(abs(huMoment));
+		//std::cout << "Hu Moment: " << huMoment << " Mod HuMomentValue: " << value << std::endl;
 		featureVector.push_back(value);
 	}
 
