@@ -5,21 +5,13 @@
 
 #include "../include/utils.h"
 
-int getFeaturesForImage(char* filePath, std::vector<float>& featureVector,
+int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	int grayscaleThreshold, int numberOfErosions, int erosionConnectValue,
 	int dilationConnectValue, int numberOfSegments,
 	bool debug, bool displayIntermediateImages)
 {
 	int windowSize = cv::WINDOW_KEEPRATIO;
-	// Read the image from the file path
-	cv::Mat image = cv::imread(filePath);
-	if (image.data == NULL)
-	{
-		printf("Fatal Error file not found");
-		exit(-404);
-	}
 
-	if (debug) { printf("Read the original image.\n"); }
 	if (displayIntermediateImages) {
 		// Displaying the image read.
 		cv::namedWindow("Original Image", windowSize);
@@ -104,5 +96,53 @@ int getFeaturesForImage(char* filePath, std::vector<float>& featureVector,
 
 	// Get the features of the segmented Image.
 	getFeatures(regionMap, featureVector, segments);
+	return 0;
+}
+
+
+/** This function returns only the fileName from the filePath provided.
+@param filePath path of the file whose name needs to be obtained.
+@param fileName placeholder for result.
+@param label placeholder for the label read.
+@return 0 for successfully obtaining the fileName.
+@note Assumes that the filePath is valid (doesn't validate filePath)
+	  Method: Parses the filePath to find the last folder separator like '/' or '\\' and
+	  populates from that index to end.
+*/
+int getFileNameAndLabel(char*& filePath, char*& fileName, char*& label) {
+	// Get the last \ index and then populate the fileName
+
+	// Get the last '\' or '/' index in the filePath
+	int length = strlen(filePath);
+	int index = 0; // For marking the filePath begining
+	for (int ind = length - 1; ind > -1; ind--)
+	{	// Parse from the end as we are interested in last separator
+		if (filePath[ind] == '\\' or filePath[ind] == '/') {
+			index = ind + 1;
+			break;
+		}
+	}
+
+	fileName = new char[256]; // To Ensure no prepopulated data is being used.
+	// Populating the fileName. 
+	for (int ind = index; ind < length; ind++) {
+		fileName[ind - index] = filePath[ind];
+	}
+	fileName[length - index] = '\0'; //To mark the end.
+
+	label = new char[257]; // To Ensure no prepopulated data is being used.
+	// Populating the label from the fileName
+	for (int ind = 0; ind < strlen(fileName); ind++) {
+		int value = int(fileName[ind]) - '0';
+		if (value <= 9 and value >=0)
+		{
+			label[ind] = '\0'; //To mark the end.
+			break;
+		}
+		else {
+			label[ind] = fileName[ind];
+		}
+	}
+
 	return 0;
 }

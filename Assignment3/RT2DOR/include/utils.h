@@ -15,8 +15,19 @@
 /** This function process the given image for the feature vector internally
 	It internally uses the functions in tasks.h file.
 */
-int getFeaturesForImage(char* filePath, std::vector<float>& featureVector,
-	int greyscaleThreshold = 124, int numberOfErosions = 1,
-	int erosionConnectValue = 4, int dilationConnectValue = 8, int numberOfSegments = 3,
+int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
+	int greyscaleThreshold = 124, int numberOfErosions = 5,
+	int erosionConnectValue = 4, int dilationConnectValue = 8, int numberOfSegments = 1,
 	bool debug = false, bool displayIntermediateImages = false);
+
+/** This function returns only the fileName from the filePath provided.
+@param filePath path of the file whose name needs to be obtained.
+@param fileName placeholder for result.
+@param label placeholder for the label read.
+@return 0 for successfully obtaining the fileName.
+@note Assumes that the filePath is valid (doesn't validate filePath)
+	  Method: Parses the filePath to find the last folder separator like '/' or '\\' and
+	  populates from that index to end.
+*/
+int getFileNameAndLabel(char*& filePath, char*& fileName, char*& label);
 

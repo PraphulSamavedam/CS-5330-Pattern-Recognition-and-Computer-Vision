@@ -20,8 +20,10 @@ int main(int argc, char* argv[])
 	// Main configuration variables.
 	int windowSize = cv::WINDOW_GUI_NORMAL;
 	int grayscaleThreshold = 124; // Value is based on the experimentation with sample images
-	int numberOfErosions = 1;
-	int numberOfSegments = 3;
+	int numberOfErosions = 5;
+	int erosionConnectValue = 4;
+	int dilationConnectValue = 8;
+	int numberOfSegments = 1;
 	bool displaySteps = true;
 
 	if (argc<2)
@@ -51,19 +53,27 @@ int main(int argc, char* argv[])
 	{
 		// Get the features for each file
 		vector<float> featureVector;
-		getFeaturesForImage(filesList[index], featureVector, 124, 1, 4, 8, 1, false, false);
-
+		printf("Processing %s file for features\n", filesList[index]);
 		cv::Mat image = cv::imread(filesList[index]);
+		if (image.data == NULL)
+		{
+			printf("Fatal Error file not found");
+			exit(-404);
+		}
+
+		getFeaturesForImage(image, featureVector);
 		
 		// Request for the label from the user
-		char label[256];
-		printf("Enter the label for %s:\n", filesList[index]);
+		char* label;
+		char* fileName;
+		/*printf("Enter the label for %s:\n", filesList[index]);
 		std::cin >> label;
 		if (label == "") {
 			printf("Invalid Emtpy Label\n");
 			continue;
-		}
-		
+		}*/
+		getFileNameAndLabel(filesList[index], fileName, label);
+		printf("Processed to have fileName:%s and label: %s\n", fileName, label);
 		// Write the feature vector to csv file
 		if (index == 0)
 		{	// First entry should override the file contents to start afresh

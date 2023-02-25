@@ -200,8 +200,9 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue, int f
 				if (srcPtr[col] == foreGround)
 				{
 					// Minimum of neighbouring cells -> cell before or cell above
-					currRowPtr[col] = MIN(aboveRowPtr[col - 1], aboveRowPtr[col], aboveRowPtr[col + 1]
-						, currRowPtr[col - 1]) + 1;
+					currRowPtr[col] = MIN(MIN(aboveRowPtr[col], aboveRowPtr[col + 1])
+										, MIN(currRowPtr[col - 1], aboveRowPtr[col - 1])
+										)+ 1;
 				}
 				// Else the pixel is background then no change default value is 0 (already handled during initialization
 			}
@@ -223,8 +224,9 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue, int f
 				{
 					// Minimum of current value or neighbouring cells + 1
 					currRowPtr[col] = MIN(currRowPtr[col],
-						MIN(belowRowPtr[col - 1], belowRowPtr[col], belowRowPtr[col + 1], currRowPtr[col + 1])
-						+ 1);
+														  MIN(MIN(belowRowPtr[col - 1], belowRowPtr[col])
+															, MIN(belowRowPtr[col + 1], currRowPtr[col + 1]))
+										  + 1);
 				}
 				// Else the pixel is background then no change.
 			}
@@ -628,6 +630,8 @@ int binaryImageWithARegion(cv::Mat& regionMap, cv::Mat& binaryOutputImage, cv::M
 			}
 		}
 	}
+
+
 
 	double width = (maxCol - minCol);
 	double height = (maxRow - minRow);
