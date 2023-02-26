@@ -229,10 +229,8 @@ int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, char* featureVectorFile,
 	return 0;
 }
 
-void placeLabel(cv::Mat& image, char* label) {
-	cv::Point text_position(image.cols / 2, image.rows / 2);// Declaring the text position//
-	int font_size = 20;// Declaring the font size//
-	cv::Scalar font_Color(0, 0, 255);// Declaring the color of the font//
-	int font_weight = 3;// Declaring the font weight//
+void placeLabel(cv::Mat& image, char* label, int font_size, int font_weight) {
+	cv::Point text_position(image.cols / 2, image.rows / 2);// Declaring the text position at the centre//
+	cv::Scalar font_Color(0, 255, 255);// Declaring the color of the font//
 	putText(image, label, text_position, cv::FONT_HERSHEY_COMPLEX, font_size, font_Color, font_weight);
 }

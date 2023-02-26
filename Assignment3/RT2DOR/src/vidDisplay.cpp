@@ -3,12 +3,13 @@
 * This file displays the live labelling of the objects.
 */
 
-#define _CRT_SECURE_NO_WARNINGS
-//#include "../include/RT2DOR.h"
+#define _CRT_SECURE_NO_WARNINGS // To suppress warnings
+
 #include <opencv2/opencv.hpp>
 
 //#include "../include/utils.h" // Required for feature calculation.
-#include "../include/match.h" // For getting the label
+#include "../include/match_util.h" // For getting the label
+#include "../include/utils.h"
 
 
 using namespace std;
@@ -22,6 +23,7 @@ int main(int argc, char* argv[])
 	int numberOfSegments = 1;
 	bool displaySteps = false;
 	bool debug = false;
+	int K = 5;
 
 	// Setup the camera for Capture
 	cv::VideoCapture* capture = new cv::VideoCapture(0);
@@ -46,24 +48,23 @@ int main(int argc, char* argv[])
 			break;
 		}
 
-		// Display the current stream of images in the video stream.
-		// Displaying the image read.
-		cv::namedWindow("Live Video", windowSize);
-		cv::imshow("Live Video", frame);
-
 		if (debug) { printf("Read the original image.\n"); }
 
+		// Get the target feature vector
 		std::vector<float> featureVector;
-
 		getFeaturesForImage(frame,featureVector);
 
 		char vectorFilePath[100] = "../data/db/features.csv";
 		char distanceMetric[100] = "euclidean";
 		char predictedLabel[100];
-		// To Do here after computed images to get the label from existing functions. 
-		ComputingNearestLabelUsingKNN(frame, vectorFilePath, distanceMetric, predictedLabel, 5);
+		
+		ComputingNearestLabelUsingKNN(frame, vectorFilePath, distanceMetric, predictedLabel, K);
+		printf("Label Predicted: %s", predictedLabel);
+		placeLabel(frame, predictedLabel, 1, 2);
 
-		placeLabel(frame, predictedLabel);
+		// Display the current stream of images in the video stream.
+		cv::namedWindow("Live Video", windowSize);
+		cv::imshow("Live Video", frame);
 		char key = cv::waitKey(100);
 		if (key == 'q')
 		{
@@ -73,6 +74,7 @@ int main(int argc, char* argv[])
 		else if (key == 's')
 		{
 			cv::setBreakOnError(true);
+			cv::destroyAllWindows();
 		}
 	}
 }

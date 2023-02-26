@@ -293,7 +293,7 @@ int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vect
 		return(-1);
 	}
 
-	printf("Reading %s\n", filename);
+	if (echo_file) { printf("Reading %s\n", filename); }
 
 	for (;;) {
 		std::vector<float> dvec;
@@ -330,7 +330,7 @@ int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vect
 	}
 	fclose(fp);
 
-	printf("Finished reading CSV file\n");
+	if (echo_file) { printf("Finished reading CSV file\n"); }
 
 	if (echo_file) {
 		for (int i = 0; i < data.size(); i++) {

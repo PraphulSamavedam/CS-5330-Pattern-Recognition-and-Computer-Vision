@@ -53,14 +53,15 @@ int thresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg, int greyScaleThresh
 	// Thresholded Image must be binary image.
 	thresholdedImg = cv::Mat::zeros(srcImg.size(), CV_8UC1);
 
-	cv::Mat grayImg;
-	cv::cvtColor(srcImg, grayImg, cv::COLOR_BGR2GRAY);
+	// Uncomment to check the performance with OpenCV functions
+	// cv::Mat grayImg;
+	// cv::cvtColor(srcImg, grayImg, cv::COLOR_BGR2GRAY);
 
 	// Checking if the image has value above threshold in the greyscale.
 	for (int row = 0; row < srcImg.rows; row++)
 	{
 		cv::Vec3b* srcPtr = srcImg.ptr<cv::Vec3b>(row);
-		uchar* srtPtr = grayImg.ptr<uchar>(row);
+		// uchar* srtPtr = grayImg.ptr<uchar>(row); 
 		uchar* dstPtr = thresholdedImg.ptr<uchar>(row);
 		for (int col = 0; col < srcImg.cols; col++)
 		{
@@ -68,7 +69,8 @@ int thresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg, int greyScaleThresh
 				+ (srcPtr[col][1] * 0.588) // 0.588 weight for green channel
 				+ (srcPtr[col][2] * 0.206) // 0.206 weight for red channel
 		> greyScaleThreshold) ? 0 : 255; // white color if below threshold else black
-			dstPtr[col] = srtPtr[col] > greyScaleThreshold ? 0 : 255; // white color if below threshold else black
+			// Uncomment to check the performance with OpenCV's function performance.
+			// dstPtr[col] = srtPtr[col] > greyScaleThreshold ? 0 : 255; // white color if below threshold else black
 		}
 	}
 	return 0;

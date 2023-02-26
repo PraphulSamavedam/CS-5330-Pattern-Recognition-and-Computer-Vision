@@ -17,4 +17,4 @@ int identifyMatches(cv::Mat& targetImage, char* featureVectorFile, char* distanc
 
 int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, char* featureVectorFile, char* distanceMetric, char* Label, int K);
 
-void placeLabel(cv::Mat& image, char* label);
+void placeLabel(cv::Mat& image, char* label, int fontSize = 8, int fontWeight = 3);

@@ -42,12 +42,12 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	cv::Mat erroredImage;
 	erosion(binaryImg, erroredImage, numberOfErosions, erosionConnectValue);
 	if (debug) {
-		printf("Erroded the binary image %d times following %d-connected technique\n"
+		printf("Erroded binary image %d times following %d-connected technique\n"
 			, numberOfErosions, erosionConnectValue);
 	}
 	if (displayIntermediateImages)
 	{
-		cv::namedWindow("Erorded Image", windowSize);
+		cv::namedWindow("Eroded Image", windowSize);
 		cv::imshow("Eroded Image", erroredImage);
 	}
 
@@ -55,7 +55,7 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	cv::Mat cleanImg;
 	dilation(erroredImage, cleanImg, numberOfErosions, dilationConnectValue);
 	if (debug) {
-		printf("Dilated the binary image %d times following %d-connected technique\n"
+		printf("Dilated binary image %d times following %d-connected technique\n"
 			, numberOfErosions, dilationConnectValue);
 		printf("Cleaned the binary image.\n");
 	}
@@ -90,8 +90,8 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	image.copyTo(ImgWithBoxes);
 	drawBoundingBoxes(regionMap, ImgWithBoxes, segments);
 	if (displayIntermediateImages) {
-		cv::namedWindow("With Boxes", windowSize);
-		cv::imshow("With Boxes", ImgWithBoxes);
+		cv::namedWindow("Bounding Boxes", windowSize);
+		cv::imshow("Bounding Boxes", ImgWithBoxes);
 	}
 
 	// Get the features of the segmented Image.
