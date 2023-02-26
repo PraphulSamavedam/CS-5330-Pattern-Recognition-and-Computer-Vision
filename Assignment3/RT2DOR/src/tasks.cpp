@@ -203,8 +203,8 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue, int f
 				{
 					// Minimum of neighbouring cells -> cell before or cell above
 					currRowPtr[col] = MIN(MIN(aboveRowPtr[col], aboveRowPtr[col + 1])
-										, MIN(currRowPtr[col - 1], aboveRowPtr[col - 1])
-										)+ 1;
+						, MIN(currRowPtr[col - 1], aboveRowPtr[col - 1])
+					) + 1;
 				}
 				// Else the pixel is background then no change default value is 0 (already handled during initialization
 			}
@@ -226,9 +226,9 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue, int f
 				{
 					// Minimum of current value or neighbouring cells + 1
 					currRowPtr[col] = MIN(currRowPtr[col],
-														  MIN(MIN(belowRowPtr[col - 1], belowRowPtr[col])
-															, MIN(belowRowPtr[col + 1], currRowPtr[col + 1]))
-										  + 1);
+						MIN(MIN(belowRowPtr[col - 1], belowRowPtr[col])
+							, MIN(belowRowPtr[col + 1], currRowPtr[col + 1]))
+						+ 1);
 				}
 				// Else the pixel is background then no change.
 			}
@@ -493,7 +493,7 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool 
 	std::priority_queue<std::tuple<int, int>, std::vector<std::tuple<int, int>>, Compare> pQueue;
 
 	std::map<int, int> regionAreaMap;
-	
+
 	// Loop through the image for the number of pixels with that region ID.
 	for (int row = 0; row < regionMap.rows; row++)
 	{
@@ -512,7 +512,7 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool 
 		}
 	}
 
-	
+
 	int count = 1;
 	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
 	{
@@ -527,11 +527,11 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool 
 	int counter = 1;
 	while (counter <= maxRegionsPossible) {
 		regionIDBinValueMap[std::get<0>(pQueue.top())] = std::make_tuple(255, counter);
-		if (debug){ std::cout << "Top Region: " << std::get<0>(pQueue.top()) << " Area: " << std::get<1>(pQueue.top()) << std::endl; }
+		if (debug) { std::cout << "Top Region: " << std::get<0>(pQueue.top()) << " Area: " << std::get<1>(pQueue.top()) << std::endl; }
 		pQueue.pop();
 		counter += 1;
 	}
-	
+
 	for (int row = 0; row < regionMap.rows; row++)
 	{
 		short* srcPtr = regionMap.ptr<short>(row);
@@ -543,7 +543,7 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool 
 			//printf("Destination Value: %d ", dstPtr[col]);
 			srcPtr[col] = std::get<1>(regionIDBinValueMap[srcPtr[col]]);
 			//printf("Post Region Image value: %d, \n", srcPtr[col]);
-			
+
 		}
 	}
 
@@ -780,24 +780,51 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 	// Create a rotated rectangle with the center point of the contour, width, height, and orientation angle
 	cv::RotatedRect box(centroid, cv::Size2f(width, height), theta * 180.0 / CV_PI);
 
-	// Create orientation line
-	cv::Point2f orientationAxis[2];
-	for (int i = 0; i < 2; i++)
-	{
-		int x = xbar + ((1 - (2 * i)) * (100) * sin_theta);
-		int y = ybar + ((1 - (2 * i)) * (100) * cos_theta);
-		orientationAxis[i] = cv::Point2f(x, y);
-	}
-	cv::line(outputImg, orientationAxis[0], orientationAxis[1], cv::Scalar(255, 255, 255), 2);
-
 	cv::Point2f vertices[4];
 	box.points(vertices);
 
 	if (debug) { std::cout << "Vertices: " << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl; }
 
+	// Plot the bounding boxes
 	for (int i = 0; i < 4; i++) {
 		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);
 	}
+
+	// Create major axis
+	cv::Point2f majorAxis[2];
+	// majorAxis[0] = cv::Point2f((vertices[0].x + vertices[1].x) / 2, (vertices[0].y + vertices[1].y) / 2);
+	// majorAxis[1] = cv::Point2f((vertices[2].x + vertices[3].x) / 2, (vertices[2].y + vertices[3].y) / 2);
+
+	// Own method
+	for (int i = 0; i < 2; i++)
+	{
+		int x = xbar + ((1 - (2 * i)) * (width * 0.5 * cos_theta));
+		int y = ybar + ((1 - (2 * i)) * (width * 0.5 * sin_theta));
+		majorAxis[i] = cv::Point2f(x, y);
+	}
+
+	// Plot major axis
+	cv::line(outputImg, majorAxis[0], majorAxis[1], cv::Scalar(255, 255, 255), 2);
+	
+	//minorAxis[0] = cv::Point2f((vertices[0].x + vertices[3].x) / 2,  (vertices[0].y + vertices[3].y) / 2);
+	//minorAxis[1] = cv::Point2f((vertices[1].x + vertices[2].x) / 2,  (vertices[1].y + vertices[2].y) / 2);
+	
+	// Create minor axis
+	cv::Point2f minorAxis[2];
+	sin_theta = sin(theta + (CV_PI / 2));
+	cos_theta = cos(theta + (CV_PI / 2));
+	for (int i = 0; i < 2; i++)
+	{
+		int x2 = xbar + ((1 - (2 * i)) * (height * 0.25 * cos_theta));
+		int y2 = ybar + ((1 - (2 * i)) * (height * 0.25 * sin_theta));
+		minorAxis[i] = cv::Point2f(x2, y2);
+	}
+	
+
+	// Plot minor axis
+	cv::line(outputImg, minorAxis[0], minorAxis[1], cv::Scalar(255, 255, 255), 1);
+
+	// std::cout << "Vertices: " << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl;
 
 	return 0;
 }

@@ -18,7 +18,7 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	// Main configuration variables.
-	int windowSize = cv::WINDOW_GUI_EXPANDED;
+	int windowSize = cv::WINDOW_NORMAL;
 	int grayscaleThreshold = 124; // Value is based on the experimentation with sample images
 	int numberOfErosions = 5;
 	int numberOfSegments = 3;
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 	erosion(grayThImg, erroredImage, numberOfErosions, 4);
 	if (displaySteps)
 	{
-		cv::namedWindow("Erorded Image", windowSize);
+		cv::namedWindow("Eroded Image", windowSize);
 		cv::imshow("Eroded Image", erroredImage);
 	}
 
