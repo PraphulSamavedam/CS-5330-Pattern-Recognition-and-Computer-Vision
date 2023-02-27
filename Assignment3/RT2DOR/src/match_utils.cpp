@@ -1,3 +1,9 @@
+/*
+* Written by :Poorna Chandra Vemula, Samavedam Manikhanta Praphul
+	CS 5330, Spring 2023
+	RT2DOR, match.cpp
+	This file has the utility function required to match target iamge with the images in a database. 
+*/
 #define _CRT_SECURE_NO_WARNINGS
 #include <opencv2/opencv.hpp>
 #include "../include/utils.h"
@@ -124,7 +130,7 @@ int identifyMatches(cv::Mat& targetImage, char* featureVectorFile, char* distanc
 	//conditional feature computing based on various feature sets
 	std::vector<float> targetFeatureVector;
 
-	getFeaturesForImage(targetImage, targetFeatureVector, 124, 5, 4, 8, 1, false, true);
+	getFeaturesForImage(targetImage, targetFeatureVector);
 
 	if (debug) {
 		std::cout << "Target feature vector is:\n";

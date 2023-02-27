@@ -26,6 +26,12 @@
   */
 int append_image_data_csv(char* filename, char* image_filename, std::vector<float>& image_data, int reset_file = 0);
 
+/*ToDo Write Label data to csv*/
+int append_label_data_csv(char* filename, std::vector<char*>& image_data, int reset_file);
+
+/*ToDo Write confusion data to csv*/
+int append_confusion_data_csv(char* filename, char* className, std::vector<int>& confusion_data, int reset_file);
+
 /*
   Given a filename, and image filename, image label, and the image features, by
   default the function will append a line of data to the CSV format
@@ -73,5 +79,10 @@ int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vect
   The function returns a non-zero value if something goes wrong.
  */
 int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vector<char*>& labelnames, std::vector<std::vector<float>>& data, bool echo_file);
+
+/*
+  This function returns the fileNames and the labels / ground truths of the images.
+ */
+int read_file_labels_only(char* featuresFile, std::vector<char*>& filenames, std::vector<char*>& labelnames, bool echo_file);
 
 #endif

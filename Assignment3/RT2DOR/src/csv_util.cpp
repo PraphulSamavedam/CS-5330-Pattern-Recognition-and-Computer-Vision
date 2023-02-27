@@ -147,6 +147,75 @@ int append_image_data_csv(char* filename, char* image_filename, std::vector<floa
 	return(0);
 }
 
+/*ToDo Write Label data to csv*/
+int append_label_data_csv(char* filename, std::vector<char*>& image_data, int reset_file) {
+	char buffer[256];
+	char mode[8];
+	FILE* fp;
+
+	strcpy(mode, "a");
+
+	if (reset_file) {
+		strcpy(mode, "w");
+	}
+
+	fp = fopen(filename, mode);
+	if (!fp) {
+		printf("Unable to open output file %s\n", filename);
+		exit(-1);
+	}
+
+	// write the filename and the feature vector to the CSV file
+	strcpy(buffer, " ");
+	std::fwrite(buffer, sizeof(char), strlen(buffer), fp);
+	for (int i = 0; i < image_data.size(); i++) {
+		char tmp[256];
+		sprintf(tmp, ",%s", image_data[i]);
+		std::fwrite(tmp, sizeof(char), strlen(tmp), fp);
+	}
+
+	std::fwrite("\n", sizeof(char), 1, fp); // EOL
+
+	fclose(fp);
+
+	return(0);
+}
+
+/*ToDo Write confusion data to csv*/
+int append_confusion_data_csv(char* filename, char* className, std::vector<int>& confusion_data, int reset_file) {
+	char buffer[256];
+	char mode[8];
+	FILE* fp;
+
+	strcpy(mode, "a");
+
+	if (reset_file) {
+		strcpy(mode, "w");
+	}
+
+	fp = fopen(filename, mode);
+	if (!fp) {
+		printf("Unable to open output file %s\n", filename);
+		exit(-1);
+	}
+
+	// write the filename and the feature vector to the CSV file
+	strcpy(buffer, className);
+	std::fwrite(buffer, sizeof(char), strlen(buffer), fp);
+	for (int i = 0; i < confusion_data.size(); i++) {
+		char tmp[256];
+		sprintf(tmp, ",%d", confusion_data[i]);
+		std::fwrite(tmp, sizeof(char), strlen(tmp), fp);
+	}
+
+	std::fwrite("\n", sizeof(char), 1, fp); // EOL
+
+	fclose(fp);
+
+	return(0);
+}
+
+
 /*
   Given a filename, and image filename, image label, and the image features, by
   default the function will append a line of data to the CSV format
@@ -344,3 +413,61 @@ int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vect
 
 	return(0);
 }
+
+
+/* The function returns a non-zero value if something goes wrong.
+ */
+int read_file_labels_only(char* featuresFile, std::vector<char*>& filenames, std::vector<char*>& labelnames, bool echo_file) {
+	FILE* fp;
+	float fval;
+	char img_file[256];
+	char img_label[256];
+	char img_predLabel[256];
+
+	fp = fopen(featuresFile, "r");
+	if (!fp) {
+		printf("Unable to open feature file\n");
+		return(-1);
+	}
+
+	if (echo_file) { printf("Reading %s\n", featuresFile); }
+
+	for (;;) {
+		std::vector<float> dvec;
+
+		// read the filename
+		if (getstring(fp, img_file)) {
+			break;
+		}
+
+		if (getstring(fp, img_label)) {
+			break;
+		}
+
+		if (echo_file) { printf("Evaluting %s\n", featuresFile); }
+
+		// read the whole feature file into memory
+		for (;;) {
+			// get next feature
+			float eol = getfloat(fp, &fval);
+			dvec.push_back(fval);
+			if (eol) break;
+		}
+		// printf("read %lu features\n", dvec.size() );
+
+		char* fname = new char[strlen(img_file) + 1];
+		strcpy(fname, img_file);
+		filenames.push_back(fname);
+
+		char* lname = new char[strlen(img_label) + 1];
+		strcpy(lname, img_label);
+		labelnames.push_back(lname);
+
+	}
+	fclose(fp);
+
+	if (echo_file) { printf("Finished reading CSV file\n"); }
+
+	return(0);
+}
+

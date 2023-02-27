@@ -4,11 +4,26 @@
 */
 
 #include "../include/utils.h"
+#include <opencv2/opencv.hpp>
 
+/** This function obtains the features in the source image by applying converting into binary based 
+on the grayscale threshold. The binary image is then cleaned based on params of cleansing like number of times, 
+which connection to use. Connected component analysis is then run to get top N segments in the image based on area.
+
+@param image source address of color image. 
+@param featureVector address of the feature vector to be populated. 
+@param grayscaleThreshold[default=124] to threshold the grayscale image.
+@param erosionConnectValue[default=4] only 4/8 for 4 connected technique or 8 connected technique.
+@param dilationConnectValue[default=8] only 4/8 for 4 connected technique or 8 connected technique.
+@param numberOfSegments[default=1] set this number to desired number of segments required in the image. 
+@param debug[defaul=false] set this to enable verbose. 
+@param displayIntermediateImages set this to have display of intermediate results. 
+ 
+*/
 int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	int grayscaleThreshold, int numberOfErosions, int erosionConnectValue,
 	int dilationConnectValue, int numberOfSegments,
-	bool debug, bool displayIntermediateImages)
+	bool debug, bool displayIntermediateImages, bool saveImages)
 {
 	int windowSize = cv::WINDOW_KEEPRATIO;
 
@@ -18,7 +33,8 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 		cv::imshow("Original Image", image);
 	}
 
-	// Remove any salt and pepper noise from the image.
+	/* This code didn't boost the performance of the system, so commenting out these steps.
+	* Remove any salt and pepper noise from the image. 
 	cv::Mat noSnPImg;
 	cv::medianBlur(image, noSnPImg, 5);
 	if (debug) { printf("Removed salt and pepper noise.\n"); }
@@ -27,8 +43,9 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	cv::Mat blurredImg;
 	cv::GaussianBlur(noSnPImg, blurredImg, cv::Size(7, 7), 0.1);
 	if (debug) { printf("Blurred the image.\n"); }
+	*/
 
-	// Thresholding based on the grayscale value above threshold using function from 
+	// Thresholding based on the grayscale value above threshold using function 
 	cv::Mat binaryImg;
 	thresholdImage(image, binaryImg, grayscaleThreshold);
 	if (debug) { printf("Thresholded greyscale image to obtain binary image.\n"); }
@@ -38,27 +55,27 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	}
 
 	// Morphological operations to clean the image
+
+	// Dilation of binary image
+	cv::Mat dilatedImg;
+	dilation(binaryImg, dilatedImg, numberOfErosions, dilationConnectValue);
+	if (debug) {
+		printf("Dilated binary image %d times following %d-connected technique\n"
+			, numberOfErosions, dilationConnectValue);
+	}
+
 	// Erosion of binary image
-	cv::Mat erroredImage;
-	erosion(binaryImg, erroredImage, numberOfErosions, erosionConnectValue);
+	cv::Mat erodedImg;
+	erosion(dilatedImg, erodedImg, numberOfErosions, erosionConnectValue);
 	if (debug) {
 		printf("Erroded binary image %d times following %d-connected technique\n"
 			, numberOfErosions, erosionConnectValue);
 	}
-	if (displayIntermediateImages)
-	{
-		cv::namedWindow("Eroded Image", windowSize);
-		cv::imshow("Eroded Image", erroredImage);
-	}
 
-	// Dilation of binary image to complete cleaning the binary image
 	cv::Mat cleanImg;
-	dilation(erroredImage, cleanImg, numberOfErosions, dilationConnectValue);
-	if (debug) {
-		printf("Dilated binary image %d times following %d-connected technique\n"
-			, numberOfErosions, dilationConnectValue);
-		printf("Cleaned the binary image.\n");
-	}
+	erodedImg.copyTo(cleanImg);
+
+	// Cleaning of the binary image is complete.
 	if (displayIntermediateImages) {
 		cv::namedWindow("Cleaned Image", windowSize);
 		cv::imshow("Cleaned Image", cleanImg);
@@ -77,25 +94,35 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 		cv::imshow("Top N segmented binary Image", segImg);
 	}
 
+	if(saveImages){
 	// Color the detected Segments
 	cv::Mat segmentColoredImg = cv::Mat::zeros(cleanImg.size(), CV_32SC3);
 	colorSegmentation(regionMap, segmentColoredImg);
+	if(debug){printf("Colored the segmented image having %d segments.\n",segments);}
 	if (displayIntermediateImages) {
 		cv::namedWindow("Colored Segmented Image", windowSize);
 		cv::imshow("Colored Segmented Image", segmentColoredImg);
 	}
 
-	// Draw bounding boxes.
+	// Draw bounding boxes with orientation details.
 	cv::Mat ImgWithBoxes;
 	image.copyTo(ImgWithBoxes);
 	drawBoundingBoxes(regionMap, ImgWithBoxes, segments);
+	if(debug){printf("Successfully drawn bouding boxes.\n");}
 	if (displayIntermediateImages) {
 		cv::namedWindow("Bounding Boxes", windowSize);
 		cv::imshow("Bounding Boxes", ImgWithBoxes);
 	}
+		cv::imwrite("Binary Image.jpg", binaryImg);
+		cv::imwrite("Cleaned Image.jpg", cleanImg);
+		cv::imwrite("Segmented Image.jpg", segImg);
+		cv::imwrite("Segmented Color Image.jpg", segmentColoredImg);
+		cv::imwrite("Bounded Image.jpg", ImgWithBoxes);
+	}
 
 	// Get the features of the segmented Image.
 	getFeatures(regionMap, featureVector, segments);
+	
 	return 0;
 }
 

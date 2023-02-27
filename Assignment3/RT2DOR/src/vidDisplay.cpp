@@ -8,8 +8,8 @@
 #include <opencv2/opencv.hpp>
 
 //#include "../include/utils.h" // Required for feature calculation.
-#include "../include/match_util.h" // For getting the label
 #include "../include/utils.h"
+#include "../include/match_utils.h"  // For getting the label
 
 
 using namespace std;
@@ -52,12 +52,12 @@ int main(int argc, char* argv[])
 
 		// Get the target feature vector
 		std::vector<float> featureVector;
-		getFeaturesForImage(frame,featureVector);
+		getFeaturesForImage(frame, featureVector);
 
 		char vectorFilePath[100] = "../data/db/features.csv";
 		char distanceMetric[100] = "euclidean";
 		char predictedLabel[100];
-		
+
 		ComputingNearestLabelUsingKNN(frame, vectorFilePath, distanceMetric, predictedLabel, K);
 		printf("Label Predicted: %s", predictedLabel);
 		placeLabel(frame, predictedLabel, 1, 2);

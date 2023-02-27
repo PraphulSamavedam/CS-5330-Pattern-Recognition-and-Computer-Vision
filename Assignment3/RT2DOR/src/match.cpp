@@ -20,8 +20,7 @@
 #include <opencv2/highgui.hpp>
 #include <vector>
 #include <queue>
-//#include "../include/utils.h"
-#include "../include/match.h"
+#include "../include/match_utils.h"
 
 
 
@@ -31,6 +30,8 @@
   Written by Poorna Chandra Vemula.
 
   It also implements a GUI with buttons using cvui
+
+  Eg: "../data/test_images/beanie1.jpg" "euclidean" "5"
 
   @return  0 if program terminated with success.
 		 -1 if invalid arguments or file not found.
@@ -48,7 +49,7 @@ int main(int argc, char* argv[]) {
 	strcpy(targetImage, argv[1]);
 	char distanceMetric[256];
 	strcpy(distanceMetric, argv[2]);
-	int N = atoi(argv[3]);
+	int topNMatches = atoi(argv[3]);
 	char featureVectorFile[256] = "../data/db/features.csv";
 
 	std::vector<char*> nMatches;
@@ -60,7 +61,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	char prediction[256];
-	ComputingNearestLabelUsingKNN(targetImg, featureVectorFile, distanceMetric, prediction, 15);
+	ComputingNearestLabelUsingKNN(targetImg, featureVectorFile, distanceMetric, prediction, topNMatches);
 	std::cout << "Prediction:" << prediction << std::endl;
 
 	//std::vector<char*> nLabels;
@@ -70,8 +71,8 @@ int main(int argc, char* argv[]) {
 	//showTopMatchedImages(nMatches);
 	cv::namedWindow("Predicted Label", cv::WINDOW_GUI_NORMAL);
 	cv::imshow("Predicted Label",targetImg);
+	cv::imwrite("Image with Prediction.jpg", targetImg);
 	cv::waitKey(0);
-
 	return 0;
 }
 

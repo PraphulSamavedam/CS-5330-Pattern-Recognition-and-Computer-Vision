@@ -10,6 +10,8 @@
 #include <tuple> // Required for tupling the row and column in the stack
 #include <map> // Required to map the color with the segmented region
 #include <cstdlib> // Required for random number generation.
+#include "../include/csv_util.h"
+#include "../include/match_utils.h"
 
 
 /* This image is thresholded in the range of hueMin, hueMax; satMin, satMax;
@@ -787,15 +789,12 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 
 	// Plot the bounding boxes
 	for (int i = 0; i < 4; i++) {
-		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);
+		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(70, 18, 31), 2);
 	}
 
 	// Create major axis
 	cv::Point2f majorAxis[2];
-	// majorAxis[0] = cv::Point2f((vertices[0].x + vertices[1].x) / 2, (vertices[0].y + vertices[1].y) / 2);
-	// majorAxis[1] = cv::Point2f((vertices[2].x + vertices[3].x) / 2, (vertices[2].y + vertices[3].y) / 2);
-
-	// Own method
+	// Mark the major axis points
 	for (int i = 0; i < 2; i++)
 	{
 		int x = xbar + ((1 - (2 * i)) * (width * 0.5 * cos_theta));
@@ -804,13 +803,10 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 	}
 
 	// Plot major axis
-	cv::line(outputImg, majorAxis[0], majorAxis[1], cv::Scalar(255, 255, 255), 2);
-	
-	//minorAxis[0] = cv::Point2f((vertices[0].x + vertices[3].x) / 2,  (vertices[0].y + vertices[3].y) / 2);
-	//minorAxis[1] = cv::Point2f((vertices[1].x + vertices[2].x) / 2,  (vertices[1].y + vertices[2].y) / 2);
-	
+	cv::line(outputImg, majorAxis[0], majorAxis[1], cv::Scalar(247, 223, 173), 5);
 	// Create minor axis
 	cv::Point2f minorAxis[2];
+	// Mark the minor axis points
 	sin_theta = sin(theta + (CV_PI / 2));
 	cos_theta = cos(theta + (CV_PI / 2));
 	for (int i = 0; i < 2; i++)
@@ -819,10 +815,9 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 		int y2 = ybar + ((1 - (2 * i)) * (height * 0.25 * sin_theta));
 		minorAxis[i] = cv::Point2f(x2, y2);
 	}
-	
 
 	// Plot minor axis
-	cv::line(outputImg, minorAxis[0], minorAxis[1], cv::Scalar(255, 255, 255), 1);
+	cv::line(outputImg, minorAxis[0], minorAxis[1], cv::Scalar(255, 255, 255), 3);
 
 	// std::cout << "Vertices: " << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl;
 
@@ -842,4 +837,141 @@ int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegion
 
 
 	return 0;
+}
+
+
+int confusionMatrixCSV(char* featuresAndLabelsFile, char* confusionMatrixFile,
+						std::vector<char*> labelnames, std::vector<char*> predictedLabelNames) {
+
+	std::set<std::string> labelsSet(labelnames.begin(), labelnames.end());
+
+	std::unordered_map<std::string, std::unordered_map<std::string, float>> mp;
+	std::unordered_map<std::string, float> current_label_map;
+
+	for (std::string label : labelsSet) {
+		current_label_map[label] = 0;
+	}
+
+	for (std::string label : labelsSet) {
+		mp[label] = current_label_map;
+	}
+
+	for (int i = 0; i < labelnames.size(); i++) {
+		mp[labelnames[i]][predictedLabelNames[i]] += 1;
+	}
+
+	//    std::vector<char*> ;
+	//
+	//    append_image_data_csv();
+
+	for (auto labelRow : mp) {
+		std::cout << "label : " << labelRow.first << std::endl;
+
+		for (auto predictLabelCounts : labelRow.second) {
+			std::cout << predictLabelCounts.first << predictLabelCounts.second << std::endl;
+		}
+	}
+
+	// Write the confusion matrix to csv
+	std::vector<char*> uniqueLabelNamesList;
+	for (std::string label:labelsSet)
+	{
+		char* cstr = new char[label.length()+1];
+		strcpy(cstr, label.c_str());
+		uniqueLabelNamesList.push_back(cstr);
+	}
+
+	append_label_data_csv(confusionMatrixFile, uniqueLabelNamesList, true);
+
+	for (char* label: uniqueLabelNamesList)
+	{
+		std::vector<int> confusionVector;
+		for (char* predictedLabel: uniqueLabelNamesList)
+		{
+			confusionVector.push_back(mp[label][predictedLabel]);
+		}
+		append_confusion_data_csv(confusionMatrixFile, label, confusionVector, false);
+	}
+	printf("Successfully wrote confusion matrix to %s file.", confusionMatrixFile);
+	return 0;
+}
+
+
+/*
+   This class implements comparator for the priority queue.
+   - priority queue is built using the second element in the pair
+*/
+class CompareSecondElement {
+public:
+	bool operator()(std::tuple<char*, char*, float> first, std::tuple<char*, char*, float> second)
+	{
+		if (std::get<2>(first) > std::get<2>(second)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+
+	}
+};
+
+int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, std::vector<char*>& labelnames, int N) {
+
+	std::vector<std::vector<float>> data;
+	std::vector<char*> filenames;
+	
+	int i = read_image_data_csv(featuresAndLabelsFile, filenames, labelnames, data, 0);
+
+	if (i != 0) {
+		std::cout << "file read unsuccessful" << std::endl;
+		exit(-1);
+	}
+	std::vector<float> standardDeviations;
+	computeStandardDeviations(data, standardDeviations);
+
+	for (int currFileIndex = 0; currFileIndex < filenames.size(); currFileIndex++)
+	{
+		std::vector<float> targetFeatureVector = data[currFileIndex];
+		std::priority_queue<std::tuple<char*, char*, float>, std::vector<std::tuple<char*, char*, float>>, CompareSecondElement> pq;
+
+		std::vector<char*> nMatches;
+		std::vector<char*> nLabels;
+		int tmpStore = N;
+
+		//calculating distances
+		for (int datapoint = 0; datapoint < data.size(); datapoint++) {
+			//change distance based on the distance metric being used
+			float distance = 0.0;
+			if (datapoint == currFileIndex) {
+				continue;
+			}
+			eucledianDistance(data[datapoint], targetFeatureVector, standardDeviations, distance);
+			pq.push(std::make_tuple(filenames[datapoint], labelnames[datapoint], distance));
+		}
+
+		while (tmpStore-- && !pq.empty()) {
+			nMatches.push_back(std::get<0>(pq.top()));
+			nLabels.push_back(std::get<1>(pq.top()));
+			//std::cout << tmpStore << " label:" << std::get<1>(pq.top()) << std::endl;
+			pq.pop();
+		}
+
+		//if (N == 1)
+		//{	// Closest Match
+		//	strcpy(predictedLabels[currFileIndex], nLabels[0]);
+		//} else {
+		//	// Logic of KNN needs to be done here.
+		//	
+		//}
+
+		predictedLabels.push_back(nLabels[0]);
+
+		if (false) {
+			std::cout << "\nFor file " << filenames[currFileIndex] << " Ground truth:" << labelnames[currFileIndex];
+			std::cout << " Predicted closest Label:" << nLabels[0] << std::endl;
+		}
+
+	}
+	
 }
