@@ -6,24 +6,24 @@
 #include "../include/utils.h"
 #include <opencv2/opencv.hpp>
 
-/** This function obtains the features in the source image by applying converting into binary based 
-on the grayscale threshold. The binary image is then cleaned based on params of cleansing like number of times, 
+/** This function obtains the features in the source image by applying converting into binary based
+on the grayscale threshold. The binary image is then cleaned based on params of cleansing like number of times,
 which connection to use. Connected component analysis is then run to get top N segments in the image based on area.
 
-@param image source address of color image. 
-@param featureVector address of the feature vector to be populated. 
+@param image source address of color image.
+@param featureVector address of the feature vector to be populated.
 @param grayscaleThreshold[default=124] to threshold the grayscale image.
 @param erosionConnectValue[default=4] only 4/8 for 4 connected technique or 8 connected technique.
 @param dilationConnectValue[default=8] only 4/8 for 4 connected technique or 8 connected technique.
-@param numberOfSegments[default=1] set this number to desired number of segments required in the image. 
-@param debug[defaul=false] set this to enable verbose. 
-@param displayIntermediateImages set this to have display of intermediate results. 
- 
+@param numberOfSegments[default=1] set this number to desired number of segments required in the image.
+@param debug[defaul=false] set this to enable verbose.
+@param displayIntermediateImages set this to have display of intermediate results.
+
 */
 int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
+	bool debug, bool displayIntermediateImages, bool saveImages, int numberOfSegments,
 	int grayscaleThreshold, int numberOfErosions, int erosionConnectValue,
-	int dilationConnectValue, int numberOfSegments,
-	bool debug, bool displayIntermediateImages, bool saveImages)
+	int dilationConnectValue)
 {
 	int windowSize = cv::WINDOW_KEEPRATIO;
 
@@ -34,7 +34,7 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	}
 
 	/* This code didn't boost the performance of the system, so commenting out these steps.
-	* Remove any salt and pepper noise from the image. 
+	* Remove any salt and pepper noise from the image.
 	cv::Mat noSnPImg;
 	cv::medianBlur(image, noSnPImg, 5);
 	if (debug) { printf("Removed salt and pepper noise.\n"); }
@@ -94,11 +94,11 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 		cv::imshow("Top N segmented binary Image", segImg);
 	}
 
-	if(saveImages){
+
 	// Color the detected Segments
 	cv::Mat segmentColoredImg = cv::Mat::zeros(cleanImg.size(), CV_32SC3);
 	colorSegmentation(regionMap, segmentColoredImg);
-	if(debug){printf("Colored the segmented image having %d segments.\n",segments);}
+	if (debug) { printf("Colored the segmented image having %d segments.\n", segments); }
 	if (displayIntermediateImages) {
 		cv::namedWindow("Colored Segmented Image", windowSize);
 		cv::imshow("Colored Segmented Image", segmentColoredImg);
@@ -108,11 +108,12 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 	cv::Mat ImgWithBoxes;
 	image.copyTo(ImgWithBoxes);
 	drawBoundingBoxes(regionMap, ImgWithBoxes, segments);
-	if(debug){printf("Successfully drawn bouding boxes.\n");}
+	if (debug) { printf("Successfully drawn bouding boxes.\n"); }
 	if (displayIntermediateImages) {
 		cv::namedWindow("Bounding Boxes", windowSize);
 		cv::imshow("Bounding Boxes", ImgWithBoxes);
 	}
+	if (saveImages) {
 		cv::imwrite("Binary Image.jpg", binaryImg);
 		cv::imwrite("Cleaned Image.jpg", cleanImg);
 		cv::imwrite("Segmented Image.jpg", segImg);
@@ -122,7 +123,7 @@ int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
 
 	// Get the features of the segmented Image.
 	getFeatures(regionMap, featureVector, segments);
-	
+
 	return 0;
 }
 
@@ -161,7 +162,7 @@ int getFileNameAndLabel(char*& filePath, char*& fileName, char*& label) {
 	// Populating the label from the fileName
 	for (int ind = 0; ind < strlen(fileName); ind++) {
 		int value = int(fileName[ind]) - '0';
-		if (value <= 9 and value >=0)
+		if (value <= 9 and value >= 0)
 		{
 			label[ind] = '\0'; //To mark the end.
 			break;

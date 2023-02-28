@@ -485,6 +485,7 @@ public:
 	}
 };
 
+
 int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool debug)
 {
 	// Binary image is required
@@ -515,12 +516,87 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool 
 	}
 
 
-	int count = 1;
+	int count = 0;
 	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
 	{
-		pQueue.push(std::make_tuple(it->first, it->second));
-		count += 1;
-		if (debug) { std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl; }
+			pQueue.push(std::make_tuple(it->first, it->second));
+			count += 1;
+			if(debug){ 
+			std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl;
+			}
+		
+	}
+
+	int maxRegionsPossible = MIN(count, NumberOfRegions);
+	// Map of the region ID with area and the new regionID
+	std::map<int, std::tuple<uchar, int>> regionIDBinValueMap;
+	int counter = 1;
+	while (counter <= maxRegionsPossible) {
+		regionIDBinValueMap[std::get<0>(pQueue.top())] = std::make_tuple(255, counter);
+		if (debug) { std::cout << "Top Region: " << std::get<0>(pQueue.top()) << " Area: " << std::get<1>(pQueue.top()) << std::endl; }
+		pQueue.pop();
+		counter += 1;
+	}
+
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = dstImg.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			dstPtr[col] = std::get<0>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Pre - Region Image value: %d, ", srcPtr[col]);
+			//printf("Destination Value: %d ", dstPtr[col]);
+			srcPtr[col] = std::get<1>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Post Region Image value: %d, \n", srcPtr[col]);
+
+		}
+	}
+
+	if (debug) { printf("Segmented the image into %d regions", maxRegionsPossible); }
+	return maxRegionsPossible;
+}
+
+int topNSegments(bool minAreaRestriction, cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions , bool debug)
+{
+	// Binary image is required
+	assert(regionMap.depth() == 1);
+
+	assert(regionMap.size() == dstImg.size());
+
+	std::priority_queue<std::tuple<int, int>, std::vector<std::tuple<int, int>>, Compare> pQueue;
+
+	std::map<int, int> regionAreaMap;
+
+	// Loop through the image for the number of pixels with that region ID.
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] != 0) {
+				if (regionAreaMap.find(int(srcPtr[col])) == regionAreaMap.end())
+				{
+					regionAreaMap[int(srcPtr[col])] = 1;
+				}
+				else {
+					regionAreaMap[int(srcPtr[col])] += 1;
+				}
+			}
+		}
+	}
+
+
+	int count = 0;
+	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
+	{
+		if (it->second >= ((regionMap.rows * regionMap.cols)/100))
+		{
+			pQueue.push(std::make_tuple(it->first, it->second));
+			count += 1;
+			std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl;
+		}
+
 	}
 
 	int maxRegionsPossible = MIN(count, NumberOfRegions);

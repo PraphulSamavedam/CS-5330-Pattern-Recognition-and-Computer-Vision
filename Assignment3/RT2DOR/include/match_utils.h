@@ -15,6 +15,10 @@ void showTopMatchedImages(std::vector<char*>& nMatches);
 
 int identifyMatches(cv::Mat& targetImage, char* featureVectorFile, char* distanceMetric, int N, std::vector<char*>& nMatches, std::vector<char*>& nLabels);
 
+int identifyMatches(std::vector<float>& targetFeatureVector, char* featureVectorFile, char* distanceMetric, int N, std::vector<char*>& nMatches, std::vector<char*>& nLabels);
+
 int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, char* featureVectorFile, char* distanceMetric, char* Label, int K);
+
+int ComputingNearestLabelUsingKNN(std::vector<float>& targetFeatureVector, char* featureVectorFile, char* distanceMetric, char* Label, int K);
 
 void placeLabel(cv::Mat& image, char* label, int fontSize = 8, int fontWeight = 3);

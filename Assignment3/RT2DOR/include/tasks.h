@@ -89,6 +89,16 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue = 4,int for
 */
 int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions = 5, bool debug = false);
 
+/** This function provides the binary image wtih top N regions if they are present in the binary image.
+* @param address of the regionMap which is segmented image with single channel with details of the region label.
+* @param address of the destinationImage
+* @param NumberOfRegions[default=5] number of the top regions (area-wise) which need to be present in the destination image.
+* @param minAreaRestriction[default=false] enable this to have minimum area restriction of total area/1000
+* @param debug[default=false] set this to have print statements to debug
+* @return 0 if we have processed the binary image for the top N regions.
+*/
+int topNSegments(bool minAreaRestriction, cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool debug);
+
 /** This function colors the image based on the region Map provided. All the regions with same ID is colored with same random color.
 * @param regionMap address of the regionMap image
 * @paaram dstImage address of the destination image
