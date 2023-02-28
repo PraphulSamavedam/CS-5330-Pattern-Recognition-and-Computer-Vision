@@ -3,7 +3,16 @@
 * This file provides the signatures of several functions required in the project.
 */
 
+#define _CRT_SECURE_NO_WARNINGS // To supress spritnf_s
 #include <opencv2/opencv.hpp>
+#include "../include/tasks.h"
+#include <stack> // Required for the stack operations in segmentation
+#include <tuple> // Required for tupling the row and column in the stack
+#include <map> // Required to map the color with the segmented region
+#include <cstdlib> // Required for random number generation.
+#include "../include/csv_util.h"
+#include "../include/match_utils.h"
+
 
 /* This image is thresholded in the range of hueMin, hueMax; satMin, satMax;
 and valMin , valMax; from the source image.
@@ -46,14 +55,15 @@ int thresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg, int greyScaleThresh
 	// Thresholded Image must be binary image.
 	thresholdedImg = cv::Mat::zeros(srcImg.size(), CV_8UC1);
 
-	cv::Mat grayImg;
-	cv::cvtColor(srcImg, grayImg, cv::COLOR_BGR2GRAY);
+	// Uncomment to check the performance with OpenCV functions
+	// cv::Mat grayImg;
+	// cv::cvtColor(srcImg, grayImg, cv::COLOR_BGR2GRAY);
 
 	// Checking if the image has value above threshold in the greyscale.
 	for (int row = 0; row < srcImg.rows; row++)
 	{
 		cv::Vec3b* srcPtr = srcImg.ptr<cv::Vec3b>(row);
-		uchar* srtPtr = grayImg.ptr<uchar>(row);
+		// uchar* srtPtr = grayImg.ptr<uchar>(row); 
 		uchar* dstPtr = thresholdedImg.ptr<uchar>(row);
 		for (int col = 0; col < srcImg.cols; col++)
 		{
@@ -61,12 +71,14 @@ int thresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg, int greyScaleThresh
 				+ (srcPtr[col][1] * 0.588) // 0.588 weight for green channel
 				+ (srcPtr[col][2] * 0.206) // 0.206 weight for red channel
 		> greyScaleThreshold) ? 0 : 255; // white color if below threshold else black
-			dstPtr[col] = srtPtr[col] > greyScaleThreshold ? 0 : 255; // white color if below threshold else black
+			// Uncomment to check the performance with OpenCV's function performance.
+			// dstPtr[col] = srtPtr[col] > greyScaleThreshold ? 0 : 255; // white color if below threshold else black
 		}
 	}
 	return 0;
 
 }
+
 
 /** This function returns only the fileName from the filePath provided.
 @param filePath path of the file whose name needs to be obtained.
@@ -99,6 +111,7 @@ int getOnlyFileName(char*& filePath, char*& fileName) {
 	return 0;
 }
 
+
 /**  This function does the Grass Fire transformation to obtain the distance of the pixel from the background.
 * Assumes the foreground to be white (255), background to be black (0)
 * @param srcImg address of the source binary image
@@ -110,7 +123,7 @@ int getOnlyFileName(char*& filePath, char*& fileName) {
 * @note AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in range [0,255].
 */
-int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue = 4, int foreGround = 255, int backGround = 0) {
+int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue, int foreGround, int backGround) {
 
 	//Supports only 4-connected or 8-connected approach
 	assert(connectValue == 4 || connectValue == 8);
@@ -191,8 +204,9 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue = 4, i
 				if (srcPtr[col] == foreGround)
 				{
 					// Minimum of neighbouring cells -> cell before or cell above
-					currRowPtr[col] = MIN(aboveRowPtr[col - 1], aboveRowPtr[col], aboveRowPtr[col + 1]
-						, currRowPtr[col - 1]) + 1;
+					currRowPtr[col] = MIN(MIN(aboveRowPtr[col], aboveRowPtr[col + 1])
+						, MIN(currRowPtr[col - 1], aboveRowPtr[col - 1])
+					) + 1;
 				}
 				// Else the pixel is background then no change default value is 0 (already handled during initialization
 			}
@@ -214,7 +228,8 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue = 4, i
 				{
 					// Minimum of current value or neighbouring cells + 1
 					currRowPtr[col] = MIN(currRowPtr[col],
-						MIN(belowRowPtr[col - 1], belowRowPtr[col], belowRowPtr[col + 1], currRowPtr[col + 1])
+						MIN(MIN(belowRowPtr[col - 1], belowRowPtr[col])
+							, MIN(belowRowPtr[col + 1], currRowPtr[col + 1]))
 						+ 1);
 				}
 				// Else the pixel is background then no change.
@@ -225,6 +240,7 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue = 4, i
 	}
 	return 0;
 }
+
 
 /** This function makes a foreground pixel into a background pixel based on the connect method chosen.
 * Assumes the foreground to be white (255), background to be black (0)
@@ -239,7 +255,7 @@ int grassFireAlgorithm(cv::Mat& srcImg, cv::Mat& dstimg, int connectValue = 4, i
 *		AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in range [0,255].
 */
-int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectValue = 4, int foreGround = 255, int backGround = 0) {
+int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectValue, int foreGround, int backGround) {
 	// Supports only 4-connected or 8-connected erosion. 
 	assert(connectValue == 4 || connectValue == 8);
 
@@ -270,6 +286,7 @@ int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectV
 
 }
 
+
 /** This function makes a background pixel into a foreground pixel based on the connect method chosen.
 * Assumes the foreground to be white (255), background to be black (0)
 * @param srcImg address of the source binary image
@@ -283,7 +300,7 @@ int erosion(cv::Mat& srcImg, cv::Mat& erodedImg, int numberOfTimes, int connectV
 *		AssertionError if connectValue not in (4,8)
 *		AssertionError if foreGround or backGround values are not in range [0,255].
 */
-int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connectValue = 4, int foreGround = 255, int backGround = 0) {
+int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connectValue, int foreGround, int backGround) {
 	// Supports only 4-connected or 8-connected erosion. 
 	assert(connectValue == 4 || connectValue == 8);
 
@@ -312,4 +329,725 @@ int dilation(cv::Mat& srcImg, cv::Mat& dilatedImg, int numberOfTimes, int connec
 
 	return 0;
 
+}
+
+
+/** This function find the conencted foreground regions in a binary image using stack.
+* Assumes the foreground to be white (255), background color as 255 - foreGround.
+* @param srcImg address of the source binary image
+* @param dstImg address of the destination binary image having the region labels
+* @param connectValue[default=4] set value as 4 or 8 to mark 4-connected, 8-connected technique
+* @param foreGround[default=255] value of the foreground pixel value.
+* @param debug[default=false] set this for debug print.
+* @returns 0 if the segmentation is successful.
+* @note AssertionError if connectValue not in (4,8)
+*		AssertionError if foreGround or backGround values are not in exactly 0 or 255.
+*/
+int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGround, bool debug)
+{
+	// It can either be 4-connected or 8-connected approach.
+	assert(connectValue == 4 or connectValue == 8);
+
+	// Foreground color can only be 255 or 0.
+	assert(foreGround == 255 or foreGround == 0);
+
+	// Destination needs to binary image
+	assert(dstImg.depth() == 1);
+
+	// Destination and source images need to be of same size.
+	assert(srcImg.size() == dstImg.size());
+
+	int backGround = 255 - foreGround;
+	int counter = 1;
+
+	std::stack<std::tuple<int, int>> pixelStack;
+
+	// Iterate over the pixels for the connected regions. 
+	for (int row = 0; row < srcImg.rows; row++)
+	{
+		uchar* srcPtr = srcImg.ptr<uchar>(row);
+		short* dstPtr = dstImg.ptr<short>(row);
+		if (debug) { printf("Processing row: %d\n", row); }
+		for (int col = 0; col < srcImg.cols; col++)
+		{
+			// Check if it is foreground pixel and is unlabelled
+			if (srcPtr[col] == foreGround and dstPtr[col] == 0)
+			{
+				if (debug) { printf("Pixel (row,col):(%d,%d) is foreground\n", row, col); }
+				dstPtr[col] = counter;
+				pixelStack.push(std::make_tuple(row, col));
+
+				while (!pixelStack.empty())
+				{
+					std::tuple<int, int> t = pixelStack.top();
+					pixelStack.pop();
+					int r = std::get<0>(t);
+					int c = std::get<1>(t);
+
+					// Neighbour pixel is foreground and unlabelled.
+					if (r != 0) {
+						// Not first row, so previous row exists
+						if (srcImg.at<uchar>(r - 1, c) == foreGround and dstImg.at<short>(r - 1, c) == 0)
+						{
+							dstImg.at<short>(r - 1, c) = counter;
+							pixelStack.push(std::make_tuple(r - 1, c));
+						}
+					}
+					if (r != srcImg.rows - 1) {
+						// Not the last row so next row exists
+						if (srcImg.at<uchar>(r + 1, c) == foreGround and dstImg.at<short>(r + 1, c) == 0)
+						{
+							dstImg.at<short>(r + 1, c) = counter;
+							pixelStack.push(std::make_tuple(r + 1, c));
+						}
+					}
+					if (c != 0) { // Not first col, so previous col exists
+						if (srcImg.at<uchar>(r, c - 1) == foreGround and dstImg.at<short>(r, c - 1) == 0)
+						{
+							dstImg.at<short>(r, c - 1) = counter;
+							pixelStack.push(std::make_tuple(r, c - 1));
+						}
+					}
+					if (c != srcImg.cols - 1)
+					{ // Not the last col so next col exists
+						if (srcImg.at<uchar>(r, c + 1) == foreGround and dstImg.at<short>(r, c + 1) == 0)
+						{
+							dstImg.at<short>(r, c + 1) = counter;
+							pixelStack.push(std::make_tuple(r, c + 1));
+						}
+					}
+
+					// Additional diagonal neighbours in case of 8- connected
+					if (connectValue == 8) {
+						if (r != 0)
+						{ // Not the first row, so previous row is accessible
+							if (c != 0) { // Not first coloumn, so previous col is accessible
+								if (srcImg.at<uchar>(r - 1, c - 1) == foreGround and dstImg.at<short>(r - 1, c - 1) == 0)
+								{
+									dstImg.at<short>(r - 1, c - 1) = counter;
+									pixelStack.push(std::make_tuple(r - 1, c - 1));
+								}
+							}
+							if (c != srcImg.cols - 1)
+							{
+								if (srcImg.at<uchar>(r - 1, c + 1) == foreGround and dstImg.at<short>(r - 1, c + 1) == 0)
+								{
+									dstImg.at<short>(r - 1, c + 1) = counter;
+									pixelStack.push(std::make_tuple(r - 1, c + 1));
+								}
+							}
+						}
+						if (r != srcImg.rows - 1)
+						{ // Not the last row, so next row is accessible
+							if (c != 0) { // Not first coloumn, so previous col is accessible
+								if (srcImg.at<uchar>(r + 1, c - 1) == foreGround and dstImg.at<short>(r + 1, c - 1) == 0)
+								{
+									dstImg.at<short>(r + 1, c - 1) = counter;
+									pixelStack.push(std::make_tuple(r + 1, c - 1));
+								}
+							}
+							if (c != srcImg.cols - 1) { // No the last column, so next column is accessible
+								if (srcImg.at<uchar>(r + 1, c + 1) == foreGround and dstImg.at<short>(r + 1, c + 1) == 0)
+								{
+									dstImg.at<short>(r + 1, c + 1) = counter;
+									pixelStack.push(std::make_tuple(r + 1, c + 1));
+								}
+							}
+						}
+					}
+				}
+
+				if (debug) { printf("Region grown for %d\n", counter - 1); }
+				counter += 1;
+			}
+			else {
+				if (debug) { printf("Pixel (row,col):(%d,%d) is background\n", row, col); }
+			}
+		}
+	}
+	if (debug) { printf("Computed regions are %d\n", counter); }
+
+	return 0;
+}
+
+class Compare {
+public:
+	bool operator()(std::tuple<int, int> first, std::tuple<int, int> second)
+	{
+		if (std::get<1>(first) < std::get<1>(second)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+
+	}
+};
+
+
+int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool debug)
+{
+	// Binary image is required
+	assert(regionMap.depth() == 1);
+
+	assert(regionMap.size() == dstImg.size());
+
+	std::priority_queue<std::tuple<int, int>, std::vector<std::tuple<int, int>>, Compare> pQueue;
+
+	std::map<int, int> regionAreaMap;
+
+	// Loop through the image for the number of pixels with that region ID.
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] != 0) {
+				if (regionAreaMap.find(int(srcPtr[col])) == regionAreaMap.end())
+				{
+					regionAreaMap[int(srcPtr[col])] = 1;
+				}
+				else {
+					regionAreaMap[int(srcPtr[col])] += 1;
+				}
+			}
+		}
+	}
+
+
+	int count = 0;
+	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
+	{
+			pQueue.push(std::make_tuple(it->first, it->second));
+			count += 1;
+			if(debug){ 
+			std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl;
+			}
+		
+	}
+
+	int maxRegionsPossible = MIN(count, NumberOfRegions);
+	// Map of the region ID with area and the new regionID
+	std::map<int, std::tuple<uchar, int>> regionIDBinValueMap;
+	int counter = 1;
+	while (counter <= maxRegionsPossible) {
+		regionIDBinValueMap[std::get<0>(pQueue.top())] = std::make_tuple(255, counter);
+		if (debug) { std::cout << "Top Region: " << std::get<0>(pQueue.top()) << " Area: " << std::get<1>(pQueue.top()) << std::endl; }
+		pQueue.pop();
+		counter += 1;
+	}
+
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = dstImg.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			dstPtr[col] = std::get<0>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Pre - Region Image value: %d, ", srcPtr[col]);
+			//printf("Destination Value: %d ", dstPtr[col]);
+			srcPtr[col] = std::get<1>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Post Region Image value: %d, \n", srcPtr[col]);
+
+		}
+	}
+
+	if (debug) { printf("Segmented the image into %d regions", maxRegionsPossible); }
+	return maxRegionsPossible;
+}
+
+int topNSegments(bool minAreaRestriction, cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions , bool debug)
+{
+	// Binary image is required
+	assert(regionMap.depth() == 1);
+
+	assert(regionMap.size() == dstImg.size());
+
+	std::priority_queue<std::tuple<int, int>, std::vector<std::tuple<int, int>>, Compare> pQueue;
+
+	std::map<int, int> regionAreaMap;
+
+	// Loop through the image for the number of pixels with that region ID.
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] != 0) {
+				if (regionAreaMap.find(int(srcPtr[col])) == regionAreaMap.end())
+				{
+					regionAreaMap[int(srcPtr[col])] = 1;
+				}
+				else {
+					regionAreaMap[int(srcPtr[col])] += 1;
+				}
+			}
+		}
+	}
+
+
+	int count = 0;
+	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
+	{
+		if (it->second >= ((regionMap.rows * regionMap.cols)/100))
+		{
+			pQueue.push(std::make_tuple(it->first, it->second));
+			count += 1;
+			std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl;
+		}
+
+	}
+
+	int maxRegionsPossible = MIN(count, NumberOfRegions);
+	// Map of the region ID with area and the new regionID
+	std::map<int, std::tuple<uchar, int>> regionIDBinValueMap;
+	int counter = 1;
+	while (counter <= maxRegionsPossible) {
+		regionIDBinValueMap[std::get<0>(pQueue.top())] = std::make_tuple(255, counter);
+		if (debug) { std::cout << "Top Region: " << std::get<0>(pQueue.top()) << " Area: " << std::get<1>(pQueue.top()) << std::endl; }
+		pQueue.pop();
+		counter += 1;
+	}
+
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = dstImg.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			dstPtr[col] = std::get<0>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Pre - Region Image value: %d, ", srcPtr[col]);
+			//printf("Destination Value: %d ", dstPtr[col]);
+			srcPtr[col] = std::get<1>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Post Region Image value: %d, \n", srcPtr[col]);
+
+		}
+	}
+
+	if (debug) { printf("Segmented the image into %d regions", maxRegionsPossible); }
+	return maxRegionsPossible;
+}
+
+
+/** This function colors the image based on the region Map provided. All the regions with same ID is colored with same random color.
+* @param regionMap address of the regionMap image
+* @paaram dstImage address of the destination image
+* @note: AssertionError if the regionMap and dstImage have different 2D dimensions.
+*		 AssertionError if the regionMap doesn't have depth of 1 color.
+*		 AssertionError if the dstImage doesn't have depth of 3 colors/channels.
+*/
+int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage) {
+	srand(100); // Setting the seed as 100 for replicability of the code.
+
+	assert(regionMap.size() == dstImage.size());
+
+	assert(dstImage.depth() == 3);
+
+	dstImage = cv::Mat::zeros(regionMap.size(), CV_8UC3);
+
+	// Map for coloring the regions with same ID a single color.
+	std::map<int, cv::Vec3s> regionColorMap;
+	for (int row = 0; row < regionMap.rows; row++) {
+		short* srcPtr = regionMap.ptr<short>(row);
+		cv::Vec3b* dstPtr = dstImage.ptr<cv::Vec3b>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] != 0) {
+				if (regionColorMap.find(int(srcPtr[col])) == regionColorMap.end()) {
+					int red = rand() % 255;
+					int green = rand() % 255;
+					int blue = rand() % 255;
+					dstPtr[col] = cv::Vec3b(blue, green, red);
+					regionColorMap[int(srcPtr[col])] = cv::Vec3b(blue, green, red);
+				}
+				else {
+					dstPtr[col] = regionColorMap[int(srcPtr[col])];
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+
+/*
+   This function creates a binary Image
+   Only the specific region ID is marked as foreground, else everything is background.
+   This function is an internal helper function.
+*/
+int binaryImageWithARegion(cv::Mat& regionMap, cv::Mat& binaryOutputImage, cv::Moments& Moments, std::pair<double, double>& Dimensions, int& regionPixelCount, int regionID) {
+
+	//expects binaryOutputImage is 8UC1
+	//expects regionMap is 32SC1
+
+	assert(regionMap.depth() == 1);
+	assert(binaryOutputImage.depth() == 1);
+
+	assert(regionMap.size() == binaryOutputImage.size());
+
+	//Initializing minRow, maxRow, minCol, maxCol
+	int minRow = INT_MAX;
+	int maxRow = -INT_MAX;
+	int minCol = INT_MAX;
+	int maxCol = -INT_MAX;
+	regionPixelCount = 0;
+
+	// Only the specific region ID is marked as foreground, else everything is background
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = binaryOutputImage.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] == regionID) {
+				dstPtr[col] = 255;
+				minRow = MIN(row, minRow);
+				maxRow = MAX(row, maxRow);
+				minCol = MIN(col, minCol);
+				maxCol = MAX(col, maxCol);
+				regionPixelCount += 1;
+			}
+		}
+	}
+
+
+
+	double width = (maxCol - minCol);
+	double height = (maxRow - minRow);
+
+	//first element in pair is width and sencond is height
+	Dimensions.first = width;
+	Dimensions.second = height;
+
+	//compute moments
+	Moments = cv::moments(binaryOutputImage, true);
+
+	return 0;
+}
+
+
+/**This function populates the feature vectors in the featureVector for the specific region in the region map.
+* @param regionMap address of the mapped regions
+* @param regionID  ID of the region whose features needs to be calculated.
+* @param featureVector address of the feature vecotr which needs to have the features of the selected region.
+* @returns 0 if the feature is properly extracted.
+*		non zero if the operation is failure.
+*/
+int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<float>& featureVector) {
+
+	// Tmp Mat to store the binary image
+	cv::Mat tmp = cv::Mat::zeros(regionMap.size(), CV_8UC1);
+
+	std::pair<double, double> dimensionsOfRegion;
+	int regionPixelCount = 0;
+	cv::Moments Moments;
+	binaryImageWithARegion(regionMap, tmp, Moments, dimensionsOfRegion, regionPixelCount, regionID);
+
+
+	//compute h/w ratio
+	float width = dimensionsOfRegion.first;
+	float height = dimensionsOfRegion.second;
+	float hw_ratio = height / width;
+
+
+
+	//compute percent fill ratio
+	float area = height * width;
+	float percentFill = regionPixelCount / area;
+
+
+
+	//compute HuMoments
+	double huMoments[7];
+	cv::HuMoments(Moments, huMoments);
+
+
+	//push all the featuers feature Vector
+	featureVector.push_back(hw_ratio);
+	featureVector.push_back(percentFill);
+	for (double huMoment : huMoments) {
+		float value = -1 * copysign(1.0, huMoment) * log10(abs(huMoment));
+		//std::cout << "Hu Moment: " << huMoment << " Mod HuMomentValue: " << value << std::endl;
+		featureVector.push_back(value);
+	}
+
+
+	return 0;
+}
+
+
+/** This function populates the feature vectors in the featureVector for the all the regions in the region map.
+* @param regionMap address of the mapped regions
+* @param featureVector address of the feature vecotr which needs to have the features
+* @param numberOfRegions number of the regions to be identified in the regionMap.
+* @returns 0 if the feature is properly extracted.
+*		non zero if the operation is failure.
+*/
+int getFeatures(cv::Mat& regionMap, std::vector<float>& featureVector, int numberOfRegions)
+{
+
+	//for each region send regionMap and regionID, featureVector
+	for (int i = 1; i <= numberOfRegions; i++) {
+		getFeaturesForARegion(regionMap, i, featureVector);
+	}
+
+
+	return 0;
+}
+
+
+int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID, bool debug) {
+
+	// Tmp Mat to store the binary image
+	cv::Mat tmp = cv::Mat::zeros(regionMap.size(), CV_8UC1);
+
+	int minRow = INT_MAX;
+	int maxRow = -INT_MAX;
+	int minCol = INT_MAX;
+	int maxCol = -INT_MAX;
+
+	// Only the specific region ID is marked as foreground, else everything is background
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = tmp.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] == regionID) {
+				dstPtr[col] = 255;
+				minRow = MIN(row, minRow);
+				maxRow = MAX(row, maxRow);
+				minCol = MIN(col, minCol);
+				maxCol = MAX(col, maxCol);
+			}
+		}
+	}
+
+	cv::Moments Moments = cv::moments(tmp, true);
+
+	// First calculate alpha - angle of least central moment
+	// alpha = arctan(2*m11/m20-m02)
+	float nu11 = Moments.nu11;
+	float nu20 = Moments.nu20;
+	float nu02 = Moments.nu02;
+	float theta = atan(2 * nu11 / (nu20 - nu02)) / 2.0;
+
+	if (debug) { printf("Angle Theta: %.04f\n", theta); }
+	// compute xbar and ybar(center point)
+	float m10 = Moments.m10;
+	float m01 = Moments.m01;
+	float m00 = Moments.m00;
+	float xbar = m10 / m00;
+	float ybar = m01 / m00;
+
+	cv::Point2f centroid(xbar, ybar);
+	if (debug) { printf("Centroid: %.02f, %0.2f\n", xbar, ybar); }
+
+	// Compute the width and height of the bounding box
+	float sin_theta = sin(theta);
+	float cos_theta = cos(theta);
+	float a = Moments.mu20 * cos_theta * cos_theta + 2.0 * Moments.mu11 * sin_theta * cos_theta + Moments.mu02 * sin_theta * sin_theta;
+	float b = Moments.mu20 * sin_theta * sin_theta - 2.0 * Moments.mu11 * sin_theta * cos_theta + Moments.mu02 * cos_theta * cos_theta;
+	/*float width = sqrt(a);
+	float height = sqrt(b);*/
+	float width = (maxCol - minCol);
+	float height = (maxRow - minRow);
+	if (debug) { printf("Height: %.02f, %0.2f\n", width, height); }
+
+	// Create a rotated rectangle with the center point of the contour, width, height, and orientation angle
+	cv::RotatedRect box(centroid, cv::Size2f(width, height), theta * 180.0 / CV_PI);
+
+	cv::Point2f vertices[4];
+	box.points(vertices);
+
+	if (debug) { std::cout << "Vertices: " << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl; }
+
+	// Plot the bounding boxes
+	for (int i = 0; i < 4; i++) {
+		cv::line(outputImg, vertices[i], vertices[(i + 1) % 4], cv::Scalar(70, 18, 31), 2);
+	}
+
+	// Create major axis
+	cv::Point2f majorAxis[2];
+	// Mark the major axis points
+	for (int i = 0; i < 2; i++)
+	{
+		int x = xbar + ((1 - (2 * i)) * (width * 0.5 * cos_theta));
+		int y = ybar + ((1 - (2 * i)) * (width * 0.5 * sin_theta));
+		majorAxis[i] = cv::Point2f(x, y);
+	}
+
+	// Plot major axis
+	cv::line(outputImg, majorAxis[0], majorAxis[1], cv::Scalar(247, 223, 173), 5);
+	// Create minor axis
+	cv::Point2f minorAxis[2];
+	// Mark the minor axis points
+	sin_theta = sin(theta + (CV_PI / 2));
+	cos_theta = cos(theta + (CV_PI / 2));
+	for (int i = 0; i < 2; i++)
+	{
+		int x2 = xbar + ((1 - (2 * i)) * (height * 0.25 * cos_theta));
+		int y2 = ybar + ((1 - (2 * i)) * (height * 0.25 * sin_theta));
+		minorAxis[i] = cv::Point2f(x2, y2);
+	}
+
+	// Plot minor axis
+	cv::line(outputImg, minorAxis[0], minorAxis[1], cv::Scalar(255, 255, 255), 3);
+
+	// std::cout << "Vertices: " << vertices[0] << "," << vertices[1] << "," << vertices[2] << "," << vertices[3] << std::endl;
+
+	return 0;
+}
+
+
+int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions, bool debug) {
+
+
+	//for each region send regionMap,outputImg and region id
+	for (int i = 1; i <= numberOfRegions; i++) {
+
+		drawBoundingBoxForARegion(regionMap, outputImg, i);
+
+	}
+
+
+	return 0;
+}
+
+
+int confusionMatrixCSV(char* featuresAndLabelsFile, char* confusionMatrixFile,
+						std::vector<char*> labelnames, std::vector<char*> predictedLabelNames) {
+
+	std::set<std::string> labelsSet(labelnames.begin(), labelnames.end());
+
+	std::unordered_map<std::string, std::unordered_map<std::string, float>> mp;
+	std::unordered_map<std::string, float> current_label_map;
+
+	for (std::string label : labelsSet) {
+		current_label_map[label] = 0;
+	}
+
+	for (std::string label : labelsSet) {
+		mp[label] = current_label_map;
+	}
+
+	for (int i = 0; i < labelnames.size(); i++) {
+		mp[labelnames[i]][predictedLabelNames[i]] += 1;
+	}
+
+	//    std::vector<char*> ;
+	//
+	//    append_image_data_csv();
+
+	for (auto labelRow : mp) {
+		std::cout << "label : " << labelRow.first << std::endl;
+
+		for (auto predictLabelCounts : labelRow.second) {
+			std::cout << predictLabelCounts.first << predictLabelCounts.second << std::endl;
+		}
+	}
+
+	// Write the confusion matrix to csv
+	std::vector<char*> uniqueLabelNamesList;
+	for (std::string label:labelsSet)
+	{
+		char* cstr = new char[label.length()+1];
+		strcpy(cstr, label.c_str());
+		uniqueLabelNamesList.push_back(cstr);
+	}
+
+	append_label_data_csv(confusionMatrixFile, uniqueLabelNamesList, true);
+
+	for (char* label: uniqueLabelNamesList)
+	{
+		std::vector<int> confusionVector;
+		for (char* predictedLabel: uniqueLabelNamesList)
+		{
+			confusionVector.push_back(mp[label][predictedLabel]);
+		}
+		append_confusion_data_csv(confusionMatrixFile, label, confusionVector, false);
+	}
+	printf("Successfully wrote confusion matrix to %s file.", confusionMatrixFile);
+	return 0;
+}
+
+
+/*
+   This class implements comparator for the priority queue.
+   - priority queue is built using the second element in the pair
+*/
+class CompareSecondElement {
+public:
+	bool operator()(std::tuple<char*, char*, float> first, std::tuple<char*, char*, float> second)
+	{
+		if (std::get<2>(first) > std::get<2>(second)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+
+	}
+};
+
+int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, std::vector<char*>& labelnames, int N) {
+
+	std::vector<std::vector<float>> data;
+	std::vector<char*> filenames;
+	
+	int i = read_image_data_csv(featuresAndLabelsFile, filenames, labelnames, data, 0);
+
+	if (i != 0) {
+		std::cout << "file read unsuccessful" << std::endl;
+		exit(-1);
+	}
+	std::vector<float> standardDeviations;
+	computeStandardDeviations(data, standardDeviations);
+
+	for (int currFileIndex = 0; currFileIndex < filenames.size(); currFileIndex++)
+	{
+		std::vector<float> targetFeatureVector = data[currFileIndex];
+		std::priority_queue<std::tuple<char*, char*, float>, std::vector<std::tuple<char*, char*, float>>, CompareSecondElement> pq;
+
+		std::vector<char*> nMatches;
+		std::vector<char*> nLabels;
+		int tmpStore = N;
+
+		//calculating distances
+		for (int datapoint = 0; datapoint < data.size(); datapoint++) {
+			//change distance based on the distance metric being used
+			float distance = 0.0;
+			if (datapoint == currFileIndex) {
+				continue;
+			}
+			eucledianDistance(data[datapoint], targetFeatureVector, standardDeviations, distance);
+			pq.push(std::make_tuple(filenames[datapoint], labelnames[datapoint], distance));
+		}
+
+		while (tmpStore-- && !pq.empty()) {
+			nMatches.push_back(std::get<0>(pq.top()));
+			nLabels.push_back(std::get<1>(pq.top()));
+			//std::cout << tmpStore << " label:" << std::get<1>(pq.top()) << std::endl;
+			pq.pop();
+		}
+
+		//if (N == 1)
+		//{	// Closest Match
+		//	strcpy(predictedLabels[currFileIndex], nLabels[0]);
+		//} else {
+		//	// Logic of KNN needs to be done here.
+		//	
+		//}
+
+		predictedLabels.push_back(nLabels[0]);
+
+		if (false) {
+			std::cout << "\nFor file " << filenames[currFileIndex] << " Ground truth:" << labelnames[currFileIndex];
+			std::cout << " Predicted closest Label:" << nLabels[0] << std::endl;
+		}
+
+	}
+	
 }
