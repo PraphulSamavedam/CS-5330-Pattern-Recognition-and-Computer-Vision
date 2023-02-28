@@ -992,7 +992,8 @@ public:
 	}
 };
 
-int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, std::vector<char*>& labelnames, int N) {
+int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, 
+	std::vector<char*>& labelnames, char* &distanceMetric ,int N, bool debug) {
 
 	std::vector<std::vector<float>> data;
 	std::vector<char*> filenames;
@@ -1003,51 +1004,18 @@ int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predic
 		std::cout << "file read unsuccessful" << std::endl;
 		exit(-1);
 	}
-	std::vector<float> standardDeviations;
-	computeStandardDeviations(data, standardDeviations);
 
 	for (int currFileIndex = 0; currFileIndex < filenames.size(); currFileIndex++)
 	{
 		std::vector<float> targetFeatureVector = data[currFileIndex];
-		std::priority_queue<std::tuple<char*, char*, float>, std::vector<std::tuple<char*, char*, float>>, CompareSecondElement> pq;
-
-		std::vector<char*> nMatches;
-		std::vector<char*> nLabels;
-		int tmpStore = N;
-
-		//calculating distances
-		for (int datapoint = 0; datapoint < data.size(); datapoint++) {
-			//change distance based on the distance metric being used
-			float distance = 0.0;
-			if (datapoint == currFileIndex) {
-				continue;
-			}
-			eucledianDistance(data[datapoint], targetFeatureVector, standardDeviations, distance);
-			pq.push(std::make_tuple(filenames[datapoint], labelnames[datapoint], distance));
-		}
-
-		while (tmpStore-- && !pq.empty()) {
-			nMatches.push_back(std::get<0>(pq.top()));
-			nLabels.push_back(std::get<1>(pq.top()));
-			//std::cout << tmpStore << " label:" << std::get<1>(pq.top()) << std::endl;
-			pq.pop();
-		}
-
-		//if (N == 1)
-		//{	// Closest Match
-		//	strcpy(predictedLabels[currFileIndex], nLabels[0]);
-		//} else {
-		//	// Logic of KNN needs to be done here.
-		//	
-		//}
-
-		predictedLabels.push_back(nLabels[0]);
-
-		if (false) {
+		char labelPredicted[64];
+		ComputingNearestLabelUsingKNN(targetFeatureVector,
+			featuresAndLabelsFile, distanceMetric, labelPredicted, N);
+		if (debug) {
 			std::cout << "\nFor file " << filenames[currFileIndex] << " Ground truth:" << labelnames[currFileIndex];
-			std::cout << " Predicted closest Label:" << nLabels[0] << std::endl;
+			std::cout << " Predicted label:" <<  labelPredicted << "with K: " << N << std::endl;
 		}
-
+		predictedLabels.push_back(labelPredicted);
 	}
-	
+	return 0;
 }
