@@ -1,5 +1,6 @@
 /*
 * Written by : Samavedam Manikhanta Praphul
+*              Poorna Chandra Vemula
 * This file displays the live labelling of the objects.
 */
 
@@ -38,6 +39,22 @@ int main(int argc, char* argv[])
 	std::printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
 
 	cv::Mat frame;
+    
+    //read features as data
+    char* featureVectorFile = "data/db/features.csv";
+    std::vector<char*> filenames;
+    std::vector<char*> labels;
+    std::vector<std::vector<float>> data;
+
+    int i = read_image_data_csv(featureVectorFile, filenames, labels, data, false);
+
+
+    if (i != 0) {
+        std::cout << "file read unsuccessful" << std::endl;
+        exit(-1);
+    }
+    
+    
 	while (true)
 	{
 		*capture >> frame;
@@ -58,7 +75,7 @@ int main(int argc, char* argv[])
 		char distanceMetric[100] = "euclidean";
 		char predictedLabel[100];
 
-		ComputingNearestLabelUsingKNN(frame, vectorFilePath, distanceMetric, predictedLabel, K);
+		ComputingNearestLabelUsingKNN(frame, data, filenames, labels, vectorFilePath, distanceMetric, predictedLabel, K);
 		printf("Label Predicted: %s", predictedLabel);
 		placeLabel(frame, predictedLabel, 1, 2);
 

@@ -1,7 +1,7 @@
 /*
-	Poorna Chandra Vemula.
-	CS 5330, Spring 2023
-	RT2DOR, match.cpp
+  Written by : Poorna Chandra Vemula
+               Samavedam Manikhanta Praphul
+  This program takes in TargetImage, distanceMetric and Number of Matches and produces top 'N' Matches.
 */
 
 
@@ -21,13 +21,9 @@
 #include <vector>
 #include <queue>
 #include "../include/match_utils.h"
-
-
-
-
 /*
  This program takes in TargetImage, distanceMetric and Number of Matches and produces top 'N' Matches.
-  Written by Poorna Chandra Vemula.
+  Written by Poorna Chandra Vemula, Samavedam Manikhanta Praphul
 
   It also implements a GUI with buttons using cvui
 

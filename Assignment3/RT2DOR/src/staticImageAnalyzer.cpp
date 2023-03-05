@@ -1,5 +1,6 @@
 /*
 * Written by : Samavedam Manikhanta Praphul
+*              Poorna Chandra Vemula
 * This file provides the required images for the static file without label.
 */
 

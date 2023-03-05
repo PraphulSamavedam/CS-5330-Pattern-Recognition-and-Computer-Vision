@@ -1,5 +1,6 @@
 /**
 * Written by: Samavedam Manikhanta Praphul
+*                   Poorna Chandra Vemula
 * This file provides the signatures of several functions required in the project.
 */
 
@@ -98,14 +99,40 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions = 5, b
 */
 int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage);
 
+
+
+
+/**This function draws the bounding box for a region
+* @param regionMap address of the mapped regions
+* @param regionID  ID of the region.
+* @param outputImg image to draw bounding box
+* @param debug[default=false] set this to have print statements to debug
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
+*/
 int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID, bool debug = false);
 
+
+
+
+/**This function draws the bounding boxes for the all the regions in the region map.
+* @param regionMap address of the mapped regions
+* @param outputImg image to draw bounding box
+* @param numberOfRegions number of the regions to draw the bounding box on
+* @param debug[default=false] set this to have print statements to debug
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
+*/
 int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions, bool debug = false);
 
-/*
-   This function creates a binary Image
-   Only the specific region ID is marked as foreground, else everything is background.
-   This function is an internal helper function.
+/**This function returns binary output image, moments, dimensions(width, height), region pixel count
+* @param regionMap address of the mapped regions
+* @param regionID  ID of the region whose binary image, moments, dimensions(width, height), region pixel count needs to be calculated.
+* @param Moments to be updated
+* @param Dimensions to be updated
+* @param regionPixelCount to be updated
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
 */
 int binaryImageWithARegion(cv::Mat& regionMap, cv::Mat& binaryOutputImage, cv::Moments& Moments, std::pair<double, double>& Dimensions, int& regionPixelCount, int regionID);
 
@@ -127,9 +154,22 @@ int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<double>&
 */
 int getFeatures(cv::Mat& regionMap, std::vector<float>& featureVector, int numberOfRegions);
 
-/* To Do */
+/**This function populates the confusion matrix in the confusion matrix file.
+* @param featuresAndLabelsFile containing features and their labels
+* @param confusionMatrixFile to write the confusion matrix
+* @param labelnames contains true class labels
+* @param predictedLabelNames contains predicted class labels
+* @returns populates the confusion matrix csv file
+*        non zero if the operation is failure.
+*/
 int confusionMatrixCSV(char* featuresAndLabelsFile, char* confusionMatrixFile,
 	std::vector<char*> labelnames, std::vector<char*> predictedLabelNames);
 
-/* To Do*/
+/**This function generates and populates the predicted labels.
+* @param featuresAndLabelsFile containing features and their labels
+* @param labelnames contains true class labels
+* @param predictedLabelNames which will be updated with predicted class labels
+* @returns populates the predictedLabels
+*        non zero if the operation is failure.
+*/
 int generatePredictions(char* featuresAndLabelsFile, std::vector<char* >& predictedLabels, std::vector<char*>& labelnames, int N = 1);
