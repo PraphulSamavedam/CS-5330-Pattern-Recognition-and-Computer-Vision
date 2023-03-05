@@ -137,10 +137,9 @@ int getFeaturesForARegion(cv::Mat& regionMap, int regionID, std::vector<double>&
 */
 int getFeatures(cv::Mat& regionMap, std::vector<float>& featureVector, int numberOfRegions);
 
-/* To Do Documentation*/
+/* To Do */
 int confusionMatrixCSV(char* featuresAndLabelsFile, char* confusionMatrixFile,
 	std::vector<char*> labelnames, std::vector<char*> predictedLabelNames);
 
-/* To Do Documentation*/
-int generatePredictions(char* featuresAndLabelsFile, std::vector<char* >& predictedLabels,
-	std::vector<char*>& labelnames, char*& distanceMetric, int N = 1, bool debug = false);
+/* To Do*/
+int generatePredictions(char* featuresAndLabelsFile, std::vector<char* >& predictedLabels, std::vector<char*>& labelnames, int N = 1);
