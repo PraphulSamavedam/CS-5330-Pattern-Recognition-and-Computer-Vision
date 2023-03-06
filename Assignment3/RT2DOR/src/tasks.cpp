@@ -631,7 +631,6 @@ public:
 };
 
 
-<<<<<<< HEAD
 /** This function provides the binary image wtih top N regions if they are present in the binary image.
 * @param address of the regionMap which is segmented image with single channel with details of the region label.
 * @param address of the destinationImage
@@ -639,8 +638,6 @@ public:
 * @param debug[default=false] set this to have print statements to debug
 * @return 0 if we have processed the binary image for the top N regions.
 */
-=======
->>>>>>> f7d60e98e4c1e65e573416660bddd586804e5e68
 int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool debug)
 {
 	// Binary image is required
@@ -1176,7 +1173,6 @@ public:
 	}
 };
 
-<<<<<<< HEAD
 
 /**This function generates and populates the predicted labels.
 * @param featuresAndLabelsFile containing features and their labels
@@ -1185,11 +1181,8 @@ public:
 * @returns populates the predictedLabels
 *        non zero if the operation is failure.
 */
-int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, std::vector<char*>& labelnames, int N) {
-=======
 int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, 
 	std::vector<char*>& labelnames, char* &distanceMetric ,int N, bool debug) {
->>>>>>> f7d60e98e4c1e65e573416660bddd586804e5e68
 
 	std::vector<std::vector<float>> data;
 	std::vector<char*> filenames;
