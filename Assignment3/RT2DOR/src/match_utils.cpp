@@ -255,47 +255,6 @@ int identifyMatches(std::vector<float>& targetFeatureVector, char* featureVector
 }
 
 
-int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, char* featureVectorFile, char* distanceMetric, char* Label, int K) {
-
-	std::vector<char*> kMatches;
-	std::vector<char*> kLabels;
-
-	std::unordered_map<std::string, int> mp;
-	bool debug = false;
-
-	identifyMatches(targetImage, featureVectorFile, distanceMetric, K, kMatches, kLabels);
-
-
-	/*showTopMatchedImages(kMatches);*/
-
-	for (char* label : kLabels) {
-		std::cout << label << std::endl;
-		if (mp.find(label) != mp.end()) {
-			mp[label] += 1;
-		}
-		else {
-			mp[label] = 1;
-		}
-	}
-
-	int maxLabelCount = -INT_MAX;
-	char maxLabel[256] = "";
-
-	for (auto kv_pair : mp) {
-		if (debug) { std::cout << "Label: " << kv_pair.first << " Count: " << kv_pair.second << std::endl; }
-		if (maxLabelCount <= kv_pair.second) {
-			maxLabelCount = kv_pair.second;
-			strcpy(maxLabel, (char*)kv_pair.first.c_str());
-		}
-	}
-
-	strcpy(Label, maxLabel);
-
-	return 0;
-}
-
-<<<<<<< HEAD
-
 int identifyMatches(cv::Mat& targetImage, std::vector<std::vector<float>> data,  std::vector<char*> filenames, std::vector<char*> labels, char* distanceMetric, int N, std::vector<char*>& nMatches, std::vector<char*>& nLabels) {
 
     bool debug = false;
@@ -345,7 +304,7 @@ int identifyMatches(cv::Mat& targetImage, std::vector<std::vector<float>> data, 
         }
         pq.push(std::make_tuple(filenames[datapoint], labels[datapoint], distance));
     }
-//    std::cout << "Top N images are:" << std::endl;
+	//    std::cout << "Top N images are:" << std::endl;
     while (N-- && !pq.empty()) {
 
         nMatches.push_back(std::get<0>(pq.top()));
@@ -359,9 +318,47 @@ int identifyMatches(cv::Mat& targetImage, std::vector<std::vector<float>> data, 
 
 
     return(0);
-
 }
 
+
+int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, char* featureVectorFile, char* distanceMetric, char* Label, int K) {
+
+	std::vector<char*> kMatches;
+	std::vector<char*> kLabels;
+
+	std::unordered_map<std::string, int> mp;
+	bool debug = false;
+
+	identifyMatches(targetImage, featureVectorFile, distanceMetric, K, kMatches, kLabels);
+
+
+	/*showTopMatchedImages(kMatches);*/
+
+	for (char* label : kLabels) {
+		std::cout << label << std::endl;
+		if (mp.find(label) != mp.end()) {
+			mp[label] += 1;
+		}
+		else {
+			mp[label] = 1;
+		}
+	}
+
+	int maxLabelCount = -INT_MAX;
+	char maxLabel[256] = "";
+
+	for (auto kv_pair : mp) {
+		if (debug) { std::cout << "Label: " << kv_pair.first << " Count: " << kv_pair.second << std::endl; }
+		if (maxLabelCount <= kv_pair.second) {
+			maxLabelCount = kv_pair.second;
+			strcpy(maxLabel, (char*)kv_pair.first.c_str());
+		}
+	}
+
+	strcpy(Label, maxLabel);
+
+	return 0;
+}
 
 
 
@@ -405,7 +402,7 @@ int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, std::vector<std::vector<
 }
 
 
-=======
+
 int ComputingNearestLabelUsingKNN(std::vector<float>& targetFeatureVector, char* featureVectorFile, char* distanceMetric, char* Label, int K) {
 
 	std::vector<char*> kMatches;
@@ -444,7 +441,7 @@ int ComputingNearestLabelUsingKNN(std::vector<float>& targetFeatureVector, char*
 	return 0;
 }
 
->>>>>>> f7d60e98e4c1e65e573416660bddd586804e5e68
+
 void placeLabel(cv::Mat& image, char* label, int font_size, int font_weight) {
 	cv::Point text_position(image.cols / 2, image.rows / 2);// Declaring the text position at the centre//
 	cv::Scalar font_Color(0, 255, 255);// Declaring the color of the font//
