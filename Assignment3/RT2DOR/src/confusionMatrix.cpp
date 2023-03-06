@@ -36,6 +36,7 @@ int main(int argc, char* argv[])
 
 	vector<char*> predictedLabels;
 	std::vector<char*> labelnames;
+	char distanceMetric[32] = "euclidean";
 	generatePredictions(featuresAndLabelsFile, predictedLabels, labelnames, 1);
 	
 	confusionMatrixCSV(featuresAndLabelsFile, confusionMatrixFile, labelnames, predictedLabels);

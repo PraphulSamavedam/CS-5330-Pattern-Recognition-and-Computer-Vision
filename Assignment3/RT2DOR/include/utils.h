@@ -35,10 +35,10 @@ which connection to use. Connected component analysis is then run to get top N s
 */
 /** 
 */
-int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector,
+int getFeaturesForImage(cv::Mat& image, std::vector<float>& featureVector, bool debug = false, 
+	bool displayIntermediateImages = false, bool saveImages = false, int numberOfSegments = 1,
 	int greyscaleThreshold = 124, int numberOfErosions = 4,
-	int erosionConnectValue = 4, int dilationConnectValue = 8, int numberOfSegments = 1,
-	bool debug = false, bool displayIntermediateImages = false, bool saveImages = false);
+	int erosionConnectValue = 4, int dilationConnectValue = 8);
 
 /** This function returns the fileName and label from the filePath provided.
 @param filePath path of the file whose name needs to be obtained.

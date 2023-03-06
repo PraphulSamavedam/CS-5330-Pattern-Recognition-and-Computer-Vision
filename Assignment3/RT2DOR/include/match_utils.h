@@ -51,9 +51,35 @@ void showTopMatchedImages(std::vector<char*>& nMatches);
 */
 int identifyMatches(cv::Mat& targetImage, char* featureVectorFile, char* distanceMetric, int N, std::vector<char*>& nMatches, std::vector<char*>& nLabels);
 
+/**This function identfies the top 'n' matches for a target image
+* @param targetImage
+* @param featureVectorData
+* @param distanceMetric
+* @param N number of matches
+* @param nMatches vector of matched filenames to be updated
+* @param nLabels vector of matched labels to be updated
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
+* @note: overloaded function passing 2D vector data instead of feature Vector file
+*/
+int identifyMatches(cv::Mat& targetImage, std::vector<std::vector<float>> data,  std::vector<char*> filenames, std::vector<char*> labels, char* distanceMetric, int N, std::vector<char*>& nMatches, std::vector<char*>& nLabels);
 
 
-/**This function predicts the label using KNN
+/**This function identfies the top 'n' matches for a target feature Vector
+* @param targetFeatureVector
+* @param featureVectorFile
+* @param distanceMetric
+* @param N number of matches
+* @param nMatches vector of matched filenames to be updated
+* @param nLabels vector of matched labels to be updated
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
+* @note: overloaded function passing target feature vector instead of target image
+*/
+int identifyMatches(std::vector<float>& targetFeatureVector, char* featureVectorFile, char* distanceMetric, int N, std::vector<char*>& nMatches, std::vector<char*>& nLabels);
+
+
+/** This function predicts the label using KNN
 * @param targetImage
 * @param featureVectorFile
 * @param distanceMetric
@@ -64,22 +90,7 @@ int identifyMatches(cv::Mat& targetImage, char* featureVectorFile, char* distanc
 */
 int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, char* featureVectorFile, char* distanceMetric, char* Label, int K);
 
-
-/**This function identfies the top 'n' matches for a target image
-* @param targetImage
-* @param featureVectorData
-* @param distanceMetric
-* @param nMatches vector of matched filenames to be updated
-* @param nLabels vector of matched labels to be updated
-* @returns 0 if the feature is properly extracted.
-*        non zero if the operation is failure.
-* @note: overloaded function passing 2D vector data instead of feature Vector file
-*/
-int identifyMatches(cv::Mat& targetImage, std::vector<std::vector<float>> data,  std::vector<char*> filenames, std::vector<char*> labels, char* distanceMetric, int N, std::vector<char*>& nMatches, std::vector<char*>& nLabels);
-
-
-
-/**This function predicts the label using KNN
+/** This function predicts the label using KNN
 * @param targetImage
 * @param featureVectorData
 * @param distanceMetric
@@ -90,6 +101,18 @@ int identifyMatches(cv::Mat& targetImage, std::vector<std::vector<float>> data, 
 * @note: overloaded function passing 2D vector data instead of feature Vector file
 */
 int ComputingNearestLabelUsingKNN(cv::Mat& targetImage, std::vector<std::vector<float>> data,  std::vector<char*> filenames, std::vector<char*> labels, char* featureVectorFile, char* distanceMetric, char* Label, int K);
+
+/** This function predicts the label using KNN
+* @param targetFeatureVector featureVector for which label needs to be found.
+* @param featureVectorFile contains featureVectors of all files in DB and its labels
+* @param distanceMetric distance metric which needs to be used.
+* @param Label char* to be updated
+* @param K parameter for KNN
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
+* @note: overloaded function passing target feature vector instead of target image
+*/
+int ComputingNearestLabelUsingKNN(std::vector<float>& targetFeatureVector, char* featureVectorFile, char* distanceMetric, char* Label, int K);
 
 /**This function places label on the image
 * @param image

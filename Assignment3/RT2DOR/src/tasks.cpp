@@ -631,6 +631,7 @@ public:
 };
 
 
+<<<<<<< HEAD
 /** This function provides the binary image wtih top N regions if they are present in the binary image.
 * @param address of the regionMap which is segmented image with single channel with details of the region label.
 * @param address of the destinationImage
@@ -638,6 +639,8 @@ public:
 * @param debug[default=false] set this to have print statements to debug
 * @return 0 if we have processed the binary image for the top N regions.
 */
+=======
+>>>>>>> f7d60e98e4c1e65e573416660bddd586804e5e68
 int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool debug)
 {
 	// Binary image is required
@@ -668,12 +671,87 @@ int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool 
 	}
 
 
-	int count = 1;
+	int count = 0;
 	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
 	{
-		pQueue.push(std::make_tuple(it->first, it->second));
-		count += 1;
-		if (debug) { std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl; }
+			pQueue.push(std::make_tuple(it->first, it->second));
+			count += 1;
+			if(debug){ 
+			std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl;
+			}
+		
+	}
+
+	int maxRegionsPossible = MIN(count, NumberOfRegions);
+	// Map of the region ID with area and the new regionID
+	std::map<int, std::tuple<uchar, int>> regionIDBinValueMap;
+	int counter = 1;
+	while (counter <= maxRegionsPossible) {
+		regionIDBinValueMap[std::get<0>(pQueue.top())] = std::make_tuple(255, counter);
+		if (debug) { std::cout << "Top Region: " << std::get<0>(pQueue.top()) << " Area: " << std::get<1>(pQueue.top()) << std::endl; }
+		pQueue.pop();
+		counter += 1;
+	}
+
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		uchar* dstPtr = dstImg.ptr<uchar>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			dstPtr[col] = std::get<0>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Pre - Region Image value: %d, ", srcPtr[col]);
+			//printf("Destination Value: %d ", dstPtr[col]);
+			srcPtr[col] = std::get<1>(regionIDBinValueMap[srcPtr[col]]);
+			//printf("Post Region Image value: %d, \n", srcPtr[col]);
+
+		}
+	}
+
+	if (debug) { printf("Segmented the image into %d regions", maxRegionsPossible); }
+	return maxRegionsPossible;
+}
+
+int topNSegments(bool minAreaRestriction, cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions , bool debug)
+{
+	// Binary image is required
+	assert(regionMap.depth() == 1);
+
+	assert(regionMap.size() == dstImg.size());
+
+	std::priority_queue<std::tuple<int, int>, std::vector<std::tuple<int, int>>, Compare> pQueue;
+
+	std::map<int, int> regionAreaMap;
+
+	// Loop through the image for the number of pixels with that region ID.
+	for (int row = 0; row < regionMap.rows; row++)
+	{
+		short* srcPtr = regionMap.ptr<short>(row);
+		for (int col = 0; col < regionMap.cols; col++)
+		{
+			if (srcPtr[col] != 0) {
+				if (regionAreaMap.find(int(srcPtr[col])) == regionAreaMap.end())
+				{
+					regionAreaMap[int(srcPtr[col])] = 1;
+				}
+				else {
+					regionAreaMap[int(srcPtr[col])] += 1;
+				}
+			}
+		}
+	}
+
+
+	int count = 0;
+	for (std::map<int, int>::iterator it = regionAreaMap.begin(); it != regionAreaMap.end(); it++)
+	{
+		if (it->second >= ((regionMap.rows * regionMap.cols)/100))
+		{
+			pQueue.push(std::make_tuple(it->first, it->second));
+			count += 1;
+			std::cout << "Region: " << it->first << "; Area: " << it->second << std::endl;
+		}
+
 	}
 
 	int maxRegionsPossible = MIN(count, NumberOfRegions);
@@ -1098,6 +1176,7 @@ public:
 	}
 };
 
+<<<<<<< HEAD
 
 /**This function generates and populates the predicted labels.
 * @param featuresAndLabelsFile containing features and their labels
@@ -1107,6 +1186,10 @@ public:
 *        non zero if the operation is failure.
 */
 int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, std::vector<char*>& labelnames, int N) {
+=======
+int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, 
+	std::vector<char*>& labelnames, char* &distanceMetric ,int N, bool debug) {
+>>>>>>> f7d60e98e4c1e65e573416660bddd586804e5e68
 
 	std::vector<std::vector<float>> data;
 	std::vector<char*> filenames;
@@ -1117,53 +1200,20 @@ int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predic
 		std::cout << "file read unsuccessful" << std::endl;
 		exit(-1);
 	}
-	std::vector<float> standardDeviations;
-	computeStandardDeviations(data, standardDeviations);
 
 	for (int currFileIndex = 0; currFileIndex < filenames.size(); currFileIndex++)
 	{
 		std::vector<float> targetFeatureVector = data[currFileIndex];
-		std::priority_queue<std::tuple<char*, char*, float>, std::vector<std::tuple<char*, char*, float>>, CompareSecondElement> pq;
-
-		std::vector<char*> nMatches;
-		std::vector<char*> nLabels;
-		int tmpStore = N;
-
-		//calculating distances
-		for (int datapoint = 0; datapoint < data.size(); datapoint++) {
-			//change distance based on the distance metric being used
-			float distance = 0.0;
-			if (datapoint == currFileIndex) {
-				continue;
-			}
-			eucledianDistance(data[datapoint], targetFeatureVector, standardDeviations, distance);
-			pq.push(std::make_tuple(filenames[datapoint], labelnames[datapoint], distance));
-		}
-
-		while (tmpStore-- && !pq.empty()) {
-			nMatches.push_back(std::get<0>(pq.top()));
-			nLabels.push_back(std::get<1>(pq.top()));
-			//std::cout << tmpStore << " label:" << std::get<1>(pq.top()) << std::endl;
-			pq.pop();
-		}
-
-		//if (N == 1)
-		//{	// Closest Match
-		//	strcpy(predictedLabels[currFileIndex], nLabels[0]);
-		//} else {
-		//	// Logic of KNN needs to be done here.
-		//	
-		//}
-
-		predictedLabels.push_back(nLabels[0]);
-
-		if (false) {
+		char labelPredicted[64];
+		ComputingNearestLabelUsingKNN(targetFeatureVector,
+			featuresAndLabelsFile, distanceMetric, labelPredicted, N);
+		if (debug) {
 			std::cout << "\nFor file " << filenames[currFileIndex] << " Ground truth:" << labelnames[currFileIndex];
-			std::cout << " Predicted closest Label:" << nLabels[0] << std::endl;
+			std::cout << " Predicted label:" <<  labelPredicted << "with K: " << N << std::endl;
 		}
-
+		predictedLabels.push_back(labelPredicted);
 	}
-	
+	return 0;
 }
 
 
