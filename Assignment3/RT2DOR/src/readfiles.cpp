@@ -1,4 +1,5 @@
 /*  Written by: Samavedam Manikhanta Praphul
+                Poorna Chandra Vemula
   @note Inspired from sample code shared by Bruce A.Maxwell to identify image fils in a directory
   Tweaked to get the list of the files from the directory read instead of printing the path on screen. 
 */

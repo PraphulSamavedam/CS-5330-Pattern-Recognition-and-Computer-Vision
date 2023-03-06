@@ -1,5 +1,6 @@
 /*
 * Written by : Samavedam Manikhanta Praphul
+               Poorna Chandra Vemula
 * This file has the function which process an image for its feature vector. 
 * This file represents the common functionality in many programs developed in this code. 
 */

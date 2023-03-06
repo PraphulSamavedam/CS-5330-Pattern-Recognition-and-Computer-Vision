@@ -1,5 +1,6 @@
 /*
 * Written by : Samavedam Manikhanta Praphul
+*              Poorna Chandra Vemula
 * This file trains the data for the features and correspondin labels.
 * This program generated from this program requires mandatory param of database images directory.
 * This file can be run in manual mode or automode. by providing the right parameters.

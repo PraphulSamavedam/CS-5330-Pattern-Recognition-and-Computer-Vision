@@ -1,5 +1,6 @@
 /*
 * Written by : Samavedam Manikhanta Praphul
+*              Poorna Chandra Vemula
 * This file generates the confusion matrix for the model. 
 */
 
@@ -28,10 +29,10 @@ int main(int argc, char* argv[])
 	}
 
 	char featuresAndLabelsFile[256];
-	strcpy_s(featuresAndLabelsFile, argv[1]);
+	strcpy(featuresAndLabelsFile, argv[1]);
 
 	char confusionMatrixFile[256];
-	strcpy_s(confusionMatrixFile, argv[2]);
+	strcpy(confusionMatrixFile, argv[2]);
 
 	vector<char*> predictedLabels;
 	std::vector<char*> labelnames;

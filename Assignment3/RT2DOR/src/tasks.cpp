@@ -1,5 +1,6 @@
 /**
 * Written by: Samavedam Manikhanta Praphul
+*                   Poorna Chandra Vemula
 * This file provides the signatures of several functions required in the project.
 */
 
@@ -13,11 +14,48 @@
 #include "../include/csv_util.h"
 #include "../include/match_utils.h"
 
+/*
+  Disjoint set union datastructure for union find.
+*/
+class DSU{
+    int V;
+    int *parent,*rank;
+    public:
+        DSU(int V){
+            this->V = V;
+            parent = new int[V];
+            rank = new int[V];
+            for(int i=0;i<V;i++){
+                parent[i] = -1;
+                rank[i] = 1;
+            }
+        }
+ 
+        int find(int i){
+            if(parent[i]==-1)
+                return i;
+            return parent[i] = find(parent[i]);
+        }
+ 
+ 
+        void unite(int x,int y){
+            int s1 = find(x);
+            int s2 = find(y);
+            if(s1!=s2){
+                if(rank[s1] > rank[s2]){
+                    parent[s2] = find(s1);
+                    rank[s1] += rank[s2];
+                }
+                else{
+                    parent[s1] = find(s2);
+                    rank[s2] += rank[s1];
+                }
+            }
+        }
+};
 
 /* This image is thresholded in the range of hueMin, hueMax; satMin, satMax;
 and valMin , valMax; from the source image.
-@param srcImg address of the source image
-@param
 */
 int thresholdImage(cv::Mat& srcImg, int hueMin, int hueMax, int satMin, int satMax, int valMin, int valMax, cv::Mat& thresholdedImg) {
 
@@ -470,6 +508,113 @@ int regionGrowing(cv::Mat& srcImg, cv::Mat& dstImg, int connectValue, int foreGr
 	return 0;
 }
 
+
+/** This function segments an image into different regions
+* Assumes the foreground to be white (255), background to be black (0)
+* @param srcImg address of the source binary image
+* @param segmentedImg address of the destination binary image
+* @param connectValue[default=4] set value as 4 or 8 to mark 4-connected, 8-connected technique
+* @param foreGround[default=255] value of the foreground pixel value.
+* @param backGround[default=0] value of the background pixel value.
+* @returns 0 if the segmentation is success
+* @note This function internally uses segmentation algorithm
+*        AssertionError if connectValue not in (4,8)
+*        AssertionError if foreGround or backGround values are not in range [0,255].
+*/
+int findRegionMap(cv::Mat &srcImg, cv::Mat &regionMap, int connectValue, int foreGround, int backGround){
+    // Supports only 4-connected or 8-connected erosion.
+    assert(connectValue == 4 || connectValue == 8);
+
+    // Only foreGround, backGround are not in range [0, 255]
+    assert(foreGround >= 0 and foreGround <= 255);
+    assert(backGround >= 0 and backGround <= 255);
+    
+    
+    regionMap.convertTo(regionMap, CV_32SC1);
+    
+    //initializing a DSU with 1000 nodes(for now assuming 1000 are the max regions, may need to take as an input)
+    DSU s(1000000);
+    
+    // converting src to CV_8UC1
+    srcImg.convertTo(srcImg, CV_8UC1);
+    
+    
+    //Intializing tmp with zeroes(CV_8UC1)
+    cv::Mat tmp = cv::Mat::zeros(srcImg.size(), CV_32SC1);
+
+
+    int label = 0;
+
+    
+  
+    // Implementing first for 4 connected
+    if (connectValue == 4)
+    {
+        label = 1;
+        //for each pixel look up and back
+        for(int row = 0;row<srcImg.rows;row++){
+            for(int col = 0; col<srcImg.cols;col++){
+
+                if(int(srcImg.at<uchar>(row,col)) == foreGround){
+                         
+                    
+                    int leftPixel;
+                    int abovePixel;
+                    
+                    //check if row or col is zero and fill in zero accordingly
+                    abovePixel = (row!=0) ? tmp.at<short>(row-1,col) : 0;
+                    leftPixel =  (col!=0) ? tmp.at<short>(row,col-1) : 0;
+                    
+        
+
+                    if(leftPixel==0 and abovePixel==0){
+                        tmp.at<short>(row,col) = label;
+                        label += 1;
+                    }
+                    
+                    else if(leftPixel!=0 and abovePixel!=0){
+                        tmp.at<short>(row,col) = (leftPixel > abovePixel) ? abovePixel : leftPixel;
+                        if(leftPixel != abovePixel){
+                            s.unite(leftPixel,abovePixel);
+                        }
+                        
+                    }
+                    
+                    else{
+                        tmp.at<short>(row,col) = (leftPixel < abovePixel) ? abovePixel : leftPixel;
+                    }
+                }
+                
+            }
+        }
+        
+        
+        // Second pass
+        for (int row = 0; row < srcImg.rows; row++)
+        {
+            uchar* srcPtr = srcImg.ptr<uchar>(row);
+            short* currRowPtr = tmp.ptr<short>(row);
+            for (int col = 0; col < srcImg.cols; col++)
+            {
+                if(int(srcPtr[col]) == foreGround){
+                    int newValue = s.find(int(currRowPtr[col]));
+                    currRowPtr[col] = newValue;
+                }
+            }
+        }
+    }
+    
+    tmp.copyTo(regionMap);
+    
+    return 0;
+}
+
+
+
+
+/*
+  Comparator for priority queue ot tuples
+*/
 class Compare {
 public:
 	bool operator()(std::tuple<int, int> first, std::tuple<int, int> second)
@@ -486,6 +631,13 @@ public:
 };
 
 
+/** This function provides the binary image wtih top N regions if they are present in the binary image.
+* @param address of the regionMap which is segmented image with single channel with details of the region label.
+* @param address of the destinationImage
+* @param NumberOfRegions[default=5] number of the top regions (area-wise) which need to be present in the destination image.
+* @param debug[default=false] set this to have print statements to debug
+* @return 0 if we have processed the binary image for the top N regions.
+*/
 int topNSegments(cv::Mat& regionMap, cv::Mat& dstImg, int NumberOfRegions, bool debug)
 {
 	// Binary image is required
@@ -671,10 +823,14 @@ int colorSegmentation(cv::Mat& regionMap, cv::Mat& dstImage) {
 }
 
 
-/*
-   This function creates a binary Image
-   Only the specific region ID is marked as foreground, else everything is background.
-   This function is an internal helper function.
+/**This function returns binary output image, moments, dimensions(width, height), region pixel count
+* @param regionMap address of the mapped regions
+* @param regionID  ID of the region whose binary image, moments, dimensions(width, height), region pixel count needs to be calculated.
+* @param Moments to be updated
+* @param Dimensions to be updated
+* @param regionPixelCount to be updated
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
 */
 int binaryImageWithARegion(cv::Mat& regionMap, cv::Mat& binaryOutputImage, cv::Moments& Moments, std::pair<double, double>& Dimensions, int& regionPixelCount, int regionID) {
 
@@ -797,6 +953,15 @@ int getFeatures(cv::Mat& regionMap, std::vector<float>& featureVector, int numbe
 }
 
 
+
+/**This function draws the bounding box for a region
+* @param regionMap address of the mapped regions
+* @param regionID  ID of the region.
+* @param outputImg image to draw bounding box
+* @param debug[default=false] set this to have print statements to debug
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
+*/
 int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int regionID, bool debug) {
 
 	// Tmp Mat to store the binary image
@@ -901,6 +1066,15 @@ int drawBoundingBoxForARegion(cv::Mat& regionMap, cv::Mat& outputImg, int region
 }
 
 
+
+/**This function draws the bounding boxes for the all the regions in the region map.
+* @param regionMap address of the mapped regions
+* @param outputImg image to draw bounding box
+* @param numberOfRegions number of the regions to draw the bounding box on
+* @param debug[default=false] set this to have print statements to debug
+* @returns 0 if the feature is properly extracted.
+*        non zero if the operation is failure.
+*/
 int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegions, bool debug) {
 
 
@@ -915,7 +1089,14 @@ int drawBoundingBoxes(cv::Mat& regionMap, cv::Mat& outputImg, int numberOfRegion
 	return 0;
 }
 
-
+/**This function populates the confusion matrix in the confusion matrix file.
+* @param featuresAndLabelsFile containing features and their labels
+* @param confusionMatrixFile to write the confusion matrix
+* @param labelnames contains true class labels
+* @param predictedLabelNames contains predicted class labels
+* @returns populates the confusion matrix csv file
+*        non zero if the operation is failure.
+*/
 int confusionMatrixCSV(char* featuresAndLabelsFile, char* confusionMatrixFile,
 						std::vector<char*> labelnames, std::vector<char*> predictedLabelNames) {
 
@@ -992,6 +1173,14 @@ public:
 	}
 };
 
+
+/**This function generates and populates the predicted labels.
+* @param featuresAndLabelsFile containing features and their labels
+* @param labelnames contains true class labels
+* @param predictedLabelNames which will be updated with predicted class labels
+* @returns populates the predictedLabels
+*        non zero if the operation is failure.
+*/
 int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predictedLabels, 
 	std::vector<char*>& labelnames, char* &distanceMetric ,int N, bool debug) {
 
@@ -1019,3 +1208,150 @@ int generatePredictions(char* featuresAndLabelsFile, std::vector<char* > &predic
 	}
 	return 0;
 }
+
+
+/*
+    Implemented Otsu algorithm for thresholding.
+*/
+
+int otsuThresholdImage(cv::Mat& srcImg, cv::Mat& thresholdedImg) {
+
+ 
+
+    thresholdedImg = cv::Mat::zeros(srcImg.size(), CV_8UC1);
+    
+    cv::Mat grayImg;
+    cv::cvtColor(srcImg, grayImg, cv::COLOR_BGR2GRAY);
+    
+    std::vector<float> Hist(256,0);
+    
+    float histCumSum = 0;
+    
+    for(int i=0;i<grayImg.rows;i++){
+        for(int j=0;j<grayImg.cols;j++){
+            int pixelValue = grayImg.at<uchar>(i,j);
+            Hist[pixelValue] += 1;
+            histCumSum += 1;
+        }
+    }
+    
+    //normalize
+    for(int i=0;i<256;i++){
+        Hist[i]/=histCumSum;
+    }
+    
+    
+    std::vector<float> bins(256);
+    for(int i=0;i<256;i++){
+        bins[i] = i;
+    }
+    
+    float fn_min = INT_MAX;
+    int thresh = -1;
+    
+    for(int i=0;i<256;i++){
+        //get p1
+        std::vector<float> p1;
+        for(int j=0;j<i;j++){
+            p1.push_back(Hist[j]);
+        }
+        
+        std::vector<float> p2;
+        for(int j=i+1;j<256;j++){
+            p2.push_back(Hist[j]);
+        }
+        
+        //fet q1,q2 -> csum
+        float sum = 0.0;
+        for(int j=0;j<i;j++){
+            sum+=Hist[j];
+        }
+        float q1 = sum;
+    
+        
+        sum = 0.0;
+        for(int j=i+1;j<256;j++){
+            sum+=Hist[j];
+        }
+        float q2 = sum;
+        
+        //write an if condition to continue
+        if(q1 < 0.000001 or q2 < 0.000001){
+            continue;
+        }
+        
+        //get b1
+        std::vector<float> b1;
+        for(int j=0;j<i;j++){
+            b1.push_back(bins[j]);
+        }
+        
+        std::vector<float> b2;
+        for(int j=i+1;j<256;j++){
+            b2.push_back(bins[j]);
+        }
+
+        
+        //find m1,m2
+        sum = 0.0;
+        for(int j=0;j<p1.size();j++){
+            sum += p1[j]*b1[j];
+        }
+        float m1 =  sum/q1;
+      
+        
+        sum = 0.0;
+        for(int j=0;j<p2.size();j++){
+            sum += p2[j]*b2[j];
+        }
+        float m2 = sum/q1;
+        
+        //find v1,v2
+        sum = 0.0;
+        for(int j=0;j<p1.size();j++){
+            sum += ((b1[j]-m1)*(b1[j]-m1))*p1[j];
+        }
+        
+        float v1 =  sum/q1;
+     
+        
+        sum = 0.0;
+        for(int j=0;j<p2.size();j++){
+            sum += ((b2[j]-m1)*(b2[j]-m1))*p2[j];
+        }
+        float v2 = sum/q2;
+ 
+        
+      //calculates the minimization function
+        float fn = v1*q1 + v2*q2;
+   
+        
+        if(fn_min>fn){
+
+            
+            fn_min = fn;
+            thresh = i;
+        }
+        
+    }
+    
+    
+    if(thresh != -1){
+        
+        for (int row = 0; row < thresholdedImg.rows; row++)
+        {
+            uchar* srcPtr = grayImg.ptr<uchar>(row);
+            
+            uchar* dstPtr = thresholdedImg.ptr<uchar>(row);
+            for (int col = 0; col < thresholdedImg.cols; col++)
+            {
+                dstPtr[col] = (thresh-50 > srcPtr[col]) ? 255 : 0;
+            }
+        }
+        
+    }
+
+    return 0;
+
+}
+
