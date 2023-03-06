@@ -60,3 +60,9 @@ CMakeFiles
 
 # Secrets
 *secret*
+
+# Sandox
+*.sandbox
+
+# Images
+*.jpg
