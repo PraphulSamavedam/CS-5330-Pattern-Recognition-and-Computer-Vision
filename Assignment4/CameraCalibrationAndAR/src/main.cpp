@@ -1,6 +1,6 @@
-/** 
+/**
 * Weitte
-This 
+This
 
 */
 
@@ -8,25 +8,52 @@ This
 #include <vector>
 #include "../include/tasks.h"
 
+
 int main(int argc, char argv[]) {
-	printf_s("Hello world");
-	char filePath[32] = "resources/checkerboard.png";
-	cv::Mat image = cv::imread(filePath);
-	if (image.data == NULL)
+
+	cv::VideoCapture* capture = new cv::VideoCapture(0);
+	// Check if any video capture device is present.
+	if (!capture->isOpened())
 	{
-		printf("Error reading the file\n"); 
-		exit(-404);
+		printf("Unable to open the primary video device.\n");
+		return(-404);
 	}
-	std::vector<cv::Point2f> corners;
-	detectAndExtractChessBoardCorners(image, corners);
+
+	cv::Size refs((int)capture->get(cv::CAP_PROP_FRAME_WIDTH),
+		capture->get(cv::CAP_PROP_FRAME_HEIGHT));
+	printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
+	
+	cv::Mat frame;
+
 	while (true) {
+		*capture >> frame;
+		//get new frame from camera, treating as stream.
+		if (frame.empty()) {
+			printf("Frame is empty");
+			break;
+		}
+
+		std::vector<cv::Point2f> corners;
+		int status = detectAndExtractChessBoardCorners(frame, corners);
 		cv::namedWindow("Image", cv::WINDOW_GUI_EXPANDED);
-		cv::imshow("Image", image);
-		char key = cv::waitKey(0);
+		cv::imshow("Image", frame);
+		char key = cv::waitKey(10);
 		if (key == 'q')
 		{
 			cv::destroyAllWindows();
 			break;
+		}
+		else if (key == 's') {
+			printf("Waiting for the point set calculation.\n");
+			if (status) {
+			// Chessboard exists so update the 
+			}
+			else
+			{
+				// Need not store. 
+			}
+			exit(-100);
+
 		}
 	}
 	return 0;

@@ -14,4 +14,5 @@
 *		non zero if the operation is not successful. 
 * @note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
-int detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners);
+int detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners, 
+										int pointsPerRow = 9, int pointsPerColumn = 6);

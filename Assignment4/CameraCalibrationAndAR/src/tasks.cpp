@@ -10,22 +10,27 @@
 * If found, prints the first corner found along with the number of corners found.
 * @param srcImage the address of source Image for which chess board corners are to be extracted. 
 * @param corners output of the refined chessboard corners found in the image. 
-* @return 0 if the operation is successful.
-*		non zero if the operation is not successful.
+* @return True if the chessboard is found and processing is complete.
+*		  False if the operation is not successful.
 * @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
-int detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners) {
-	cv::Size patternSize = cv::Size(9, 6); // Width = 9, Height = 6
+bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners,
+										int pointsPerRow, int pointsPerColumn){
+	cv::Size patternSize = cv::Size(pointsPerRow, pointsPerColumn); // Width = 9, Height = 6
 
 	bool status = cv::findChessboardCorners(srcImage, patternSize, corners);
 	if (status)
 	{
 		printf("Successfully obtained the chessboard corners.\n");
 		// Mark each corner caught with Magenta Circle.
+		/*
 		for (int i = 0; i < corners.size(); i++)
 		{
 			cv::circle(srcImage, corners[i], 9, cv::Scalar(255, 0, 255), -1);
+			printf("Corner %d: %.02f, %.02f\n", i, corners[i].x, corners[i].y);
 		}
+		*/
+		// Print the details of capture
 		printf("First corner: %.02f, %.02f\n", corners[0].x, corners[0].y);
 		printf("Total number of corners found: %zd\n", corners.size());
 
@@ -38,7 +43,7 @@ int detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f
 			cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 100, 0.001));
 
 		// Draw the refined chess board corners
-		cv::drawChessboardCorners(srcImage, cv::Size(9, 6), corners, status);
+		cv::drawChessboardCorners(srcImage, cv::Size(pointsPerRow, pointsPerColumn), corners, status);
 	}
 	else {
 		printf("Chessboard corners are not found.\n");
