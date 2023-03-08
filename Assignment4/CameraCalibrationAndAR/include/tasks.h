@@ -14,5 +14,14 @@
 *		non zero if the operation is not successful. 
 * @note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
-int detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners, 
+bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners, 
 										int pointsPerRow = 9, int pointsPerColumn = 6);
+
+/*This function populates the points_list for the corners list provided.
+* @param corners_set set of points in the world euclidean.
+* @param points_set set of points corresponding to which the corners are found.
+* @return True if the chessboard is found and processing is complete.
+*		  False if the operation is not successful.
+* @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
+*/
+bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& points, int pointsPerRow = 9, int pointsPerColumn = 6);

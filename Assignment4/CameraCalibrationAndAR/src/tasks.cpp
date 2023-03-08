@@ -23,13 +23,13 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 	{
 		printf("Successfully obtained the chessboard corners.\n");
 		// Mark each corner caught with Magenta Circle.
-		/*
+		
 		for (int i = 0; i < corners.size(); i++)
 		{
-			cv::circle(srcImage, corners[i], 9, cv::Scalar(255, 0, 255), -1);
-			printf("Corner %d: %.02f, %.02f\n", i, corners[i].x, corners[i].y);
+		//	cv::circle(srcImage, corners[i], 9, cv::Scalar(255, 0, 255), -1);
+			// printf("Corner %d: %.02f, %.02f\n", i, corners[i].x, corners[i].y);
 		}
-		*/
+		
 		// Print the details of capture
 		printf("First corner: %.02f, %.02f\n", corners[0].x, corners[0].y);
 		printf("Total number of corners found: %zd\n", corners.size());
@@ -47,7 +47,37 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 	}
 	else {
 		printf("Chessboard corners are not found.\n");
+		return false;
+	}
+	return true;
+}
+
+
+/*This function populates the points_list for the corners list provided.
+* @param corners_set set of points in the world euclidean. 
+* @param points_set set of points corresponding to which the corners are found. 
+* @return True if the chessboard is found and processing is complete.
+*		  False if the operation is not successful.
+* @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
+*/
+bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& points,	int pointsPerRow, int pointsPerColumn) {
+	printf("Called Build Points Set");
+	// Ensure that all corners are captured to proceed
+	try
+	{
+		assert(corners.size() == (pointsPerRow * pointsPerColumn));
+	}
+	catch (const std::exception&)
+	{
+		printf("Invalid number of corners are passed");
 		return -1;
+	}
+	
+	// Populated the points based on the corners 
+	points.clear(); // Width = 9, Height = 6 are default values
+	for (int index = 0; index < corners.size(); index++)
+	{
+		points.push_back(cv::Vec3f(index % pointsPerRow, - index / pointsPerRow, 0));
 	}
 	return 0;
 }
