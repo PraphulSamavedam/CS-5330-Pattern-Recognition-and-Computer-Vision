@@ -98,16 +98,17 @@ int main(int argc, char* argv[]) {
 			printf("Frame is empty");
 			break;
 		}
-		cv::imshow("Live Video", frame);
-		char key = cv::waitKey(3);
-
+		
+		//Check if chessboard exists in the frame. 
 		std::vector<cv::Point2f> imagePoints;
 		bool status = detectAndExtractChessBoardCorners(frame, imagePoints);
+		
+		// Show the image now so that detected chessboard corners are visible. 
+		cv::imshow("Live Video", frame);
+		char key = cv::waitKey(3);
 		if (status)
 		{
-			// ChessBoard exists in this frame.
-			printf("Chess board exists in this frame\n");
-
+			debug = true;
 			// Build the points set from the corner set
 			std::vector<cv::Vec3f> objectPoints;
 			buildPointsSet(imagePoints, objectPoints);
