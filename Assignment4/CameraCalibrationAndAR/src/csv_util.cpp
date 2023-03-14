@@ -1,9 +1,7 @@
 /** Written by: Samavedam Manikhanta Praphul
 * Borrowed from Bruce A. Maxwell
-* 
-
-CS 5330 Computer Vision
-Spring 2023
+* CS 5330 Computer Vision
+* Spring 2023
 
 CPP functions for reading CSV files with a specific format
 - first column is a string containing a metric name
