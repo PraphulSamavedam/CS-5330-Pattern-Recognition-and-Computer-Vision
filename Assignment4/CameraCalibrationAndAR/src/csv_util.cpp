@@ -114,7 +114,7 @@ int getfloat(FILE* fp, float* v) {
 
   The function returns a non-zero value in case of an error.
  */
-int append_image_data_csv(char* filename, char* image_filename, std::vector<float>& image_data, int reset_file) {
+int append_metric_data_csv(char* filename, char* metric_name, std::vector<float>& metric_values_data, int reset_file = 0) {
     char buffer[256];
     char mode[8];
     FILE* fp;
@@ -132,11 +132,11 @@ int append_image_data_csv(char* filename, char* image_filename, std::vector<floa
     }
 
     // write the filename and the feature vector to the CSV file
-    strcpy(buffer, image_filename);
+    strcpy(buffer, metric_name);
     std::fwrite(buffer, sizeof(char), strlen(buffer), fp);
-    for (int i = 0; i < image_data.size(); i++) {
+    for (int i = 0; i < metric_values_data.size(); i++) {
         char tmp[256];
-        sprintf(tmp, ",%.4f", image_data[i]);
+        sprintf(tmp, ",%.4f", metric_values_data[i]);
         std::fwrite(tmp, sizeof(char), strlen(tmp), fp);
     }
 
@@ -150,10 +150,10 @@ int append_image_data_csv(char* filename, char* image_filename, std::vector<floa
 /*
   Given a file with the format of a string as the first column and
   floating point numbers as the remaining columns, this function
-  returns the filenames as a std::vector of character arrays, and the
+  returns the metricNames as a std::vector of character arrays, and the
   remaining data as a 2D std::vector<float>.
 
-  filenames will contain all of the image file names.
+  metricNames will contain all of the image file names.
   data will contain the features calculated from each image.
 
   If echo_file is true, it prints out the contents of the file as read
@@ -161,7 +161,7 @@ int append_image_data_csv(char* filename, char* image_filename, std::vector<floa
 
   The function returns a non-zero value if something goes wrong.
  */
-int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vector<std::vector<float>>& data, bool echo_file) {
+int read_metric_data_csv(char* filename, std::vector<char*>& metricNames, std::vector<std::vector<float>>& data, bool echo_file) {
     FILE* fp;
     float fval;
     char img_file[256];
@@ -196,7 +196,7 @@ int read_image_data_csv(char* filename, std::vector<char*>& filenames, std::vect
 
         char* fname = new char[strlen(img_file) + 1];
         strcpy(fname, img_file);
-        filenames.push_back(fname);
+        metricNames.push_back(fname);
     }
     fclose(fp);
     printf("Finished reading CSV file\n");
