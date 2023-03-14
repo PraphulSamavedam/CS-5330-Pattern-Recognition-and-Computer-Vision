@@ -7,6 +7,7 @@ This
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include "../include/tasks.h"
+#include "../include/csv_util.h";
 
 
 int main(int argc, char *argv[]) {
@@ -31,7 +32,7 @@ int main(int argc, char *argv[]) {
     std::vector<cv::Vec3f> points_set;
     std::vector<cv::Vec3f> last_points_set;
     std::vector<std::vector<cv::Vec3f>> points_list;
-
+    char* cameraParametersFile = "./resources/cameraParams.csv";
 
     bool last_successful_capture = false;
     while (true) {
@@ -123,29 +124,41 @@ int main(int argc, char *argv[]) {
             {
                 std::cout << dist << std::endl;
             }
+            
             printf("Using %zd points for calibration.\n", corners_list.size());
             double reprojection_error = cv::calibrateCamera(points_list, corners_list, refs, cameraMatrix,
                 distortionCoefficients, rVecs, tVecs, cv::CALIB_FIX_ASPECT_RATIO);
             printf("Calibrated the camera.\n");
             printf("Updated distortion coefficients are :\n");
-            for (auto dist:distortionCoefficients)
-            {
-                std::cout << dist << std::endl;
-            }
+    
+            //9 element camera matrix vector
+            std::vector<float> cameraMatrixVector;
+            
             printf("Updated Camera Matrix\n");
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
                 {
                     printf("[%d,%d]: %.06f ", i, j, cameraMatrix.at<double>(i, j));
+                    cameraMatrixVector.push_back(cameraMatrix.at<double>(i, j));
                 }
                 printf("\n");
             }
-
+            
+            //append three zeroes for distortion coeff for consistency
+            for(int i=0;i<4;i++){
+                distortionCoefficients.push_back(0);
+            }
+            
+            //append camera matrix
+            append_metric_data_csv(cameraParametersFile, "cameraMatrix", cameraMatrixVector, true);
+            
+            //append dist coefficients
+            append_metric_data_csv(cameraParametersFile, "distCoeff", distortionCoefficients, false);
 
             printf("Reprojection Error: %.06f\n", reprojection_error);
-            printf("Closing the function\n");
-            break;
+//            printf("Closing the function\n");
+//            break;
         }
     }
     return 0;

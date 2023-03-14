@@ -27,7 +27,7 @@ BINDIR = .
 # rules for making various executables
 all: main
 
-main: ./src/main.o ./src/tasks.o
+main: ./src/main.o ./src/tasks.o ./src/csv_util.o
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 	
 clean:
