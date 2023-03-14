@@ -61,7 +61,7 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 * @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
 bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& points,	int pointsPerRow, int pointsPerColumn) {
-	printf("Called Build Points Set");
+	printf("Called Build Points Set\n");
 	// Ensure that all corners are captured to proceed
 	try
 	{

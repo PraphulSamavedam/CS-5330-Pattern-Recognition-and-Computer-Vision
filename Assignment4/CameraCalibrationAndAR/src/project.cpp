@@ -4,13 +4,16 @@
 * 
 */
 
+#define _CRT_SECURE_NO_WARNINGS // To supress strcpy warnings
+
+
 #include <opencv2/opencv.hpp> // Required for openCV functions.
 #include "../include/csv_util.h" // Reading the csv file containing the camera intrinsic parameters
 #include "../include/tasks.h" // For detectAndExtractChessBoardCorners function
 
 int main(int argc, char* argv[]) {
 	//char paramsFile[32];
-	char paramsFile[32] = "../resources/cameraParams.csv";
+	char paramsFile[32] = "resources/cameraParams.csv";
 	/*assert(argc > 1);
 	strcpy(paramsFile, argv[1]);*/
 
@@ -19,7 +22,10 @@ int main(int argc, char* argv[]) {
 
 	std::vector<char*> metricNames;
 	std::vector<std::vector<float>> data;
-	read_metric_data_csv(paramsFile, metricNames, data, false);
+	int status = read_metric_data_csv(paramsFile, metricNames, data, false);
+	
+	assert(status == 0);
+	printf("Data is read to have length: %zd \n", data.size());
 
 	assert(strcpy(metric_name_0, metricNames[0]) == 0);
 	assert(strcpy(metric_name_1, metricNames[1]) == 0);
@@ -28,6 +34,15 @@ int main(int argc, char* argv[]) {
 	cv::Mat cameraMatrix = cv::Mat::zeros(3, 3, CV_64FC1);
 	for (int index = 0; index < metric_values_length; index++) {
 		cameraMatrix.at<float>(index / 3, index % 3) = data[0][index];
+	}
+	printf("Camera Matrix is read as follows: \n");
+	for (int i=0;i<3;i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			std::cout << cameraMatrix.at<float>(i, j) << " ";
+		}
+		std::cout << std::endl;
 	}
 
 	std::vector<float> distortionCoefficients;
@@ -52,7 +67,6 @@ int main(int argc, char* argv[]) {
 	printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
 
 	cv::Mat frame;
-
 	while (true) {
 		*capture >> frame;
 		//get new frame from camera, treating as stream.
@@ -60,6 +74,8 @@ int main(int argc, char* argv[]) {
 			printf("Frame is empty");
 			break;
 		}
+		cv::imshow("Live Video", frame);
+		cv::waitKey(10);
 		std::vector<cv::Point2f> corners_set;
 		bool status = detectAndExtractChessBoardCorners(frame, corners_set);
 		if (status)
@@ -71,21 +87,36 @@ int main(int argc, char* argv[]) {
 			buildPointsSet(corners_set, points_set);
 
 			// Create placeholders for vectors of translation and rotation
-			std::vector<cv::Mat> rVecs;
-			std::vector<cv::Mat> tVecs;
+			cv::Mat rVecs;
+			cv::Mat tVecs;
+
+			printf("Solving for PnP\n");
 
 			// Solve for the pose and position of the camera based on the capture. 
-			cv::solvePnP(corners_set, points_set, cameraMatrix, distortionCoefficients, rVecs, tVecs);
+			cv::solvePnP(points_set, corners_set, cameraMatrix, distortionCoefficients, rVecs, tVecs);
 
+			printf("Rotation vector is of shape (%d, %d) follows: \n", rVecs.rows, rVecs.cols);
 			printf("Rotation vector is as follows: \n");
-			for (auto rotation : rVecs)
+			for (int row = 0; row < rVecs.rows; row ++)
 			{
-				std::cout << rotation << std::endl;
+				for (int col = 0; col < rVecs.cols; col++)
+				{
+					std::cout << rVecs.at<float>(row,col) << " " ;
+				}
+				std::cout << std::endl;
 			}
-			for (auto translation : tVecs)
+
+			printf("Translation vector is of shape (%d, %d) follows: \n", tVecs.rows, tVecs.cols);
+			printf("Translation vector is as follows: \n");
+			for (int row = 0; row < tVecs.rows; row++)
 			{
-				std::cout << translation << std::endl;
+				for (int col = 0; col < tVecs.cols; col++)
+				{
+					std::cout << tVecs.at<float>(row, col) << " ";
+				}
+				std::cout << std::endl;
 			}
+			cv::waitKey(0); // To Capture the details for report. 
 		}
 		else {
 			printf("Chessboard corners are not found.\n");
