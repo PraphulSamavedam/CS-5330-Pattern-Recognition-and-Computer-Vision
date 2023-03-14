@@ -24,8 +24,7 @@ int append_metric_data_csv( char *filename, char *metric_name, std::vector<float
 
 
 /*
-  Given a file with the format of
-  metric name as a string the first column and
+  Given a file with the format of metric name as a string the first column and
   floating point numbers as the remaining columns, this function
   returns the filenames as a std::vector of character arrays, and the
   remaining data as a 2D std::vector<float>.
