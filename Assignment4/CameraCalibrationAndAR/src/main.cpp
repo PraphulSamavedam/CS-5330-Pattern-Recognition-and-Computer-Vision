@@ -164,7 +164,13 @@ int main(int argc, char *argv[]) {
             //append dist coefficients
             append_metric_data_csv(cameraParametersFile, metricName, distortionCoefficients, false);
 
+            //append the reprojection error
+            strcpy(metricName, "reprojectionError");
+            std::vector<float> reprojection;
+            reprojection.push_back(reprojection_error);
+            append_metric_data_csv(cameraParametersFile, metricName, reprojection, false);
             printf("Reprojection Error: %.06f\n", reprojection_error);
+
 //            printf("Closing the function\n");
 //            break;
         }
