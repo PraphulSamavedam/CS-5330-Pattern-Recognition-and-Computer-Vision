@@ -1,7 +1,7 @@
 /** Written by: Samavedam Manikhanta Praphul
 *				Poorna Chandra Vemula
-* This functions works on a calibrated camera to start augmented reality. 
-* 
+* This functions works on a calibrated camera to start augmented reality.
+*
 */
 
 #define _CRT_SECURE_NO_WARNINGS // To supress strcpy warnings
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 	std::vector<char*> metricNames;
 	std::vector<std::vector<float>> data;
 	int status = read_metric_data_csv(paramsFile, metricNames, data, false);
-	
+
 	assert(status == 0);
 	printf("Data is read to have length: %zd \n", data.size());
 
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 		cameraMatrix.at<float>(index / 3, index % 3) = data[0][index];
 	}
 	printf("Camera Matrix is read as follows: \n");
-	for (int i=0;i<3;i++)
+	for (int i = 0; i < 3; i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
@@ -46,10 +46,19 @@ int main(int argc, char* argv[]) {
 	}
 
 	std::vector<float> distortionCoefficients;
+	//printf("Distortion coefficients are read as follows: \n");
 	metric_values_length = data[1].size();
 	for (int index = 0; index < metric_values_length; index++) {
 		distortionCoefficients.push_back(data[1][index]);
+		// std::cout << data[1][index] << std::endl;
 	}
+
+	printf("Distortion coefficients are read as follows: \n");
+	for (int index = 0; index < metric_values_length; index++)
+	{
+		std::cout << distortionCoefficients[index] << " ";
+	}
+	std::cout << std::endl;
 
 	// Assuming we have succesfully read the parameters from the csv file, let us proceed for live video
 
@@ -66,6 +75,10 @@ int main(int argc, char* argv[]) {
 		capture->get(cv::CAP_PROP_FRAME_HEIGHT));
 	printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
 
+	// Create placeholders for vectors of translation and rotation
+	cv::Mat rVector;
+	cv::Mat tVector;
+
 	cv::Mat frame;
 	while (true) {
 		*capture >> frame;
@@ -75,48 +88,57 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 		cv::imshow("Live Video", frame);
-		cv::waitKey(10);
+		cv::waitKey(3);
 		std::vector<cv::Point2f> corners_set;
 		bool status = detectAndExtractChessBoardCorners(frame, corners_set);
 		if (status)
 		{
 			// ChessBoard exists in this frame.
 			printf("Chess board exists in this frame\n");
+
 			// Build the points set from the corner set
 			std::vector<cv::Vec3f> points_set;
 			buildPointsSet(corners_set, points_set);
-
-			// Create placeholders for vectors of translation and rotation
-			cv::Mat rVecs;
-			cv::Mat tVecs;
-
 			printf("Solving for PnP\n");
 
 			// Solve for the pose and position of the camera based on the capture. 
-			cv::solvePnP(points_set, corners_set, cameraMatrix, distortionCoefficients, rVecs, tVecs);
+			cv::solvePnP(points_set, corners_set, cameraMatrix, distortionCoefficients, rVector, tVector);
 
-			printf("Rotation vector is of shape (%d, %d) follows: \n", rVecs.rows, rVecs.cols);
+			printf("Rotation vector is of shape (%d, %d) follows: \n", rVector.rows, rVector.cols);
+			std::cout << rVector << std::endl;
 			printf("Rotation vector is as follows: \n");
-			for (int row = 0; row < rVecs.rows; row ++)
+			for (int row = 0; row < rVector.rows; row++)
 			{
-				for (int col = 0; col < rVecs.cols; col++)
+				for (int col = 0; col < rVector.cols; col++)
 				{
-					std::cout << rVecs.at<float>(row,col) << " " ;
+					std::cout << rVector.at<int>(row, col) << " ";
 				}
 				std::cout << std::endl;
 			}
 
-			printf("Translation vector is of shape (%d, %d) follows: \n", tVecs.rows, tVecs.cols);
+			printf("Translation vector is of shape (%d, %d) follows: \n", tVector.rows, tVector.cols);
+			std::cout << tVector << std::endl;
 			printf("Translation vector is as follows: \n");
-			for (int row = 0; row < tVecs.rows; row++)
+			for (int row = 0; row < tVector.rows; row++)
 			{
-				for (int col = 0; col < tVecs.cols; col++)
+				for (int col = 0; col < tVector.cols; col++)
 				{
-					std::cout << tVecs.at<float>(row, col) << " ";
+					std::cout << tVector.at<int>(row, col) << " ";
 				}
 				std::cout << std::endl;
 			}
-			cv::waitKey(0); // To Capture the details for report. 
+			break;
+			// cv::waitKey(0); // To Capture the details for report. 
+			std::vector<cv::Vec2f> projectedObjectPoints;
+			cv::projectPoints(points_set, rVector, tVector, cameraMatrix, distortionCoefficients, projectedObjectPoints);
+
+			printf("Projected points are :\n");
+			for (int index = 0; index < projectedObjectPoints.size(); index++)
+			{
+				std::cout << projectedObjectPoints[index] << std::endl;
+			}
+			// cv::imshow()
+	
 		}
 		else {
 			printf("Chessboard corners are not found.\n");
