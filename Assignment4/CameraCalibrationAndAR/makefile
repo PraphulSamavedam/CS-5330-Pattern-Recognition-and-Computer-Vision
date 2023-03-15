@@ -25,9 +25,12 @@ LDLIBS = -framework AVFoundation -framework CoreMedia -framework CoreVideo -fram
 BINDIR = .
 
 # rules for making various executables
-all: main
+all: main project
 
 main: ./src/main.o ./src/tasks.o ./src/csv_util.o
+	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
+	
+project: ./src/project.o ./src/tasks.o ./src/csv_util.o
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 	
 clean:

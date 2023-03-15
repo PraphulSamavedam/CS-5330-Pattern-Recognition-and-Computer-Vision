@@ -1,16 +1,22 @@
 /**
-* Weitte
-This
-
+* Written by:   Poorna Chandra Vemula
+*               Samavedam Manikhanta Praphul
+* Version : 1.0
+* This file starts a video stream and is used to calibrate the
+* camera and store the camera intrinsic params into a csv file.
 */
+
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include "../include/tasks.h"
-#include "../include/csv_util.h";
+#include "../include/csv_util.h"
 
 
 int main(int argc, char *argv[]) {
+
+    char cameraParametersFile[32] = "./resources/cameraParams.csv";
 
     cv::VideoCapture* capture = new cv::VideoCapture(0);
     // Check if any video capture device is present.
@@ -32,7 +38,7 @@ int main(int argc, char *argv[]) {
     std::vector<cv::Vec3f> points_set;
     std::vector<cv::Vec3f> last_points_set;
     std::vector<std::vector<cv::Vec3f>> points_list;
-    char* cameraParametersFile = "./resources/cameraParams.csv";
+    
 
     bool last_successful_capture = false;
     while (true) {
@@ -146,17 +152,25 @@ int main(int argc, char *argv[]) {
             }
             
             //append three zeroes for distortion coeff for consistency
-            for(int i=0;i<4;i++){
+           /* for(int i=0;i<4;i++){
                 distortionCoefficients.push_back(0);
-            }
+            }*/
+            char metricName[32] = "cameraMatrix";
             
             //append camera matrix
-            append_metric_data_csv(cameraParametersFile, "cameraMatrix", cameraMatrixVector, true);
+            append_metric_data_csv(cameraParametersFile, metricName, cameraMatrixVector, true);
             
+            strcpy(metricName, "distCoeff");
             //append dist coefficients
-            append_metric_data_csv(cameraParametersFile, "distCoeff", distortionCoefficients, false);
+            append_metric_data_csv(cameraParametersFile, metricName, distortionCoefficients, false);
 
+            //append the reprojection error
+            strcpy(metricName, "reprojectionError");
+            std::vector<float> reprojection;
+            reprojection.push_back(reprojection_error);
+            append_metric_data_csv(cameraParametersFile, metricName, reprojection, false);
             printf("Reprojection Error: %.06f\n", reprojection_error);
+
 //            printf("Closing the function\n");
 //            break;
         }
