@@ -18,6 +18,8 @@ int main(int argc, char* argv[]) {
 	bool debug = false;
 	char metric_name_0[13] = "cameraMatrix";
 	char metric_name_1[10] = "distCoeff";
+	char projectedFrameName[32] = "Projected Exterior points";
+	char prVirObjFrameName[32] = "Projected Virtual Object";
 
 	/*assert(argc > 1);
 	strcpy(paramsFile, argv[1]);*/
@@ -37,7 +39,7 @@ int main(int argc, char* argv[]) {
 	int metric_values_length = data[0].size();
 	cv::Mat cameraMatrix = cv::Mat::zeros(3, 3, CV_64FC1);
 	for (int index = 0; index < metric_values_length; index++) {
-		cameraMatrix.at<float>(index / 3, index % 3) = data[0][index];
+		cameraMatrix.at<double>(index / 3, index % 3) = data[0][index];
 	}
 
 	if (debug) {
@@ -46,7 +48,7 @@ int main(int argc, char* argv[]) {
 		{
 			for (int j = 0; j < 3; j++)
 			{
-				printf("%0.4f ", cameraMatrix.at<float>(i, j));
+				printf("%0.4f ", cameraMatrix.at<double>(i, j));
 			}
 			std::cout << std::endl;
 		}
@@ -80,15 +82,13 @@ int main(int argc, char* argv[]) {
 
 	cv::Size refs((int)capture->get(cv::CAP_PROP_FRAME_WIDTH),
 		capture->get(cv::CAP_PROP_FRAME_HEIGHT));
-	if (debug) { 
-		printf("Camera Capture size: %d x %d \n.", refs.width, refs.height); 
+	if (debug) {
+		printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
 	}
-
+	printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
 	// Create placeholders for vectors of translation and rotation
 	cv::Mat rVector;
 	cv::Mat tVector;
-	//std::vector<float> rVector;
-	//std::vector<float> tVector;
 
 	cv::Mat frame;
 	while (true) {
@@ -98,17 +98,17 @@ int main(int argc, char* argv[]) {
 			printf("Frame is empty");
 			break;
 		}
-		
+		cv::Mat detect;
+		frame.copyTo(detect);
 		//Check if chessboard exists in the frame. 
 		std::vector<cv::Point2f> imagePoints;
-		bool status = detectAndExtractChessBoardCorners(frame, imagePoints);
-		
+		bool status = detectAndExtractChessBoardCorners(detect, imagePoints);
+
 		// Show the image now so that detected chessboard corners are visible. 
-		cv::imshow("Live Video", frame);
+		cv::imshow("Live Video", detect);
 		char key = cv::waitKey(3);
 		if (status)
 		{
-			debug = true;
 			// Build the points set from the corner set
 			std::vector<cv::Vec3f> objectPoints;
 			buildPointsSet(imagePoints, objectPoints);
@@ -134,6 +134,24 @@ int main(int argc, char* argv[]) {
 
 			// Solve for the pose and position of the camera based on the capture. 
 			cv::solvePnP(objectPoints, imagePoints, cameraMatrix, distortionCoefficients, rVector, tVector);
+			debug = true;
+			if (debug)
+			{
+				printf("Image Points: \n");
+				for (int i = 0; i < imagePoints.size(); i++)
+				{
+					std::cout << imagePoints[i] << std::endl;
+				}
+			}
+
+			if (debug)
+			{
+				printf("Object Points: \n");
+				for (int i = 0; i < objectPoints.size(); i++)
+				{
+					std::cout << objectPoints[i] << std::endl;
+				}
+			}
 
 			// Code to print the matrices
 			printf("Rotation vector is of shape (%d, %d) follows: \n", rVector.rows, rVector.cols);
@@ -143,7 +161,7 @@ int main(int argc, char* argv[]) {
 			{
 				for (int col = 0; col < rVector.cols; col++)
 				{
-					std::cout << rVector.at<int>(row, col) << " ";
+					printf("%0.4f", rVector.at<double>(row, col));
 				}
 				std::cout << std::endl;
 			}
@@ -155,7 +173,7 @@ int main(int argc, char* argv[]) {
 			{
 				for (int col = 0; col < tVector.cols; col++)
 				{
-					std::cout << tVector.at<int>(row, col) << " ";
+					printf("%0.4f", tVector.at<double>(row, col));
 				}
 				std::cout << std::endl;
 			}
@@ -177,19 +195,67 @@ int main(int argc, char* argv[]) {
 
 			// break;
 			// cv::waitKey(0); // To Capture the details for report. 
-			std::vector<cv::Vec2f> projectedObjectPoints;
-			//cv::projectPoints(objectPoints, rVector, tVector, cameraMatrix, distortionCoefficients, projectedObjectPoints);
 
-			/*printf("Projected points are :\n");
-			for (int index = 0; index < projectedObjectPoints.size(); index++)
-			{
-				std::cout << projectedObjectPoints[index] << std::endl;
-			}*/
-			// cv::imshow()
 
+			// Calculation for iamge points of exterior object points
+			std::vector<cv::Vec2f> projectedImagePoints;
+			std::vector<cv::Vec3f> exteriorObjectPoints;
+			exteriorObjectPoints.push_back(cv::Vec3f(-1, 1, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(-1, -6, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(9, -6, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(9, 1, 0));
+			cv::projectPoints(exteriorObjectPoints, rVector, tVector, cameraMatrix, distortionCoefficients, projectedImagePoints);
+
+			if (debug) {
+				printf("Projected points size is %zd:\n", projectedImagePoints.size());
+				for (int index = 0; index < projectedImagePoints.size(); index++)
+				{
+					std::cout << projectedImagePoints[index] << std::endl;
+				}
+			}
+			// Projected the exterior points. 
+			cv::Mat projection;
+			frame.copyTo(projection);
+			cv::line(projection, cv::Point2f(projectedImagePoints[0]), cv::Point2f(projectedImagePoints[1]),
+				cv::Scalar(255,0,255), 3);
+			cv::line(projection, cv::Point2f(projectedImagePoints[1]), cv::Point2f(projectedImagePoints[2]),
+				cv::Scalar(255, 0, 255), 3);
+			cv::line(projection, cv::Point2f(projectedImagePoints[2]), cv::Point2f(projectedImagePoints[3]),
+				cv::Scalar(255, 0, 255), 3);
+			cv::line(projection, cv::Point2f(projectedImagePoints[3]), cv::Point2f(projectedImagePoints[0]),
+				cv::Scalar(255, 0, 255), 3);
+
+			// Calculations for virutal object projection
+			std::vector<cv::Vec2f> projectedVirObjImgPts;
+			std::vector<cv::Vec3f> VirObjObjectPts;
+			buildVirtualObjectPoints(VirObjObjectPts);
+			cv::projectPoints(VirObjObjectPts, rVector, tVector, cameraMatrix, distortionCoefficients, projectedVirObjImgPts);
+
+			if (debug) {
+				printf("Vitual object's projected points of size %zd are:\n", projectedVirObjImgPts.size());
+				for (int index = 0; index < projectedVirObjImgPts.size(); index++)
+				{
+					std::cout << projectedVirObjImgPts[index] << std::endl;
+				}
+			}
+
+			// Projecting a virtual object
+			cv::Mat VirualObjProjection;
+			frame.copyTo(VirualObjProjection);
+			drawVirtualObject(VirualObjProjection, projectedVirObjImgPts);
+			cv::imshow(prVirObjFrameName, VirualObjProjection);
 		}
 		else {
 			printf("Chessboard corners are not found.\n");
+			if (cv::getWindowProperty(projectedFrameName, cv::WND_PROP_VISIBLE) > 0)
+			{
+				cv::destroyWindow(projectedFrameName);
+			}
+			if (cv::getWindowProperty(prVirObjFrameName, cv::WND_PROP_VISIBLE) > 0)
+			{
+				cv::destroyWindow(prVirObjFrameName);
+			}
+			
 		}
 
 		if (key == 'q')

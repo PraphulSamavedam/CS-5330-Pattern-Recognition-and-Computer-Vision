@@ -64,7 +64,7 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 
 /*This function populates the points_list for the corners list provided.
 * @param corners_set set of points in the world euclidean. 
-* @param points_set set of points corresponding to which the corners are found. 
+* @param vir_obj_object_pts set of points corresponding to which the corners are found. 
 * @return True if the chessboard is found and processing is complete.
 *		  False if the operation is not successful.
 * @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
@@ -89,4 +89,71 @@ bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& p
 		points.push_back(cv::Vec3f(index % pointsPerRow, - index / pointsPerRow, 0));
 	}
 	return 0;
+}
+
+
+/*This function populates the vir_obj_object_pts for the virtual object chosen in object option.
+* @param vir_obj_object_pts set of points of the virtual object.
+* @return True all points are provided.
+*          False if invalid object option is passed.
+*/
+bool buildVirtualObjectPoints(std::vector<cv::Vec3f>& vir_obj_object_pts, char object) {
+	vir_obj_object_pts.clear();
+	if (object == 'h')
+	{	// Base Floor
+		vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(4, 0, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(4,-4, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(0,-4, 0));
+
+		// Roof
+		vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(4, 0, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(4,-4, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(0,-4, 4));
+
+		// Center Line
+		vir_obj_object_pts.push_back(cv::Vec3f(2, 0, 6));
+		vir_obj_object_pts.push_back(cv::Vec3f(2,-4, 6));
+		return true;
+	}
+	return false;
+}
+
+/** This function draws the virtual object in the image based on the virtual object chosen.
+* @param image address of the image on which virtual object needs to be drawn
+* @param vir_obj_img_pts image points of the virtual object.
+* @param object virtual object which is passed to drawn.
+* @return True if  virtual object is successfully drawn on image.
+*         False if virtual object cannot be drawn.
+*/
+bool drawVirtualObject(cv::Mat& image, std::vector<cv::Vec2f>& vir_obj_img_pts, char object) {
+	if (object == 'h')
+	{
+		// Draw the base floor
+		cv::line(image, cv::Point2f(vir_obj_img_pts[0]), cv::Point2f(vir_obj_img_pts[1]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[1]), cv::Point2f(vir_obj_img_pts[2]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[2]), cv::Point2f(vir_obj_img_pts[3]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[3]), cv::Point2f(vir_obj_img_pts[0]), cv::Scalar(0, 255, 255), 2);
+
+		// Draw the one wall
+		cv::line(image, cv::Point2f(vir_obj_img_pts[1]), cv::Point2f(vir_obj_img_pts[5]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[5]), cv::Point2f(vir_obj_img_pts[6]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[6]), cv::Point2f(vir_obj_img_pts[2]), cv::Scalar(0, 255, 255), 2);
+
+		//Draw the other wall
+		cv::line(image, cv::Point2f(vir_obj_img_pts[0]), cv::Point2f(vir_obj_img_pts[4]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[4]), cv::Point2f(vir_obj_img_pts[7]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[7]), cv::Point2f(vir_obj_img_pts[3]), cv::Scalar(0, 255, 255), 2);
+
+		// Draw the roof 
+		cv::line(image, cv::Point2f(vir_obj_img_pts[6]), cv::Point2f(vir_obj_img_pts[9]), cv::Scalar(255, 0, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[7]), cv::Point2f(vir_obj_img_pts[9]), cv::Scalar(255, 0, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[5]), cv::Point2f(vir_obj_img_pts[8]), cv::Scalar(255, 0, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[4]), cv::Point2f(vir_obj_img_pts[8]), cv::Scalar(255, 0, 255), 2);
+
+		cv::line(image, cv::Point2f(vir_obj_img_pts[8]), cv::Point2f(vir_obj_img_pts[9]), cv::Scalar(255, 0, 255), 2);
+		return true;
+	}
+	return false;
 }
