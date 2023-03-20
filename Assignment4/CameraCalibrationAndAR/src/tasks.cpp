@@ -1,4 +1,4 @@
-/** 
+/**
 * Written by: Poorna Chandra Vemula, Samavedam Manikhanta Praphul
 * Version: 1.0
 * This file has the utitity functions required for the main functionality.
@@ -6,12 +6,12 @@
 
 #include <opencv2/opencv.hpp>
 
-/*This function checks for the presence of chessboard in the image. 
+/*This function checks for the presence of chessboard in the image.
 * If found, prints the first corner found along with the number of corners found.
-* @param srcImage the address of source Image for which chess board corners are to be extracted. 
-* @param corners output of the refined chessboard corners found in the image. 
+* @param srcImage the address of source Image for which chess board corners are to be extracted.
+* @param corners output of the refined chessboard corners found in the image.
 * @return True if the chessboard is found and processing is complete.
-*		  False if the operation is not successful.
+*          False if the operation is not successful.
 * @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
 bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners,
@@ -66,29 +66,45 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 * @param corners_set set of points in the world euclidean. 
 * @param vir_obj_object_pts set of points corresponding to which the corners are found. 
 * @return True if the chessboard is found and processing is complete.
-*		  False if the operation is not successful.
+*          False if the operation is not successful.
 * @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
-bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& points,	int pointsPerRow, int pointsPerColumn) {
-	// printf("Called Build Points Set\n");
-	// Ensure that all corners are captured to proceed
-	try
-	{
-		assert(corners.size() == (pointsPerRow * pointsPerColumn));
-	}
-	catch (const std::exception&)
-	{
-		printf("Invalid number of corners are passed");
-		return -1;
-	}
-	
-	// Populated the points based on the corners 
-	points.clear(); // Width = 9, Height = 6 are default values
-	for (int index = 0; index < corners.size(); index++)
-	{
-		points.push_back(cv::Vec3f(index % pointsPerRow, - index / pointsPerRow, 0));
-	}
-	return 0;
+bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& points,    int pointsPerRow, int pointsPerColumn) {
+    // printf("Called Build Points Set\n");
+    // Ensure that all corners are captured to proceed
+    try
+    {
+        assert(corners.size() == (pointsPerRow * pointsPerColumn));
+    }
+    catch (const std::exception&)
+    {
+        printf("Invalid number of corners are passed");
+        return -1;
+    }
+    
+    // Populated the points based on the corners
+    points.clear(); // Width = 9, Height = 6 are default values
+    for (int index = 0; index < corners.size(); index++)
+    {
+        points.push_back(cv::Vec3f(index % pointsPerRow, - index / pointsPerRow, 0));
+    }
+    return 0;
+}
+
+
+int cornerHarris(cv::Mat &cornersImage)
+{
+    int blockSize = 2;
+    int apertureSize = 3;
+    double k = 0.04;
+    cv::Mat src_gray;
+    cvtColor( cornersImage, src_gray, cv::COLOR_BGR2GRAY );
+    cv::Mat dst = cv::Mat::zeros( cornersImage.size(), CV_32FC1 );
+    cornerHarris( src_gray, dst, blockSize, apertureSize, k );
+    cv::Mat dst_norm, dst_norm_scaled;
+    cv::normalize( dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat() );
+    cv::convertScaleAbs( dst_norm, dst_norm_scaled );
+    dst_norm_scaled.copyTo(cornersImage);
 }
 
 
