@@ -2,7 +2,7 @@
 * Written by:   Poorna Chandra Vemula
 *               Samavedam Manikhanta Praphul
 * Version : 1.0
-* This file starts a video stream and is used to calibrate the
+* This file starts a video stream and is used to calibrate the 
 * camera and store the camera intrinsic params into a csv file.
 */
 
@@ -170,6 +170,7 @@ int main(int argc, char *argv[]) {
             reprojection.push_back(reprojection_error);
             append_metric_data_csv(cameraParametersFile, metricName, reprojection, false);
             printf("Reprojection Error: %.06f\n", reprojection_error);
+
         }
     }
     return 0;
