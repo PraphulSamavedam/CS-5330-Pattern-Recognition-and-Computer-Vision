@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
 	char metric_name_1[10] = "distCoeff";
 	char projectedFrameName[32] = "Projected Exterior points";
 	char prVirObjFrameName[32] = "Projected Virtual Object";
+	char virtual_object = 'a';
 
 	/*assert(argc > 1);
 	strcpy(paramsFile, argv[1]);*/
@@ -204,6 +205,18 @@ int main(int argc, char* argv[]) {
 			exteriorObjectPoints.push_back(cv::Vec3f(-1, -6, 0));
 			exteriorObjectPoints.push_back(cv::Vec3f(9, -6, 0));
 			exteriorObjectPoints.push_back(cv::Vec3f(9, 1, 0));
+
+			// Calculate for image points of axis points.
+			exteriorObjectPoints.push_back(cv::Vec3f(0, 0, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(1, 0, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(0, 1, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(0, 0, 1));
+
+			// Positions for the axis labels
+			exteriorObjectPoints.push_back(cv::Vec3f(1.5, 0, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(0, 1.5, 0));
+			exteriorObjectPoints.push_back(cv::Vec3f(0, 0, 1.5));
+
 			cv::projectPoints(exteriorObjectPoints, rVector, tVector, cameraMatrix, distortionCoefficients, projectedImagePoints);
 
 			if (debug) {
@@ -213,22 +226,39 @@ int main(int argc, char* argv[]) {
 					std::cout << projectedImagePoints[index] << std::endl;
 				}
 			}
+
 			// Projected the exterior points. 
 			cv::Mat projection;
 			frame.copyTo(projection);
 			cv::line(projection, cv::Point2f(projectedImagePoints[0]), cv::Point2f(projectedImagePoints[1]),
-				cv::Scalar(255,0,255), 3);
+				cv::Scalar(255, 0, 255), 2);
 			cv::line(projection, cv::Point2f(projectedImagePoints[1]), cv::Point2f(projectedImagePoints[2]),
-				cv::Scalar(255, 0, 255), 3);
+				cv::Scalar(255, 0, 255), 2);
 			cv::line(projection, cv::Point2f(projectedImagePoints[2]), cv::Point2f(projectedImagePoints[3]),
-				cv::Scalar(255, 0, 255), 3);
+				cv::Scalar(255, 0, 255), 2);
 			cv::line(projection, cv::Point2f(projectedImagePoints[3]), cv::Point2f(projectedImagePoints[0]),
-				cv::Scalar(255, 0, 255), 3);
+				cv::Scalar(255, 0, 255), 2);
 
+			// Project the axes
+			cv::line(projection, cv::Point2f(projectedImagePoints[4]), cv::Point2f(projectedImagePoints[5]),
+				cv::Scalar(255, 0, 0), 2.5);
+			cv::line(projection, cv::Point2f(projectedImagePoints[4]), cv::Point2f(projectedImagePoints[6]),
+				cv::Scalar(0, 255, 0), 2.5);
+			cv::line(projection, cv::Point2f(projectedImagePoints[4]), cv::Point2f(projectedImagePoints[7]),
+				cv::Scalar(0, 0, 255), 2.5);
+
+			// Label the axes
+			cv::putText(projection, "X-axis", cv::Point2f(projectedImagePoints[8]), cv::FONT_HERSHEY_COMPLEX,
+				0.2, cv::Scalar(255, 0, 0), 1.5);
+			cv::putText(projection, "Y-axis", cv::Point2f(projectedImagePoints[9]), cv::FONT_HERSHEY_COMPLEX,
+				0.2, cv::Scalar(0, 255, 0), 1.5);
+			cv::putText(projection, "Z-axis", cv::Point2f(projectedImagePoints[10]), cv::FONT_HERSHEY_COMPLEX,
+				0.2, cv::Scalar(0, 0, 255), 1.5);
+			cv::imshow("Outside points", projection);
 			// Calculations for virutal object projection
 			std::vector<cv::Vec2f> projectedVirObjImgPts;
 			std::vector<cv::Vec3f> VirObjObjectPts;
-			buildVirtualObjectPoints(VirObjObjectPts);
+			buildVirtualObjectPoints(VirObjObjectPts, virtual_object);
 			cv::projectPoints(VirObjObjectPts, rVector, tVector, cameraMatrix, distortionCoefficients, projectedVirObjImgPts);
 
 			if (debug) {
@@ -242,7 +272,7 @@ int main(int argc, char* argv[]) {
 			// Projecting a virtual object
 			cv::Mat VirualObjProjection;
 			frame.copyTo(VirualObjProjection);
-			drawVirtualObject(VirualObjProjection, projectedVirObjImgPts);
+			drawVirtualObject(VirualObjProjection, projectedVirObjImgPts, virtual_object);
 			cv::imshow(prVirObjFrameName, VirualObjProjection);
 		}
 		else {
@@ -255,9 +285,8 @@ int main(int argc, char* argv[]) {
 			{
 				cv::destroyWindow(prVirObjFrameName);
 			}
-			
-		}
 
+		}
 		if (key == 'q')
 		{
 			break;

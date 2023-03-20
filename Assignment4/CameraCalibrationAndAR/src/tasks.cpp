@@ -117,6 +117,21 @@ bool buildVirtualObjectPoints(std::vector<cv::Vec3f>& vir_obj_object_pts, char o
 		vir_obj_object_pts.push_back(cv::Vec3f(2,-4, 6));
 		return true;
 	}
+	else if (object == 'a') { 
+		// Front face - Square
+		vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(0,-4, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(0,-4, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 4));
+
+		// Back face - triangle
+		vir_obj_object_pts.push_back(cv::Vec3f(6, 0, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(6,-4, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(6, 0, 4));
+
+		// Assymmetric point
+		vir_obj_object_pts.push_back(cv::Vec3f(2,-2, 2));
+	}
 	return false;
 }
 
@@ -154,6 +169,27 @@ bool drawVirtualObject(cv::Mat& image, std::vector<cv::Vec2f>& vir_obj_img_pts, 
 
 		cv::line(image, cv::Point2f(vir_obj_img_pts[8]), cv::Point2f(vir_obj_img_pts[9]), cv::Scalar(255, 0, 255), 2);
 		return true;
+	}
+	else if (object == 'a') {
+		// Draw the front square
+		cv::line(image, cv::Point2f(vir_obj_img_pts[0]), cv::Point2f(vir_obj_img_pts[1]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[1]), cv::Point2f(vir_obj_img_pts[2]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[2]), cv::Point2f(vir_obj_img_pts[3]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[3]), cv::Point2f(vir_obj_img_pts[0]), cv::Scalar(0, 255, 255), 2);
+
+		// Draw the back triangle
+		cv::line(image, cv::Point2f(vir_obj_img_pts[4]), cv::Point2f(vir_obj_img_pts[5]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[5]), cv::Point2f(vir_obj_img_pts[6]), cv::Scalar(0, 255, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[6]), cv::Point2f(vir_obj_img_pts[4]), cv::Scalar(0, 255, 255), 2);
+
+		// Connecting front square with back triangle
+		cv::line(image, cv::Point2f(vir_obj_img_pts[0]), cv::Point2f(vir_obj_img_pts[4]), cv::Scalar(255, 0, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[3]), cv::Point2f(vir_obj_img_pts[6]), cv::Scalar(255, 0, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[1]), cv::Point2f(vir_obj_img_pts[5]), cv::Scalar(255, 0, 255), 2);
+
+		// Making assymetrical 
+		cv::line(image, cv::Point2f(vir_obj_img_pts[2]), cv::Point2f(vir_obj_img_pts[7]), cv::Scalar(255, 0, 255), 2);
+		cv::line(image, cv::Point2f(vir_obj_img_pts[7]), cv::Point2f(vir_obj_img_pts[6]), cv::Scalar(255, 0, 255), 2);
 	}
 	return false;
 }
