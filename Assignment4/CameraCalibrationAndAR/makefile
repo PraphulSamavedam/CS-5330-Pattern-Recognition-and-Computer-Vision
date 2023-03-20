@@ -19,18 +19,19 @@ LDFLAGS = -L/opt/homebrew/Cellar/opencv/4.7.0/lib/# opencv libraries are here
 # these settings work for macOS and macports
 LDLIBS = -framework AVFoundation -framework CoreMedia -framework CoreVideo -framework CoreServices -framework CoreGraphics -framework AppKit -framework OpenCL -lopencv_core -lopencv_highgui -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_objdetect -lopencv_calib3d
 
-#LDLIBS = -ltiff -lpng -ljpeg -llapack -lblas -lz -ljasper -lwebp -lIlmImf -lgs -framework AVFoundation -framework CoreMedia -framework CoreVideo -framework CoreServices -framework CoreGraphics -framework AppKit -framework OpenCL  -lopencv_core -lopencv_highgui -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_objdetect -lIlmImf
-
 # Location to write the executables
 BINDIR = .
 
 # rules for making various executables
-all: main project
+all: main project features
 
 main: ./src/main.o ./src/tasks.o ./src/csv_util.o
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 	
 project: ./src/project.o ./src/tasks.o ./src/csv_util.o
+	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
+	
+features: ./src/features.o ./src/tasks.o
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 	
 clean:
