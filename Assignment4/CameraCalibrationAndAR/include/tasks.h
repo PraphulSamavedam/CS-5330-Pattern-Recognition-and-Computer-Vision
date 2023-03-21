@@ -8,10 +8,10 @@
 
 /*This function checks for the presence of chessboard in the image. 
 * If found, prints the first corner found along with the number of corners found.
-* @param srcImage the address of source Image for which chess board corners are to be extracted. 
-* @param corners output of the refined chessboard corners found in the image. 
+* @param srcImage the address of source Image for which chess board corners are to be extracted.
+* @param corners output of the refined chessboard corners found in the image.
 * @return True if the chessboard is found and processing is complete.
-*		  False if the operation is not successful.
+*          False if the operation is not successful.
 * @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
 bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2f>& corners,
@@ -37,9 +37,11 @@ bool buildVirtualObjectPoints(std::vector<cv::Vec3f>& points_set, char object = 
 
 /** This function draws the virtual object in the image based on the virtual object chosen.
 * @param image address of the image on which virtual object needs to be drawn
-* @param vir_obj_img_pts image points of the virtual object. 
+* @param vir_obj_img_pts image points of the virtual object.
 * @param object virtual object which is passed to drawn.
 * @return True if  virtual object is successfully drawn on image.
 *         False if virtual object cannot be drawn.
 */
 bool drawVirtualObject(cv::Mat& image, std::vector<cv::Vec2f>& vir_obj_img_pts, char object = 'h');
+
+int cornerHarris(cv::Mat &cornersImage);

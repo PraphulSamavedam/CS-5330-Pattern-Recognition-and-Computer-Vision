@@ -11,7 +11,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include "../include/tasks.h"
-#include "../include/csv_util.h";
+#include "../include/csv_util.h"
 
 
 int main(int argc, char *argv[]) {
@@ -174,8 +174,6 @@ int main(int argc, char *argv[]) {
             append_metric_data_csv(cameraParametersFile, metricName, reprojection, false);
             printf("Reprojection Error: %.06f\n", reprojection_error);
 
-//            printf("Closing the function\n");
-//            break;
         }
     }
     return 0;
