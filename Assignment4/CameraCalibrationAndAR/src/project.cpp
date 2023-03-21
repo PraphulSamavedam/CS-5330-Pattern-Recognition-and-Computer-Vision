@@ -8,7 +8,7 @@
 
 
 #include <opencv2/opencv.hpp> // Required for openCV functions.
-#include <opencv2/aruco.hpp>  //  Required for aruco
+#include <opencv2/arco.hpp>  //  Required for aruco
 #include "../include/csv_util.h" // Reading the csv file containing the camera intrinsic parameters
 #include "../include/tasks.h" // For detectAndExtractChessBoardCorners function
 
@@ -149,7 +149,6 @@ int main(int argc, char* argv[]) {
 
 			// Solve for the pose and position of the camera based on the capture. 
 			cv::solvePnP(objectPoints, imagePoints, cameraMatrix, distortionCoefficients, rVector, tVector);
-			debug = true;
 			if (debug)
 			{
 				printf("Image Points: \n");
@@ -168,70 +167,26 @@ int main(int argc, char* argv[]) {
 				}
 			}
 
-			// Code to print the matrices
-			printf("Rotation vector is of shape (%d, %d) follows: \n", rVector.rows, rVector.cols);
+			// Print the translation and rotation vectors
+			printf("Rotation vector of shape (%d, %d) is as follows: \n", rVector.rows, rVector.cols);
 			std::cout << rVector << std::endl;
-			printf("Rotation vector is as follows: \n");
-			for (int row = 0; row < rVector.rows; row++)
-			{
-				for (int col = 0; col < rVector.cols; col++)
-				{
-					printf("%0.4f", rVector.at<double>(row, col));
-				}
-				std::cout << std::endl;
-			}
 
-			printf("Translation vector is of shape (%d, %d) follows: \n", tVector.rows, tVector.cols);
+			printf("Translation vector of shape (%d, %d) is as follows: \n", tVector.rows, tVector.cols);
 			std::cout << tVector << std::endl;
-			printf("Translation vector is as follows: \n");
-			for (int row = 0; row < tVector.rows; row++)
-			{
-				for (int col = 0; col < tVector.cols; col++)
-				{
-					printf("%0.4f", tVector.at<double>(row, col));
-				}
-				std::cout << std::endl;
-			}
 
-			/* // Code to print float vectors
-			printf("Rotation Vector is :\n");
-			for (float val : rVector)
-			{
-				printf("%.04f ", val);
-			}
-			std::cout << std::endl;
-
-			printf("Translation Vector is :\n");
-			for (float val : tVector)
-			{
-				printf("%.04f ", val);
-			}
-			std::cout << std::endl;*/
-
-			// break;
-			// cv::waitKey(0); // To Capture the details for report. 
-
-
-			// Calculation for iamge points of exterior object points
+			// Calculation for image points of exterior object points
 			std::vector<cv::Vec2f> projectedImagePoints;
 			std::vector<cv::Vec3f> exteriorObjectPoints;
-			exteriorObjectPoints.push_back(cv::Vec3f(-1, 1, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(-1, -6, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(9, -6, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(9, 1, 0));
-
-			// Calculate for image points of axis points.
-			exteriorObjectPoints.push_back(cv::Vec3f(0, 0, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(1, 0, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(0, 1, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(0, 0, 1));
-
-			// Positions for the axis labels
-			exteriorObjectPoints.push_back(cv::Vec3f(1.5, 0, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(0, 1.5, 0));
-			exteriorObjectPoints.push_back(cv::Vec3f(0, 0, 1.5));
-
+			buildVirtualObjectPoints(exteriorObjectPoints, 'r'); 
+			
+			// Get the projected the exterior points.
 			cv::projectPoints(exteriorObjectPoints, rVector, tVector, cameraMatrix, distortionCoefficients, projectedImagePoints);
+
+			// Display the exterior rectangle
+			cv::Mat projection;
+			frame.copyTo(projection);
+			drawVirtualObject(projection, projectedImagePoints, 'r');
+			cv::imshow(projectedFrameName, projection);
 
 			if (debug) {
 				printf("Projected points size is %zd:\n", projectedImagePoints.size());
@@ -241,53 +196,30 @@ int main(int argc, char* argv[]) {
 				}
 			}
 
-			// Projected the exterior points. 
-			cv::Mat projection;
-			frame.copyTo(projection);
-			cv::line(projection, cv::Point2f(projectedImagePoints[0]), cv::Point2f(projectedImagePoints[1]),
-				cv::Scalar(255, 0, 255), 2);
-			cv::line(projection, cv::Point2f(projectedImagePoints[1]), cv::Point2f(projectedImagePoints[2]),
-				cv::Scalar(255, 0, 255), 2);
-			cv::line(projection, cv::Point2f(projectedImagePoints[2]), cv::Point2f(projectedImagePoints[3]),
-				cv::Scalar(255, 0, 255), 2);
-			cv::line(projection, cv::Point2f(projectedImagePoints[3]), cv::Point2f(projectedImagePoints[0]),
-				cv::Scalar(255, 0, 255), 2);
-
-			// Project the axes
-			cv::line(projection, cv::Point2f(projectedImagePoints[4]), cv::Point2f(projectedImagePoints[5]),
-				cv::Scalar(255, 0, 0), 2.5);
-			cv::line(projection, cv::Point2f(projectedImagePoints[4]), cv::Point2f(projectedImagePoints[6]),
-				cv::Scalar(0, 255, 0), 2.5);
-			cv::line(projection, cv::Point2f(projectedImagePoints[4]), cv::Point2f(projectedImagePoints[7]),
-				cv::Scalar(0, 0, 255), 2.5);
-
-			// Label the axes
-			cv::putText(projection, "X-axis", cv::Point2f(projectedImagePoints[8]), cv::FONT_HERSHEY_COMPLEX,
-				0.2, cv::Scalar(255, 0, 0), 1.5);
-			cv::putText(projection, "Y-axis", cv::Point2f(projectedImagePoints[9]), cv::FONT_HERSHEY_COMPLEX,
-				0.2, cv::Scalar(0, 255, 0), 1.5);
-			cv::putText(projection, "Z-axis", cv::Point2f(projectedImagePoints[10]), cv::FONT_HERSHEY_COMPLEX,
-				0.2, cv::Scalar(0, 0, 255), 1.5);
-			cv::imshow("Outside points", projection);
 			// Calculations for virutal object projection
 			std::vector<cv::Vec2f> projectedVirObjImgPts;
 			std::vector<cv::Vec3f> VirObjObjectPts;
-			buildVirtualObjectPoints(VirObjObjectPts, virtual_object);
-			cv::projectPoints(VirObjObjectPts, rVector, tVector, cameraMatrix, distortionCoefficients, projectedVirObjImgPts);
+			bool validVirtualObject = buildVirtualObjectPoints(VirObjObjectPts, virtual_object);
+			// If Valid object then project the virtual object.
+			if (validVirtualObject)
+			{
+				cv::projectPoints(VirObjObjectPts, rVector, tVector, cameraMatrix, distortionCoefficients, projectedVirObjImgPts);
 
-			if (debug) {
-				printf("Vitual object's projected points of size %zd are:\n", projectedVirObjImgPts.size());
-				for (int index = 0; index < projectedVirObjImgPts.size(); index++)
-				{
-					std::cout << projectedVirObjImgPts[index] << std::endl;
+				if (debug) {
+					printf("Vitual object's projected points of size %zd are:\n", projectedVirObjImgPts.size());
+					for (int index = 0; index < projectedVirObjImgPts.size(); index++)
+					{
+						std::cout << projectedVirObjImgPts[index] << std::endl;
+					}
 				}
-			}
 
-			// Projecting a virtual object
-			cv::Mat VirualObjProjection;
-			frame.copyTo(VirualObjProjection);
-			drawVirtualObject(VirualObjProjection, projectedVirObjImgPts, virtual_object);
-			cv::imshow(prVirObjFrameName, VirualObjProjection);
+				// Projecting a virtual object
+				cv::Mat VirualObjProjection;
+				frame.copyTo(VirualObjProjection);
+				drawVirtualObject(VirualObjProjection, projectedVirObjImgPts, virtual_object);
+				cv::imshow(prVirObjFrameName, VirualObjProjection);
+			}
+			
 		}
     
     if(ids.size()>0){
@@ -338,6 +270,11 @@ int main(int argc, char* argv[]) {
 		if (key == 'q')
 		{
 			break;
+		}
+		else if (key>0)
+		{
+			virtual_object = key;
+			std::cout << "Virtual object set as '" << virtual_object << "'" << std::endl;
 		}
 	}
 	return 0;
