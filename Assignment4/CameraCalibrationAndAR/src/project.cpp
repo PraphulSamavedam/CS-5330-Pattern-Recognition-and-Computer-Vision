@@ -8,7 +8,7 @@
 
 
 #include <opencv2/opencv.hpp> // Required for openCV functions.
-#include <opencv2/aruco.hpp>  //  Required for aruco
+#include <opencv2/arco.hpp>  //  Required for aruco
 #include "../include/csv_util.h" // Reading the csv file containing the camera intrinsic parameters
 #include "../include/tasks.h" // For detectAndExtractChessBoardCorners function
 

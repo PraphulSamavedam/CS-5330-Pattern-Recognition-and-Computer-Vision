@@ -69,26 +69,6 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 *          False if the operation is not successful.
 * @Note the chess board image is supposed to have 9 internal points along row and 6 internal points along column.
 */
-bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& points, int pointsPerRow, int pointsPerColumn) {
-	// printf("Called Build Points Set\n");
-	// Ensure that all corners are captured to proceed
-	try
-	{
-		assert(corners.size() == (pointsPerRow * pointsPerColumn));
-	}
-	catch (const std::exception&)
-	{
-		printf("Invalid number of corners are passed");
-		return -1;
-	}
-
-	// Populated the points based on the corners 
-	points.clear(); // Width = 9, Height = 6 are default values
-	for (int index = 0; index < corners.size(); index++)
-	{
-		points.push_back(cv::Vec3f(index % pointsPerRow, -index / pointsPerRow, 0));
-	}
-	return 0;
 bool buildPointsSet(std::vector<cv::Point2f>& corners, std::vector<cv::Vec3f>& points,    int pointsPerRow, int pointsPerColumn) {
     // printf("Called Build Points Set\n");
     // Ensure that all corners are captured to proceed
@@ -137,25 +117,25 @@ bool buildVirtualObjectPoints(std::vector<cv::Vec3f>& vir_obj_object_pts, char o
 	vir_obj_object_pts.clear();
 	switch (object)
 	{
-	case 'r': // Outer rectangle with axes 
-	{	// Calculate for the outer corners
-		vir_obj_object_pts.push_back(cv::Vec3f(-1, 1, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(-1, -6, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(9, -6, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(9, 1, 0));
+		case 'r': // Outer rectangle with axes 
+		{	// Calculate for the outer corners
+			vir_obj_object_pts.push_back(cv::Vec3f(-1, 1, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(-1, -6, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(9, -6, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(9, 1, 0));
 
-		// Calculate for image points of axis points.
-		vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(1, 0, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(0, 1, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 1));
+			// Calculate for image points of axis points.
+			vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(1, 0, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(0, 1, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 1));
 
-		// Positions for the axis labels
-		vir_obj_object_pts.push_back(cv::Vec3f(1.5, 0, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(0, 1.5, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 1.5));
-		return true;
-	}
+			// Positions for the axis labels
+			vir_obj_object_pts.push_back(cv::Vec3f(1.5, 0, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(0, 1.5, 0));
+			vir_obj_object_pts.push_back(cv::Vec3f(0, 0, 1.5));
+			return true;
+		}
 	case 'h': // House 
 	{
 		// Base Floor
