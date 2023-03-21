@@ -17,6 +17,7 @@
 int main(int argc, char *argv[]) {
 
     char cameraParametersFile[32] = "./resources/cameraParams.csv";
+    bool debug = false;
 
     cv::VideoCapture* capture = new cv::VideoCapture(0);
     // Check if any video capture device is present.
@@ -60,17 +61,19 @@ int main(int argc, char *argv[]) {
         if (key == 'q')
         {
             cv::destroyAllWindows();
-            for (auto corner : corners_list)
-            {
-                std::cout << corner << std::endl;
-            }
-            printf("\nPrinting points. \n");
-            for (auto point_set : points_list)
-            {
-                for (auto point : point_set) {
-                    std::cout << point << " ";
+            if (debug) {
+                for (auto corner : corners_list)
+                {
+                    std::cout << corner << std::endl;
                 }
-                std::cout << std::endl;
+                printf("\nPrinting points. \n");
+                for (auto point_set : points_list)
+                {
+                    for (auto point : point_set) {
+                        std::cout << point << " ";
+                    }
+                    std::cout << std::endl;
+                }
             }
             break;
         }

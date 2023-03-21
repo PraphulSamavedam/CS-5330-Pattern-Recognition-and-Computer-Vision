@@ -8,7 +8,7 @@
 
 
 #include <opencv2/opencv.hpp> // Required for openCV functions.
-#include <opencv2/arco.hpp>  //  Required for aruco
+//#include <opencv2/arco.hpp>  //  Required for aruco
 #include "../include/csv_util.h" // Reading the csv file containing the camera intrinsic parameters
 #include "../include/tasks.h" // For detectAndExtractChessBoardCorners function
 
@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
 	char metric_name_1[10] = "distCoeff";
 	char projectedFrameName[32] = "Projected Exterior points";
 	char prVirObjFrameName[32] = "Projected Virtual Object";
-	char virtual_object = 'a';
+	char virtual_object = 'r';
 
 	/*assert(argc > 1);
 	strcpy(paramsFile, argv[1]);*/
@@ -92,12 +92,12 @@ int main(int argc, char* argv[]) {
 	// Create placeholders for vectors of translation and rotation
 	cv::Mat rVector;
 	cv::Mat tVector;
-  
-  //Aruco setup
-  cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
-  cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-  cv::aruco::ArucoDetector detector(dictionary, detectorParams);
-  
+
+	//Aruco setup
+	cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
+	cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+	cv::aruco::ArucoDetector detector(dictionary, detectorParams);
+
 	cv::Mat frame;
 	while (true) {
 		*capture >> frame;
@@ -115,13 +115,13 @@ int main(int argc, char* argv[]) {
 		// Show the image now so that detected chessboard corners are visible. 
 		cv::imshow("Live Video", detect);
 		char key = cv::waitKey(3);
-    
-    //detecting Markers
-    std::vector<int> ids;
-    std::vector<std::vector<cv::Point2f>> corners;
-    detector.detectMarkers(frame, corners, ids);
-    
-    
+
+		//detecting Markers
+		std::vector<int> ids;
+		std::vector<std::vector<cv::Point2f>> corners;
+		//detector.detectMarkers(frame, corners, ids);
+
+		//Checking for chessboard in the image.
 		if (status)
 		{
 			// Build the points set from the corner set
@@ -177,8 +177,8 @@ int main(int argc, char* argv[]) {
 			// Calculation for image points of exterior object points
 			std::vector<cv::Vec2f> projectedImagePoints;
 			std::vector<cv::Vec3f> exteriorObjectPoints;
-			buildVirtualObjectPoints(exteriorObjectPoints, 'r'); 
-			
+			buildVirtualObjectPoints(exteriorObjectPoints, 'r');
+
 			// Get the projected the exterior points.
 			cv::projectPoints(exteriorObjectPoints, rVector, tVector, cameraMatrix, distortionCoefficients, projectedImagePoints);
 
@@ -219,42 +219,8 @@ int main(int argc, char* argv[]) {
 				drawVirtualObject(VirualObjProjection, projectedVirObjImgPts, virtual_object);
 				cv::imshow(prVirObjFrameName, VirualObjProjection);
 			}
-			
+
 		}
-    
-    if(ids.size()>0){
-            
-            // Projected the exterior points.
-            cv::Mat projection;
-            frame.copyTo(projection);
-            
-            cv::aruco::drawDetectedMarkers(projection, corners, ids);
-            int nMarkers = corners.size();
-            std::vector<cv::Vec3d> rvecs(nMarkers), tvecs(nMarkers);
-            
-            float markerLength = 0.05;
-            
-            // Set coordinate system
-            cv::Mat objPoints(4, 1, CV_32FC3);
-            objPoints.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(-markerLength/2.f, markerLength/2.f, 0);
-            objPoints.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(markerLength/2.f, markerLength/2.f, 0);
-            objPoints.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(markerLength/2.f, -markerLength/2.f, 0);
-            objPoints.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(-markerLength/2.f, -markerLength/2.f, 0);
-            
-            // Calculate pose for each marker
-            for (int i = 0; i < nMarkers; i++) {
-                cv::solvePnP(objPoints, corners.at(i), cameraMatrix, distortionCoefficients, rvecs.at(i), tvecs.at(i));
-            }
-            
-            // Draw axis for each marker
-            for(unsigned int i = 0; i < ids.size(); i++) {
-                cv::drawFrameAxes(projection, cameraMatrix, distortionCoefficients, rvecs[i], tvecs[i], 0.1);
-            }
-            
-            cv::imshow("projection markers", projection);
-            
-     }
-        
 		else {
 			printf("Chessboard corners are not found.\n");
 			if (cv::getWindowProperty(projectedFrameName, cv::WND_PROP_VISIBLE) > 0)
@@ -267,11 +233,47 @@ int main(int argc, char* argv[]) {
 			}
 
 		}
+
+		// Checking with Arco Markers
+		if(ids.size()>0){
+		        
+		        // Projected the exterior points.
+		        cv::Mat projection;
+		        frame.copyTo(projection);
+		        
+		        cv::aruco::drawDetectedMarkers(projection, corners, ids);
+		        int nMarkers = corners.size();
+		        std::vector<cv::Vec3d> rvecs(nMarkers), tvecs(nMarkers);
+		        
+		        float markerLength = 0.05;
+		        
+		        // Set coordinate system
+		        cv::Mat objPoints(4, 1, CV_32FC3);
+		        objPoints.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(-markerLength/2.f, markerLength/2.f, 0);
+		        objPoints.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(markerLength/2.f, markerLength/2.f, 0);
+		        objPoints.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(markerLength/2.f, -markerLength/2.f, 0);
+		        objPoints.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(-markerLength/2.f, -markerLength/2.f, 0);
+		        
+		        // Calculate pose for each marker
+		        for (int i = 0; i < nMarkers; i++) {
+		            cv::solvePnP(objPoints, corners.at(i), cameraMatrix, distortionCoefficients, rvecs.at(i), tvecs.at(i));
+		        }
+		        
+		        // Draw axis for each marker
+		        for(unsigned int i = 0; i < ids.size(); i++) {
+		            cv::drawFrameAxes(projection, cameraMatrix, distortionCoefficients, rvecs[i], tvecs[i], 0.1);
+		        }
+		        
+		        cv::imshow("projection markers", projection);
+		        
+		 }
+
+
 		if (key == 'q')
 		{
 			break;
 		}
-		else if (key>0)
+		else if (key > 0)
 		{
 			virtual_object = key;
 			std::cout << "Virtual object set as '" << virtual_object << "'" << std::endl;
