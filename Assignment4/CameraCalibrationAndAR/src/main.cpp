@@ -49,6 +49,9 @@ int main(int argc, char *argv[]) {
             break;
         }
         std::vector<cv::Point2f> corners_set;
+        cv::Mat original;
+        frame.copyTo(original);
+        cv::imshow("Input", original);
         bool status = detectAndExtractChessBoardCorners(frame, corners_set);
         // printf("Status of chess board capture in video loop: %d\n", status);
         cv::namedWindow("Image", cv::WINDOW_GUI_EXPANDED);
