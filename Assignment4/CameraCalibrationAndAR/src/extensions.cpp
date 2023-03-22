@@ -138,18 +138,20 @@ int main(int argc, char* argv[]) {
 			}
 
 			// Show the image now so that detected chessboard cornerPts are visible. 
-			cv::imshow("Live Video", frame);
+			cv::imshow(OriginalFrameName, frame);
 			char key = cv::waitKey(3);
 
 			cv::Mat image;
 			frame.copyTo(image);
-
+			cv::Mat detect;
+			frame.copyTo(detect);
 			std::vector<cv::Point2f> cornerPts;
-			bool status = detectAndExtractChessBoardCorners(image, cornerPts);
+			bool status = detectAndExtractChessBoardCorners(detect, cornerPts);
 			if (status)
 			{
 				getCameraPoseAndDrawVirtualObject(image, cornerPts, cameraMatrix, distortionCoefficients, virtual_object);
 				cv::imshow(prVirObjFrameName, image);
+				cv::imshow(detectedFrameName, detect);
 			}
 			else {
 				printf("Chessboard corners are not found.\n");
@@ -251,7 +253,7 @@ int main(int argc, char* argv[]) {
 			cv::Mat image;
 
 			float fps = cap->get(cv::CAP_PROP_FPS);
-			printf("frames per second = % .04f", fps);
+			printf("frames per second = % .04f\n", fps);
 
 			int frame_width = cap->get(cv::CAP_PROP_FRAME_WIDTH);
 			int frame_height = cap->get(cv::CAP_PROP_FRAME_HEIGHT);
@@ -260,13 +262,14 @@ int main(int argc, char* argv[]) {
 			cv::VideoWriter video(outputFileName,
 				cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), fps,
 				cv::Size(frame_width, frame_height));
-
+			printf("\nProcessing video \n");
 			while (cap->isOpened())
 			{
 				*cap >> image;
+				printf(".");
 				//get new frame from camera, treating as stream.
 				if (image.empty()) {
-					printf("Image is empty");
+					//printf("Image is empty\n");
 					break;
 				}
 				std::vector<cv::Point2f> corners;
@@ -278,6 +281,7 @@ int main(int argc, char* argv[]) {
 				// Else scenario is not required as the frame has to be the same. 
 				video.write(image);
 			}
+			printf("\nSuccessfully processed static video.\n");
 			
 		}
 		else

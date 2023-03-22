@@ -20,7 +20,7 @@ bool __getCameraPosition(std::vector<cv::Point2f>& cornerImgPts, cv::Mat& camera
 	cv::Mat& rVector, cv::Mat& tVector) {
 	std::vector<cv::Vec3f> cornerObjPts;
 	buildPointsSet(cornerImgPts, cornerObjPts);
-	printf("Built the points set of size %zd.", cornerObjPts.size());
+	//printf("Built the points set of size %zd.", cornerObjPts.size());
 	cv::solvePnP(cornerObjPts, cornerImgPts, cameraMatrix, distortionCoefficients, rVector, tVector);
 }
 

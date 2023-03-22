@@ -21,9 +21,9 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 	bool status = cv::findChessboardCorners(srcImage, patternSize, corners);
 	if (status)
 	{
-		printf("Successfully obtained the chessboard corners.\n");
-		// Mark each corner caught with Magenta Circle.
+		if (echo) { printf("Successfully obtained the chessboard corners.\n"); }
 
+		// Mark each corner caught with Magenta Circle.
 		if (echo) {
 			for (int i = 0; i < corners.size(); i++)
 			{
@@ -33,9 +33,10 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 		}
 
 		// Print the details of capture
-		printf("First corner: %.02f, %.02f\n", corners[0].x, corners[0].y);
-		printf("Total number of corners found: %zd\n", corners.size());
-
+		if (echo) {
+			printf("First corner: %.02f, %.02f\n", corners[0].x, corners[0].y);
+			printf("Total number of corners found: %zd\n", corners.size());
+		}
 		if (echo)
 		{
 			printf("Obtained the chessboard corners, refining the corners....\n");
@@ -55,7 +56,7 @@ bool detectAndExtractChessBoardCorners(cv::Mat& srcImage, std::vector<cv::Point2
 		cv::drawChessboardCorners(srcImage, cv::Size(pointsPerRow, pointsPerColumn), corners, status);
 	}
 	else {
-		printf("Chessboard corners are not found.\n");
+		//printf("Chessboard corners are not found.\n");
 		return false;
 	}
 	return true;
@@ -187,17 +188,17 @@ bool buildVirtualObjectPoints(std::vector<cv::Vec3f>& vir_obj_object_pts, char o
 	}
 	case 'c': // Cube
 	{	// Calculate for the bottom square
-		vir_obj_object_pts.push_back(cv::Vec3f( 2, -1, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f( 2, -5, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f( 6, -5, 0));
-		vir_obj_object_pts.push_back(cv::Vec3f( 6, -1, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(2, -1, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(2, -5, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(6, -5, 0));
+		vir_obj_object_pts.push_back(cv::Vec3f(6, -1, 0));
 
 
 		// Calculate for the top square
-		vir_obj_object_pts.push_back(cv::Vec3f( 2, -1, 4));
-		vir_obj_object_pts.push_back(cv::Vec3f( 2, -5, 4));
-		vir_obj_object_pts.push_back(cv::Vec3f( 6, -5, 4));
-		vir_obj_object_pts.push_back(cv::Vec3f( 6, -1, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(2, -1, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(2, -5, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(6, -5, 4));
+		vir_obj_object_pts.push_back(cv::Vec3f(6, -1, 4));
 
 		return true;
 	}
