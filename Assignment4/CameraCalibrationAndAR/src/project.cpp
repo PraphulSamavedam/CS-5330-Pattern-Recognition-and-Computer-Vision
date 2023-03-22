@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
 		//detecting Markers
 		std::vector<int> ids;
 		std::vector<std::vector<cv::Point2f>> corners;
-		//detector.detectMarkers(frame, corners, ids);
+		detector.detectMarkers(frame, corners, ids);
 
 		//Checking for chessboard in the image.
 		if (status)

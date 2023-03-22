@@ -30,6 +30,8 @@ int main(int argc, char *argv[]) {
     cv::Size refs((int)capture->get(cv::CAP_PROP_FRAME_WIDTH),
         capture->get(cv::CAP_PROP_FRAME_HEIGHT));
     printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
+    printf("Camera Aspect Ratio: %.04f\n", refs.width/refs.height);
+    printf("Camera FPS: %d\n", capture->get(cv::CAP_PROP_FPS));
     
     cv::Mat frame;
     std::vector<std::vector<cv::Point2f>> corners_list;
