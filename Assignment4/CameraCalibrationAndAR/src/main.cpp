@@ -17,7 +17,7 @@
 int main(int argc, char *argv[]) {
 
     char cameraParametersFile[32] = "./resources/cameraParams.csv";
-    bool debug = false;
+    bool debug = true;
 
     cv::VideoCapture* capture = new cv::VideoCapture(0);
     // Check if any video capture device is present.
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
     cv::Size refs((int)capture->get(cv::CAP_PROP_FRAME_WIDTH),
         capture->get(cv::CAP_PROP_FRAME_HEIGHT));
     printf("Camera Capture size: %d x %d \n.", refs.width, refs.height);
-    printf("Camera Aspect Ratio: %.04f\n", refs.width/refs.height);
-    printf("Camera FPS: %d\n", capture->get(cv::CAP_PROP_FPS));
+    printf("Camera Aspect Ratio: %.04f\n", float(refs.width)/refs.height);
+    printf("Camera FPS: %l\n", capture->get(cv::CAP_PROP_FPS));
     
     cv::Mat frame;
     std::vector<std::vector<cv::Point2f>> corners_list;
@@ -82,15 +82,18 @@ int main(int argc, char *argv[]) {
         else if (key == 's') {
             //printf("Waiting for the point set calculation.\n");
             if (status) {
+                printf("Storing the %zd image points into memory.\n", corners_set.size());
                 corners_list.push_back(corners_set);
                 buildPointsSet(corners_set, points_set);
                 points_list.push_back(points_set);
-                
+                printf("Storing the %zd objects points into memory.\n", points_set.size());
+
                 // Mark that there was a successful capture
                 last_successful_capture = true;
                 last_corners_set = corners_set;
                 buildPointsSet(last_corners_set, last_points_set);
                 frame.copyTo(last_image); // Save the last image
+                printf("Marked the current image points and object points as last successful capture details.\n");
             }
             else {
                 if (last_successful_capture)

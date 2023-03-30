@@ -1,7 +1,13 @@
 /** Written by: Samavedam Manikhanta Praphul
 *                Poorna Chandra Vemula
-* This functions works on a calibrated camera to start augmented reality.
-*
+* This functions works on a calibrated camera to project some virtual object either live 
+* or on static iamge or an existing video based on the params
+* Usage: projectStaticOrLive.exe <cam_intr_path> <mode> <static_file_path> <virtual_object>
+* Defaults:
+* cam_int_path = "resources/cameraParams.csv"
+* mode = "l" options: "l", "i", "v" for live, staticImage, staticVideo
+* static_file_path = NULL
+* virtual_object = "a" options: "h", "a", "c", "t", "r"
 */
 
 #define _CRT_SECURE_NO_WARNINGS // To supress strcpy warnings
@@ -11,7 +17,6 @@
 #include "../include/csv_util.h" // Reading the csv file containing the camera intrinsic parameters
 #include <fstream> // Required for accessing static images/video
 #include "../include/utils.h"  // Required for code simplicity
-//#include "../include/tasks.h" // For functions developed as part of tasks.
 
 int main(int argc, char* argv[]) {
 
