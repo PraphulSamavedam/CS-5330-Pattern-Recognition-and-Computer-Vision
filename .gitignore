@@ -66,3 +66,6 @@ CMakeFiles
 
 # Images
 *.jpg
+
+# Binary files
+**/x64/*
