@@ -47,10 +47,10 @@ def main():
     Returns
     0 if the script exits successfully."""
 
-    epochs = 50
-    learning_rate = 0.01
-    momentum = 0.01
-    log_interval = 1
+    epochs = 25
+    learning_rate = 0.03
+    momentum = 0.1
+    log_interval = 5
     batch_size = 5
 
     # Load the model from file
@@ -86,6 +86,16 @@ def main():
     plt.xlabel("number of training examples seen")
     plt.ylabel("negative log likelihood loss")
     plt.title("Training loss vs number of examples seen")
+    plt.savefig("results/transfer_learning_errors.png")
+    plt.show()
+
+    epochs_indices = [x for x in range(epochs)]
+    plt.plot(epochs_indices, accuracies,c='r',marker='x', label= "Train accuracy")
+    plt.title("Training accuracy vs epochs")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.savefig("results/transfer_learning_accuracies.png")
     plt.show()
 
 if __name__ == "__main__":
