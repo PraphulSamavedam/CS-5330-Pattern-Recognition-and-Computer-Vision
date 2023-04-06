@@ -11,7 +11,7 @@ from torch.nn import Module
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 from utils import get_mnist_data_loaders
-from train import MyNetwork
+from models import BaseNetwork
 
 
 def predict(model: Module, test_data: DataLoader, count: int) -> None:
@@ -50,12 +50,12 @@ def predict(model: Module, test_data: DataLoader, count: int) -> None:
             return None
 
 
-def load_model(model_path: str) -> Module:
+def load_model(neural_network:Module, model_path: str) -> Module:
     """This function returns the model completely loaded from the file path provided.
     Returns
     nn.Module neural network which is loaded from the file path.
     """
-    model = MyNetwork()
+    model = neural_network()
     model_state_dict = torch.load(model_path)
     model.load_state_dict(model_state_dict)
     return model
@@ -65,7 +65,7 @@ def main():
     """This is the function which runs when run as a standalone script.
     Returns
     0 if the script exits successfully."""
-    model = load_model("models/final_model.pth")
+    model = load_model(BaseNetwork, "models/final_model.pth")
     _, test_data = get_mnist_data_loaders()
     predict(model=model, test_data=test_data, count=9)
     return 0
