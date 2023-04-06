@@ -66,6 +66,7 @@ def main():
 
     # Save the trained model
     torch.save(model.state_dict(),"models/model_greek.pth")
+    
 
 if __name__ == "__main__":
     main()
