@@ -4,6 +4,8 @@ Version: 1.0
 Description:
 This file visualizes the different filters in the model learned from several training examples
 """
+# Standard imports
+import logging 
 # Third party imports
 import matplotlib.pyplot as plt
 from cv2 import filter2D
@@ -25,10 +27,15 @@ def get_layer_weights(model:Module, layer_number:int = 0):
     assert layer_number < 5 # To ensure that the layer corresponds to the convolution stack. 
     n_layer_weights = model.convolution_stack[layer_number].weight
     filter_count = n_layer_weights.shape[0]
+
+    logging.basicConfig(filename='results/model_weights.log', encoding='utf-8', level=logging.INFO)
+
+    logging.info(f"Number of filters in layer {layer_number} are {filter_count}")
     print(f"Number of filters in layer {layer_number} are {filter_count}")
     for filtr in range(filter_count):
         filter_weights = n_layer_weights[filtr,0]
         print(f"Filter {filtr + 1} of shape {filter_weights.shape} has weights \n{filter_weights}")
+        logging.info(f"Filter {filtr + 1} of shape {filter_weights.shape} has weights \n{filter_weights}")
     return n_layer_weights
 
 def visualize_filters(n_layer_weights: torch.Tensor, layer_number:int = 0) -> None:

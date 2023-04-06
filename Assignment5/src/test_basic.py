@@ -32,7 +32,7 @@ def predict(model: Module, test_data: DataLoader, count: int) -> None:
             indices = [random.randint(0, len(target) - 1) for indx in range(count)]
             plt.figure(figsize=(20, 20))
             plt.axis("off")
-            plt.title(f"Model predictions on {count} test samples")
+            plt.suptitle(f"Model predictions on {count} test samples")
 
             rows = 3
             columns = (

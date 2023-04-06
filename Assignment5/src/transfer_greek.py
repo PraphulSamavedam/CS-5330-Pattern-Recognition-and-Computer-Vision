@@ -9,25 +9,14 @@ the Greek letters alpha, beta, gamma
 # Thirdparty imports
 import torch
 import torchvision
+from torchviz import make_dot
 
 # Local imports
 from test_basic import load_model
 from models import BaseNetwork
 from utils import freeze_layers_and_modify_last_layer, train_and_plot_accuracies
+from transforms import GreekTransform
 
-
-class GreekTransform:
-    """This class represents the transformation required to convert 133 x 133 color images of
-     greek letters
-     """
-    def __init__(self) -> None:
-        pass
-
-    def __call__(self, x_input) :
-        x_input = torchvision.transforms.functional.rgb_to_grayscale(x_input)
-        x_input = torchvision.transforms.functional.affine(x_input, 0, (0, 0), 36/128, 0)
-        x_input = torchvision.transforms.functional.center_crop(x_input, (28, 28))
-        return torchvision.transforms.functional.invert(x_input)
 
 def main():
     """This is the function which runs when run as a standalone script.
@@ -60,8 +49,16 @@ def main():
                                             torchvision.transforms.Normalize((0.1307,),
                                                                              (0.3801,),)
                                          ])), batch_size = batch_size, shuffle=True )
+
+    #Visualize the model
+    for _, (image_data, _) in enumerate(greek_train):
+        yhat = model(image_data)
+        make_dot(yhat, params=dict(model.named_parameters())).render("greek_network",format="png")
+        break
+
+    # Optimizer for training the model
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
-    # Train and plot the accuracy based on the
+    # Train and plot the accuracy for all epochs
     train_and_plot_accuracies(model=model, epochs=epochs, optimizer=optimizer,
                               train_data_loader=greek_train, log_interval=log_interval,
                               batch_size=batch_size,model_path="models/model_greek.pth",

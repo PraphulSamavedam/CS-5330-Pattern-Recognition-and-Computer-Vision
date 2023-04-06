@@ -1,3 +1,9 @@
+"""
+Written by: Samavedam Manikhanta Praphul
+Version: 1.0
+Description: 
+This file has definitions of neural networks which are written from scratch in this project. 
+"""
 # class definitions
 from torch import nn
 
