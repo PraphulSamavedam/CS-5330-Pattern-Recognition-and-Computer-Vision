@@ -77,7 +77,7 @@ def main():
                                             torchvision.transforms.Normalize((0.1307,),
                                                                              (0.3801,),)
                                          ])), batch_size = 3, shuffle=True )
-       
+   
     _, accuracy = test_transfer_learning(model=model, test_data_loader=test_data_loader)
     print(f"Accuracy on custom images:{accuracy:.2f}%")
     return 0

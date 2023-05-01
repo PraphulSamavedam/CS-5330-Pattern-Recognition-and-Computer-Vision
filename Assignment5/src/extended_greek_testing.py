@@ -30,6 +30,7 @@ def test_transfer_learning(model:Module, test_data_loader:DataLoader):
     cols = 6
     plt.figure(figsize=(8, 8))
     plt.axis("off")
+    plt.suptitle("Model predictions on extended greek letters")
     test_samples = len(test_data_loader.dataset)
     with torch.no_grad():
         index = 1

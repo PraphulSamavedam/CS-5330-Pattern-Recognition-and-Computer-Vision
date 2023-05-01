@@ -73,13 +73,14 @@ def main():
     columns = length//rows if length < (length//rows) * rows else (length//rows) + 1
     plt.figure(figsize=(12, 20))
     plt.axis("off")
-    plt.title("Predictions of final model on user test data")
+    plt.suptitle("Predictions of final model on user test data")
     for indx in range(1, length+1, 1):
         plt.subplot(rows, columns, indx)
         plt.imshow(images_data[indx-1].squeeze(),cmap='gray')
         plt.axis("off")
         plt.xlabel(f"Ground truth:{ground_truths[indx-1]}")
         plt.title(f"Predicted: {predictions[indx-1]}")
+    plt.savefig("Predictions of trained model on user custom data")
     plt.show()
 
     # Standard exit status is 0

@@ -13,7 +13,7 @@ from torchviz import make_dot
 
 # Local imports
 from models import BaseNetwork
-from utils import parse_arguments, test_network, train_network, visualize_errors_over_training
+from utils import parse_arguments, test_network, train_network_single_epoch, visualize_errors_over_training
 from utils import get_mnist_data_loaders, visualize_data_loader_data
 
 
@@ -59,17 +59,17 @@ def main():
     test_indices = [epoch*len(train_data_loader.dataset) for epoch in range(number_of_epochs+1)]
 
     # Test error without training the model
-    test_loss, _ = test_network(model=model,test_data_loader=test_data_loader)
+    test_loss, _ = test_network(model=model, test_data_loader=test_data_loader)
     test_losses.append(test_loss)
 
     #Train the network for number of epochs
     for epoch in range(1, number_of_epochs+1, 1):
-        losses, counter = train_network(model=model, train_data_loader=train_data_loader,
+        losses, counter = train_network_single_epoch(model=model, train_data_loader=train_data_loader,
                                         optimizer=optimizer, log_interval = log_interval,
                                         epoch = epoch, batch_size=train_batch_size)
         train_losses.extend(losses)
         train_indices.extend(counter)
-        test_loss, _ = test_network(model=model,test_data_loader=test_data_loader)
+        test_loss, _ = test_network(model=model, test_data_loader=test_data_loader)
         test_losses.append(test_loss)
 
     # Visualize the training of the model over epochs
@@ -77,6 +77,7 @@ def main():
 
     # Store the model
     torch.save(model.state_dict(), 'models/final_model.pth')
+    print("Successfully saved the model at models/final_model.pth")
 
     # Standard exit status is 0
     return 0

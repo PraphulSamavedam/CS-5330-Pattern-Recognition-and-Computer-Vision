@@ -17,3 +17,4 @@ class GreekTransform:
         x_input = torchvision.transforms.functional.affine(x_input, 0, (0, 0), 36/128, 0)
         x_input = torchvision.transforms.functional.center_crop(x_input, (28, 28))
         return torchvision.transforms.functional.invert(x_input)
+
