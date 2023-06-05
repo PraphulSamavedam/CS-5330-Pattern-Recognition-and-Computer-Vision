@@ -3,8 +3,13 @@
 This Repository has the following sub projects. 
 1. Assignment 1: Aka Filtering Project    
 Applies negative effect, blur, cartoonize, find edges,  etc to both images and video feed from live camera. Also allows the user to store the images with effects by pressing 's'.     
-_Project Aim:_ Color Space exploration, datatype understanding and their prominence, ability to apply effects on still images and videos.     
-     
+_Project Aim:_ Color Space exploration, datatype understanding and their prominence, ability to apply effects on still images and videos.      
+##### Watch the real time filtering demo    
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=EXsLRqkdQ3k" target="_blank" >
+ <img src="http://img.youtube.com/vi/EXsLRqkdQ3k/mqdefault.jpg" alt="Watch the real time filtering demo" width="400" height="240" border="10" align="middle"/>
+</a>
+      
+--- 
 2. Assignment 2: Aka Content Based Image Retrieval (CBIR)     
 <To be updated>    
      
