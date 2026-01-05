@@ -1,0 +1,2533 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Projects executed for CS-5330 Pattern Recognition and Computer Vision">
+      
+      
+        <meta name="author" content="Praphul Samavedam">
+      
+      
+        <link rel="canonical" href="https://PraphulSamavedam.github.io/CS-5330-Pattern-Recognition-and-Computer-Vision/image-retrieval/">
+      
+      
+        <link rel="prev" href="../real-time-filtering/">
+      
+      
+        <link rel="next" href="../object-recognition/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Image Retrieval (Content based) - CS-5330 Pattern Recognition and Computer Vision</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#content-based-image-retrieval-cbir-system" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CS-5330 Pattern Recognition and Computer Vision" class="md-header__button md-logo" aria-label="CS-5330 Pattern Recognition and Computer Vision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CS-5330 Pattern Recognition and Computer Vision
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Image Retrieval (Content based)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-2.69L23.31 12 20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 2c-1.82 0-3.53.5-5 1.35C8 5.08 10 8.3 10 12s-2 6.92-5 8.65C6.47 21.5 8.18 22 10 22a10 10 0 0 0 10-10A10 10 0 0 0 10 2"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/PraphulSamavedam/CS-5330-Pattern-Recognition-and-Computer-Vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CS-5330-Pattern-Recognition-and-Computer-Vision
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../real-time-filtering/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Real-Time Filtering
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Image Retrieval (Content based)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../object-recognition/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Real Time 2D Object Recognition
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../camera-calibration-ar/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Augemented Reality with Camera Calibration
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../character-recognition/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Character Recognition (Deep Learning)
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CS-5330 Pattern Recognition and Computer Vision" class="md-nav__button md-logo" aria-label="CS-5330 Pattern Recognition and Computer Vision" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CS-5330 Pattern Recognition and Computer Vision
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/PraphulSamavedam/CS-5330-Pattern-Recognition-and-Computer-Vision" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CS-5330-Pattern-Recognition-and-Computer-Vision
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../real-time-filtering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Real-Time Filtering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Image Retrieval (Content based)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Image Retrieval (Content based)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-stages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Stages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-features-and-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features and Capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Features and Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-extraction-techniques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Extraction Techniques
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Feature Extraction Techniques">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-baseline-99-center-pixels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Baseline (9×9 Center Pixels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-2d-histogram-rg-chromaticity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 2D Histogram (rg Chromaticity)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-3d-histogram-rgb-color-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 3D Histogram (RGB Color Space)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-multi-histogram-upper-bottom-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Multi-Histogram (Upper-Bottom Split)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-multi-histogram-left-right-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Multi-Histogram (Left-Right Split)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-texture-color-tac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Texture &amp; Color (TAC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-q4-texture-histogram-four-quarters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Q4 Texture Histogram (Four Quarters)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-custom-histogram-center-weighted-texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Custom Histogram (Center-Weighted + Texture)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-specialized-techniques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Specialized Techniques
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distance Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Distance Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-sum-of-squared-error-sse-aggsquareerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Sum of Squared Error (SSE) - AggSquareError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-histogram-intersection-error-histogramerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Histogram Intersection Error - HistogramError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-entropy-error-entropyerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Entropy Error - EntropyError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-weighted-histogram-error-80-20-w82histogramerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Weighted Histogram Error (80-20) - W82HistogramError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mean-square-error-mse-meansquareerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Mean Square Error (MSE) - MeanSquareError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-masked-boundary-error-maskedbounderror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Masked Boundary Error - MaskedBoundError
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-metric-matching-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature-Metric Matching Guide
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benefits-and-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits and Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gui-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GUI Interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-Line Interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-processing-script-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Processing Script Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Learning Objectives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-feature-extraction-fundamentals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Feature Extraction Fundamentals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-distance-metrics-and-similarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Distance Metrics and Similarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-system-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. System Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-computer-vision-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Computer Vision Concepts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-practical-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Practical Skills
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-algorithm-understanding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Algorithm Understanding
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#performance-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-vector-dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Vector Dimensions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csv-cache-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV Cache Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Codes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-and-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build and Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-the-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-image-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Image Formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-recognition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Real Time 2D Object Recognition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../camera-calibration-ar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Augemented Reality with Camera Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../character-recognition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Character Recognition (Deep Learning)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-stages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Stages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-features-and-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features and Capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Features and Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-extraction-techniques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Extraction Techniques
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Feature Extraction Techniques">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-baseline-99-center-pixels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Baseline (9×9 Center Pixels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-2d-histogram-rg-chromaticity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 2D Histogram (rg Chromaticity)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-3d-histogram-rgb-color-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 3D Histogram (RGB Color Space)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-multi-histogram-upper-bottom-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Multi-Histogram (Upper-Bottom Split)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-multi-histogram-left-right-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Multi-Histogram (Left-Right Split)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-texture-color-tac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Texture &amp; Color (TAC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-q4-texture-histogram-four-quarters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Q4 Texture Histogram (Four Quarters)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-custom-histogram-center-weighted-texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Custom Histogram (Center-Weighted + Texture)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-specialized-techniques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Specialized Techniques
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distance Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Distance Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-sum-of-squared-error-sse-aggsquareerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Sum of Squared Error (SSE) - AggSquareError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-histogram-intersection-error-histogramerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Histogram Intersection Error - HistogramError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-entropy-error-entropyerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Entropy Error - EntropyError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-weighted-histogram-error-80-20-w82histogramerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Weighted Histogram Error (80-20) - W82HistogramError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mean-square-error-mse-meansquareerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Mean Square Error (MSE) - MeanSquareError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-masked-boundary-error-maskedbounderror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Masked Boundary Error - MaskedBoundError
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-metric-matching-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature-Metric Matching Guide
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benefits-and-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits and Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gui-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GUI Interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-Line Interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-processing-script-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Processing Script Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Learning Objectives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-feature-extraction-fundamentals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Feature Extraction Fundamentals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-distance-metrics-and-similarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Distance Metrics and Similarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-system-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. System Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-computer-vision-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Computer Vision Concepts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-practical-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Practical Skills
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-algorithm-understanding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Algorithm Understanding
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#performance-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-vector-dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Vector Dimensions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csv-cache-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV Cache Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Codes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-and-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build and Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-the-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-image-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Image Formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="content-based-image-retrieval-cbir-system">Content-Based Image Retrieval (CBIR) System<a class="headerlink" href="#content-based-image-retrieval-cbir-system" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The Content-Based Image Retrieval (CBIR) system is a sophisticated image search engine that finds and ranks similar images from a database based on visual features rather than text metadata. The system analyzes visual characteristics such as color distribution, texture patterns, and spatial layout to identify images with similar content.</p>
+<p>The implementation provides both a <strong>GUI-based interface</strong> for interactive exploration and a <strong>command-line interface</strong> for automated processing and integration into workflows.</p>
+<div class="admonition info">
+<p class="admonition-title">Key Concept</p>
+<p>Unlike traditional text-based image search, CBIR uses visual content analysis to find similar images. You query with an image, not keywords, making it ideal for visual search applications, duplicate detection, and content organization.</p>
+</div>
+<h2 id="system-architecture">System Architecture<a class="headerlink" href="#system-architecture" title="Permanent link">&para;</a></h2>
+<p>The CBIR system follows a multi-stage pipeline that efficiently processes queries through feature extraction, distance computation, and result ranking:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│                          CONTENT-BASED IMAGE RETRIEVAL                      │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│                              Query Flow Diagram                             │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└─────────────────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                              ┌──────────────┐
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                              │ Query Image  │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                              │ (Target)     │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                              └──────┬───────┘
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                                     │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>                                     ▼
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                    ┌────────────────────────────────┐
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>                    │  Select Feature Technique      │
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>                    │  (Baseline, 3DHistogram, etc.) │
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                    └────────────┬───────────────────┘
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                                 │
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                                 ▼
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>                    ┌────────────────────────────────┐
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>                    │  Extract Target Features       │
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>                    │  → Feature Vector (e.g., 512D) │
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>                    └────────────┬───────────────────┘
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>                                 │
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>                                 |
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>                                 │
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>                                 ▼
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>                    ┌───────────────────────────────┐
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>                    │ Check Corresponding CSV Cache │
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>                    │ (E.g. 3DHistogram.csv)        │
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>                    └────────────┬──────────────────┘
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>                                 │
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>                                 │ Found?
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>                                 ├────────────Yes ────────────────┐
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>                                 │                                │
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>                                 No                               │
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>                                 │                                │
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>                                 │                                │
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>                      ┌───────────────────────┐                   │
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>                      │ Image Database        │                   │
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>                      │ (olympus/, testDB/)   │                   │
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>                      └──────────┬────────────┘                   │
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>                                 │                                │
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>                                 ▼                                |
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>                    ┌──────────────────────────┐                  │
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>                    | Process All DB Images    │                  │
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>                    │ ├─ Read Image            │                  │
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>                    │ ├─ Extract Features      │                  │
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>                    │ └─ Store in CSV          │                  │
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>                    └──────────┬───────────────┘                  │
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>                               │                                  |
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>                               └┬─────────────────────────────────┘
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>                      ┌──────────────────┐
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>                      │ Read Features    │
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>                      │ from CSV (fast!) │
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>                      └────────┬─────────┘
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>                               │
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>                               ▼
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>              ┌─────────────────────────────────┐
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>              │ Database Features Loaded        │
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>              │ (N images × Feature Dimensions) │
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>              └─────────────┬───────────────────┘
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>                            │
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>                            ▼
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>              ┌─────────────────────────────────┐
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>              │ Select Distance Metric          │
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>              │ (HistogramError, SSE, etc.)     │
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>              └─────────────┬───────────────────┘
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>                            │
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>                            ▼
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>              ┌─────────────────────────────────┐
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>              │ Compute Distances               │
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>              │ For Each DB Image:              │
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>              │   distance[i] = metric(         │
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>              │     target_features,            │
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>              │     db_features[i]              │
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>              │   )                             │
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>              └─────────────┬───────────────────┘
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>                            │
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>                            ▼
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>              ┌─────────────────────────────────┐
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>              │ Rank by Distance                │
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>              │ Sort ascending (lower = similar)│
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>              └─────────────┬───────────────────┘
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>                            │
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>                            ▼
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>              ┌─────────────────────────────────┐
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>              │ Select Top-K Similar Images     │
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>              │ (User specified: 3-15 images)   │
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>              └─────────────┬───────────────────┘
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>                            │
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>                            ▼
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>              ┌─────────────────────────────────┐
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>              │ Display Results                 │
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>              │ ├─ Target Image                 │
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>              │ ├─ Similar Image 1 (dist: 0.12) │
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>              │ ├─ Similar Image 2 (dist: 0.18) │
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>              │ └─ Similar Image K (dist: 0.25) │
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>              └──────────────┬──────────────────┘
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>                             │
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>                      ┌──────┴───────┐
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>                      │              │
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>                      ▼              ▼
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>            ┌──────────────┐   ┌─────────────┐
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>            │ Save Results │   │ Exit (q)    │
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>            │ Press &#39;s&#39;    │   │             │
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>            └──────────────┘   └─────────────┘
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>Performance Note: First Run = Minutes | Cached Runs = Seconds
+</code></pre></div>
+<h3 id="pipeline-stages">Pipeline Stages<a class="headerlink" href="#pipeline-stages" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Feature Extraction</strong>: Converts images into numerical feature vectors that capture visual characteristics</li>
+<li><strong>Feature Caching</strong>: Stores computed features in CSV files for ~100x speedup on subsequent queries</li>
+<li><strong>Distance Computation</strong>: Compares query image features against database using selected metric</li>
+<li><strong>Result Ranking</strong>: Sorts images by similarity (lower distance = more similar)</li>
+<li><strong>Result Display</strong>: Shows top-K most similar images with distance scores</li>
+</ol>
+<h2 id="key-features-and-capabilities">Key Features and Capabilities<a class="headerlink" href="#key-features-and-capabilities" title="Permanent link">&para;</a></h2>
+<h3 id="core-capabilities">Core Capabilities<a class="headerlink" href="#core-capabilities" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Multiple Feature Extraction Methods</strong>: 8+ techniques for different visual characteristics</li>
+<li><strong>Flexible Distance Metrics</strong>: 6 different similarity measures for various use cases</li>
+<li><strong>Intelligent Caching</strong>: CSV-based feature storage reduces query time from minutes to seconds</li>
+<li><strong>Dual Interface</strong>: Both GUI and command-line options for different workflows</li>
+<li><strong>Scalable Performance</strong>: Handles databases with 1000+ images efficiently</li>
+<li><strong>Result Persistence</strong>: Save retrieved images with descriptive filenames</li>
+</ul>
+<h3 id="feature-extraction-techniques">Feature Extraction Techniques<a class="headerlink" href="#feature-extraction-techniques" title="Permanent link">&para;</a></h3>
+<p>The system implements multiple complementary approaches to capture different aspects of visual similarity:</p>
+<h4 id="1-baseline-99-center-pixels">1. <strong>Baseline (9×9 Center Pixels)</strong><a class="headerlink" href="#1-baseline-99-center-pixels" title="Permanent link">&para;</a></h4>
+<p>Extracts raw pixel values from the center 9×9 region of the image.</p>
+<ul>
+<li><strong>Vector Size</strong>: 243 features (81 pixels × 3 RGB channels)</li>
+<li><strong>Best For</strong>: Aligned/registered images where objects are consistently positioned</li>
+<li><strong>Limitations</strong>: Sensitive to translation, rotation, and scale variations</li>
+</ul>
+<p><strong>How it works:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>center_row = height / 2
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>center_col = width / 2
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>feature[i] = image[center_row - 4 : center_row + 5,
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>                   center_col - 4 : center_col + 5]
+</code></pre></div></p>
+<h4 id="2-2d-histogram-rg-chromaticity">2. <strong>2D Histogram (rg Chromaticity)</strong><a class="headerlink" href="#2-2d-histogram-rg-chromaticity" title="Permanent link">&para;</a></h4>
+<p>Uses normalized color distribution in rg chromaticity space, removing intensity information.</p>
+<ul>
+<li><strong>Vector Size</strong>: 256 features (16×16 bins)</li>
+<li><strong>Best For</strong>: Color matching under varying lighting conditions</li>
+<li><strong>Advantages</strong>: Illumination invariant</li>
+</ul>
+<p><strong>Formula:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>r = R / (R + G + B + ε)
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>g = G / (R + G + B + ε)
+</code></pre></div></p>
+<p>Where ε prevents division by zero.</p>
+<h4 id="3-3d-histogram-rgb-color-space">3. <strong>3D Histogram (RGB Color Space)</strong><a class="headerlink" href="#3-3d-histogram-rgb-color-space" title="Permanent link">&para;</a></h4>
+<p>Captures full color distribution across all three color channels simultaneously.</p>
+<ul>
+<li><strong>Vector Size</strong>: 512 features (8×8×8 bins)</li>
+<li><strong>Best For</strong>: Finding images with similar overall color composition</li>
+<li><strong>Use Cases</strong>: Sunset photos, ocean images, fruit images</li>
+</ul>
+<p><strong>Binning:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>r_index = R / 32  (256 values → 8 bins)
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>g_index = G / 32
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>b_index = B / 32
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>histogram[r_index][g_index][b_index]++
+</code></pre></div></p>
+<h4 id="4-multi-histogram-upper-bottom-split">4. <strong>Multi-Histogram (Upper-Bottom Split)</strong><a class="headerlink" href="#4-multi-histogram-upper-bottom-split" title="Permanent link">&para;</a></h4>
+<p>Divides image horizontally and computes separate histograms for spatial awareness.</p>
+<ul>
+<li><strong>Vector Size</strong>: 1024 features (2 × 512)</li>
+<li><strong>Best For</strong>: Images with consistent vertical layout (sky/ground, head/body)</li>
+<li><strong>Preserves</strong>: Vertical spatial relationships</li>
+</ul>
+<h4 id="5-multi-histogram-left-right-split">5. <strong>Multi-Histogram (Left-Right Split)</strong><a class="headerlink" href="#5-multi-histogram-left-right-split" title="Permanent link">&para;</a></h4>
+<p>Divides image vertically to preserve horizontal spatial layout.</p>
+<ul>
+<li><strong>Vector Size</strong>: 1024 features (2 × 512)</li>
+<li><strong>Best For</strong>: Horizontally structured scenes, objects positioned left/right</li>
+<li><strong>Preserves</strong>: Horizontal spatial relationships</li>
+</ul>
+<h4 id="6-texture-color-tac">6. <strong>Texture &amp; Color (TAC)</strong><a class="headerlink" href="#6-texture-color-tac" title="Permanent link">&para;</a></h4>
+<p>Combines gradient magnitude histograms with color histograms for rich feature representation.</p>
+<ul>
+<li><strong>Vector Size</strong>: Variable (gradient histogram + color histogram)</li>
+<li><strong>Best For</strong>: Distinguishing textured vs smooth surfaces</li>
+<li><strong>Components</strong>: 50% Sobel gradient texture + 50% RGB color</li>
+</ul>
+<p><strong>Gradient Computation:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Sobel_X = [[-1, 0, 1],    Sobel_Y = [[-1, -2, -1],
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>           [-2, 0, 2],               [ 0,  0,  0],
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>           [-1, 0, 1]]               [ 1,  2,  1]]
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>magnitude = sqrt(Sobel_X² + Sobel_Y²)
+</code></pre></div></p>
+<h4 id="7-q4-texture-histogram-four-quarters">7. <strong>Q4 Texture Histogram (Four Quarters)</strong><a class="headerlink" href="#7-q4-texture-histogram-four-quarters" title="Permanent link">&para;</a></h4>
+<p>Divides image into four quadrants with texture information for fine-grained spatial awareness.</p>
+<ul>
+<li><strong>Vector Size</strong>: 2048+ features (4 quadrants × 512 + texture)</li>
+<li><strong>Best For</strong>: Spatially structured scenes (faces, layouts)</li>
+<li><strong>Preserves</strong>: 2D spatial color distribution</li>
+</ul>
+<p><strong>Quadrant Division:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>[Top-Left]    [Top-Right]
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>[Bottom-Left] [Bottom-Right]
+</code></pre></div></p>
+<h4 id="8-custom-histogram-center-weighted-texture">8. <strong>Custom Histogram (Center-Weighted + Texture)</strong><a class="headerlink" href="#8-custom-histogram-center-weighted-texture" title="Permanent link">&para;</a></h4>
+<p>Focuses on central region with weighted combination of color and edge features.</p>
+<ul>
+<li><strong>Vector Size</strong>: Variable</li>
+<li><strong>Best For</strong>: Centered objects (portraits, product images)</li>
+<li><strong>Weighting</strong>: 65% center color + 35% Laplacian edge texture</li>
+</ul>
+<p><strong>Distance Formula:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>distance = 0.65 × color_distance + 0.35 × texture_distance
+</code></pre></div></p>
+<h4 id="additional-specialized-techniques">Additional Specialized Techniques<a class="headerlink" href="#additional-specialized-techniques" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Specific Color Detection</strong>: Targeted detection for yellow/banana tones, blue bins, green bins</li>
+<li><strong>Edge and Color Combination</strong>: Canny edges with color histograms</li>
+<li><strong>Two Halves with rg Chromaticity</strong>: Spatial split using illumination-invariant colors</li>
+</ul>
+<h3 id="distance-metrics">Distance Metrics<a class="headerlink" href="#distance-metrics" title="Permanent link">&para;</a></h3>
+<p>The system provides multiple distance metrics to compare feature vectors, each suited for different feature types:</p>
+<h4 id="1-sum-of-squared-error-sse-aggsquareerror">1. <strong>Sum of Squared Error (SSE) - <code>AggSquareError</code></strong><a class="headerlink" href="#1-sum-of-squared-error-sse-aggsquareerror" title="Permanent link">&para;</a></h4>
+<p>Classic Euclidean distance squared between feature vectors.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>distance = Σ(feature1[i] - feature2[i])²
+</code></pre></div>
+<ul>
+<li><strong>Properties</strong>: Simple, fast, magnitude-sensitive</li>
+<li><strong>Best For</strong>: Baseline technique, features with similar scales</li>
+<li><strong>Range</strong>: [0, ∞)</li>
+</ul>
+<h4 id="2-histogram-intersection-error-histogramerror">2. <strong>Histogram Intersection Error - <code>HistogramError</code></strong><a class="headerlink" href="#2-histogram-intersection-error-histogramerror" title="Permanent link">&para;</a></h4>
+<p>Measures overlap between normalized histograms.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>intersection = Σ min(histogram1[i], histogram2[i])
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>distance = 1 - intersection
+</code></pre></div>
+<ul>
+<li><strong>Properties</strong>: Robust to partial occlusion, bounded output</li>
+<li><strong>Best For</strong>: All histogram-based features (RGB, rg, multi-region)</li>
+<li><strong>Range</strong>: [0, 1]</li>
+</ul>
+<h4 id="3-entropy-error-entropyerror">3. <strong>Entropy Error - <code>EntropyError</code></strong><a class="headerlink" href="#3-entropy-error-entropyerror" title="Permanent link">&para;</a></h4>
+<p>Compares information content and complexity of feature distributions.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>entropy(H) = -Σ H[i] × log(H[i])
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>distance = |entropy(H1) - entropy(H2)|
+</code></pre></div>
+<ul>
+<li><strong>Properties</strong>: Measures distribution complexity similarity</li>
+<li><strong>Best For</strong>: Texture complexity comparison, pattern diversity</li>
+<li><strong>Interpretation</strong>: Low entropy = uniform/smooth, High entropy = diverse/textured</li>
+</ul>
+<h4 id="4-weighted-histogram-error-80-20-w82histogramerror">4. <strong>Weighted Histogram Error (80-20) - <code>W82HistogramError</code></strong><a class="headerlink" href="#4-weighted-histogram-error-80-20-w82histogramerror" title="Permanent link">&para;</a></h4>
+<p>Allows different importance weights for combined feature components.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>distance = 1 - Σ weight[j] × intersection_error(section_j)
+</code></pre></div>
+<ul>
+<li><strong>Properties</strong>: Flexible component weighting</li>
+<li><strong>Best For</strong>: Combined features (e.g., 80% color + 20% texture)</li>
+<li><strong>Use Case</strong>: Color-dominant vs texture-dominant matching</li>
+</ul>
+<h4 id="5-mean-square-error-mse-meansquareerror">5. <strong>Mean Square Error (MSE) - <code>MeanSquareError</code></strong><a class="headerlink" href="#5-mean-square-error-mse-meansquareerror" title="Permanent link">&para;</a></h4>
+<p>Normalized version of SSE, independent of feature vector length.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>distance = sqrt(mean((feature1[i] - feature2[i])²))
+</code></pre></div>
+<ul>
+<li><strong>Properties</strong>: Normalized by vector length, scale-independent</li>
+<li><strong>Best For</strong>: Comparing different feature types, mixed features</li>
+<li><strong>Advantage</strong>: Less sensitive to dimensionality differences</li>
+</ul>
+<h4 id="6-masked-boundary-error-maskedbounderror">6. <strong>Masked Boundary Error - <code>MaskedBoundError</code></strong><a class="headerlink" href="#6-masked-boundary-error-maskedbounderror" title="Permanent link">&para;</a></h4>
+<p>Specialized metric for comparing segmented regions and object shapes.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>overlap = min(area1, area2) + min(ratio1, ratio2)
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>distance = 2 - overlap
+</code></pre></div>
+<ul>
+<li><strong>Properties</strong>: Geometric similarity measure</li>
+<li><strong>Best For</strong>: Shape-based matching, segmented object comparison</li>
+<li><strong>Features</strong>: Normalized contour area + aspect ratio</li>
+</ul>
+<h3 id="feature-metric-matching-guide">Feature-Metric Matching Guide<a class="headerlink" href="#feature-metric-matching-guide" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Scenario</strong></th>
+<th><strong>Recommended Feature</strong></th>
+<th><strong>Recommended Metric</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Color-based objects (fruits, clothing)</td>
+<td>3D RGB Histogram</td>
+<td>Histogram Intersection</td>
+</tr>
+<tr>
+<td>Different lighting conditions</td>
+<td>rg Chromaticity</td>
+<td>Histogram Intersection</td>
+</tr>
+<tr>
+<td>Texture-rich images (fabrics, patterns)</td>
+<td>Texture &amp; Color (TAC)</td>
+<td>Entropy Error</td>
+</tr>
+<tr>
+<td>Spatially consistent scenes (landscapes)</td>
+<td>Upper-Bottom Histogram</td>
+<td>Histogram Intersection</td>
+</tr>
+<tr>
+<td>Centered objects (portraits, products)</td>
+<td>Custom (Center-Weighted)</td>
+<td>Weighted Histogram</td>
+</tr>
+<tr>
+<td>Raw pixel matching (aligned images)</td>
+<td>Baseline 9×9</td>
+<td>Sum of Squared Error</td>
+</tr>
+<tr>
+<td>Object shape similarity</td>
+<td>Any + segmentation</td>
+<td>Masked Boundary Error</td>
+</tr>
+</tbody>
+</table>
+<h2 id="benefits-and-limitations">Benefits and Limitations<a class="headerlink" href="#benefits-and-limitations" title="Permanent link">&para;</a></h2>
+<div class="admonition success">
+<p class="admonition-title">Benefits</p>
+<p><strong>Efficient Performance</strong></p>
+<ul>
+<li>CSV caching provides ~100x speedup: first run in minutes, cached runs in seconds</li>
+<li>Scalable to databases with 1000+ images</li>
+<li>Parallel-friendly architecture for batch processing</li>
+</ul>
+<p><strong>Flexible Feature Extraction</strong></p>
+<ul>
+<li>8+ feature techniques capture different visual characteristics</li>
+<li>Supports color, texture, spatial layout, and combined approaches</li>
+<li>Illumination-invariant options (rg chromaticity)</li>
+</ul>
+<p><strong>Multiple Distance Metrics</strong></p>
+<ul>
+<li>6 distance functions for different similarity criteria</li>
+<li>Histogram intersection robust to partial occlusion</li>
+<li>Weighted combinations for multi-modal features</li>
+</ul>
+<p><strong>User-Friendly Interface</strong></p>
+<ul>
+<li>Interactive GUI for exploration and experimentation</li>
+<li>Command-line interface for automation and scripting</li>
+<li>Visual result display with distance scores</li>
+</ul>
+<p><strong>Research and Learning</strong></p>
+<ul>
+<li>Demonstrates fundamental computer vision techniques</li>
+<li>Modular design for extending with new features</li>
+<li>Educational value for understanding CBIR systems</li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Limitations</p>
+<p><strong>Computational Constraints</strong></p>
+<ul>
+<li>First-time feature extraction takes minutes for large databases</li>
+<li>Memory usage scales with database size and feature dimensionality</li>
+<li>Real-time performance requires pre-computed features</li>
+</ul>
+<p><strong>Feature Limitations</strong></p>
+<ul>
+<li>Color histograms lose spatial information (except multi-region variants)</li>
+<li>Texture features sensitive to image resolution and quality</li>
+<li>Baseline technique requires object alignment</li>
+</ul>
+<p><strong>Invariance Challenges</strong></p>
+<ul>
+<li>Most features not rotation or scale invariant</li>
+<li>Significant viewpoint changes affect matching</li>
+<li>Background clutter can interfere with object-focused queries</li>
+</ul>
+<p><strong>Database Requirements</strong></p>
+<ul>
+<li>Requires manual cache reset when database contents change</li>
+<li>No automatic change detection for database updates</li>
+<li>CSV cache files must match current database state</li>
+</ul>
+<p><strong>Semantic Gap</strong></p>
+<ul>
+<li>Visual similarity ≠ semantic similarity</li>
+<li>Cannot understand high-level concepts (e.g., "happy person")</li>
+<li>No relevance feedback or query refinement in current implementation</li>
+</ul>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Optimization Strategies</p>
+<ul>
+<li>Use cached features whenever possible (avoid unnecessary <code>resetFile</code>)</li>
+<li>Choose appropriate feature-metric combinations for your use case</li>
+<li>Start with 3D Histogram + Histogram Intersection for general-purpose queries</li>
+<li>Use rg chromaticity for illumination-robust color matching</li>
+<li>Combine spatial techniques (multi-region) for layout-sensitive queries</li>
+<li>Consider texture features when color alone is insufficient</li>
+</ul>
+</div>
+<h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
+<h3 id="gui-interface">GUI Interface<a class="headerlink" href="#gui-interface" title="Permanent link">&para;</a></h3>
+<p>The graphical interface provides an interactive workflow for exploring different feature techniques and distance metrics.</p>
+<p><strong>Basic Command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>./guiMain<span class="w"> </span>&lt;targetImagePath&gt;<span class="w"> </span>&lt;imagesDatabasePath&gt;
+</code></pre></div></p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>./guiMain<span class="w"> </span>data/testImg/pic.0164.jpg<span class="w"> </span>data/olympus
+</code></pre></div></p>
+<p><strong>Interactive Workflow:</strong></p>
+<ol>
+<li><strong>Feature Selection Window</strong> opens first</li>
+<li>Click a button to select feature extraction technique</li>
+<li>Options: Baseline, 2D Histogram, 3D Histogram, Upper-Bottom, Left-Right, TAC, Q4 Texture, Custom</li>
+<li>
+<p>Optional: Check "Re-evaluate ft vectors" to force feature recomputation</p>
+</li>
+<li>
+<p><strong>Distance &amp; Settings Window</strong> opens next</p>
+</li>
+<li>Use trackbar to select number of similar images (3-15)</li>
+<li>Click a button to select distance metric</li>
+<li>
+<p>Options: AggSquareError, HistogramError, EntropyError, W82HistogramError, MeanSquareError</p>
+</li>
+<li>
+<p><strong>Results Display</strong> shows:</p>
+</li>
+<li>Query/target image (reference)</li>
+<li>Top-K similar images ranked by distance</li>
+<li>
+<p>Distance scores for each match</p>
+</li>
+<li>
+<p><strong>Keyboard Controls:</strong></p>
+</li>
+<li>Press <code>s</code> to save retrieved images with descriptive filenames</li>
+<li>Press <code>q</code> to quit the application</li>
+</ol>
+<p><strong>Saved Filename Format:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>&lt;FeatureTechnique&gt;_&lt;DistanceMetric&gt;_&lt;Rank&gt;_&lt;OriginalFilename&gt;
+</code></pre></div></p>
+<p>Example: <code>3DHistogram_HistogramError_1_pic.0245.jpg</code></p>
+<h3 id="command-line-interface">Command-Line Interface<a class="headerlink" href="#command-line-interface" title="Permanent link">&para;</a></h3>
+<p>The command-line interface enables scripting, automation, and batch processing.</p>
+<p><strong>Basic Command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>./cmdMain<span class="w"> </span>&lt;targetImagePath&gt;<span class="w"> </span>&lt;imagesDatabasePath&gt;<span class="w"> </span>&lt;featureTechnique&gt;<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">          </span>&lt;distanceMetric&gt;<span class="w"> </span>&lt;numberOfSimilarImages&gt;<span class="w"> </span><span class="o">[</span>resetFile<span class="o">]</span><span class="w"> </span><span class="o">[</span>echoStatus<span class="o">]</span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>targetImagePath</code> - Path to the query/target image</li>
+<li><code>imagesDatabasePath</code> - Directory containing the image database</li>
+<li><code>featureTechnique</code> - Feature extraction method (see list below)</li>
+<li><code>distanceMetric</code> - Distance calculation method (see list below)</li>
+<li><code>numberOfSimilarImages</code> - Number of similar images to retrieve (integer)</li>
+<li><code>resetFile</code> (optional) - Non-zero to force feature recomputation (default: 0)</li>
+<li><code>echoStatus</code> (optional) - Non-zero for verbose output (default: 0)</li>
+</ul>
+<p><strong>Feature Technique Options:</strong></p>
+<ul>
+<li><code>Baseline</code> - 9×9 center pixel extraction</li>
+<li><code>2DHistogram</code> - rg chromaticity histogram</li>
+<li><code>3DHistogram</code> - RGB color histogram</li>
+<li><code>2HalvesUBHistogram</code> - Upper-Bottom multi-histogram</li>
+<li><code>2HalvesLRHistogram</code> - Left-Right multi-histogram</li>
+<li><code>TACHistogram</code> - Texture and color combination</li>
+<li><code>Q4TextureHistogram</code> - Four-quarters with texture</li>
+<li><code>CustomHistogram</code> - Center-weighted color with texture</li>
+</ul>
+<p><strong>Distance Metric Options:</strong></p>
+<ul>
+<li><code>AggSquareError</code> - Sum of squared error (SSE)</li>
+<li><code>HistogramError</code> - Histogram intersection</li>
+<li><code>EntropyError</code> - Entropy difference</li>
+<li><code>W82HistogramError</code> - Weighted 80-20 histogram</li>
+<li><code>MeanSquareError</code> - Mean square error (MSE)</li>
+<li><code>MaskedBoundError</code> - Masked boundary error</li>
+</ul>
+<p><strong>Example 1: Basic Query</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>./cmdMain<span class="w"> </span>data/testImg/pic.0164.jpg<span class="w"> </span>data/olympus<span class="w"> </span>3DHistogram<span class="w"> </span>HistogramError<span class="w"> </span><span class="m">5</span>
+</code></pre></div></p>
+<p>Retrieves 5 similar images using 3D RGB histogram features and histogram intersection metric.</p>
+<p><strong>Example 2: Query with Feature Recomputation</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>./cmdMain<span class="w"> </span>data/testImg/pic.0164.jpg<span class="w"> </span>data/olympus<span class="w"> </span>3DHistogram<span class="w"> </span>HistogramError<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">0</span>
+</code></pre></div></p>
+<p>Forces recomputation of all features (useful when database changed).</p>
+<p><strong>Example 3: Verbose Query</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>./cmdMain<span class="w"> </span>data/testImg/pic.0164.jpg<span class="w"> </span>data/olympus<span class="w"> </span>TACHistogram<span class="w"> </span>EntropyError<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span>
+</code></pre></div></p>
+<p>Retrieves 10 images using texture+color with verbose output for debugging.</p>
+<p><strong>Example 4: Illumination-Robust Query</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>./cmdMain<span class="w"> </span>data/testImg/sunset.jpg<span class="w"> </span>data/olympus<span class="w"> </span>2DHistogram<span class="w"> </span>HistogramError<span class="w"> </span><span class="m">8</span>
+</code></pre></div></p>
+<p>Uses rg chromaticity for lighting-invariant color matching.</p>
+<p><strong>Example 5: Spatial-Aware Query</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>./cmdMain<span class="w"> </span>data/testImg/landscape.jpg<span class="w"> </span>data/olympus<span class="w"> </span>2HalvesUBHistogram<span class="w"> </span>HistogramError<span class="w"> </span><span class="m">7</span>
+</code></pre></div></p>
+<p>Uses upper-bottom split to preserve vertical spatial layout (sky/ground).</p>
+<h3 id="batch-processing-script-example">Batch Processing Script Example<a class="headerlink" href="#batch-processing-script-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="c1"># Query all images in a directory and save results</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="nv">TARGET_DIR</span><span class="o">=</span><span class="s2">&quot;data/testImages&quot;</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="nv">DATABASE</span><span class="o">=</span><span class="s2">&quot;data/olympus&quot;</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="nv">FEATURE</span><span class="o">=</span><span class="s2">&quot;3DHistogram&quot;</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="nv">METRIC</span><span class="o">=</span><span class="s2">&quot;HistogramError&quot;</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="nv">NUM_RESULTS</span><span class="o">=</span><span class="m">5</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="k">for</span><span class="w"> </span>img<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_DIR</span><span class="s2">&quot;</span>/*.jpg<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Processing: </span><span class="nv">$img</span><span class="s2">&quot;</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="w">    </span>./cmdMain<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$img</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DATABASE</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$FEATURE</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$METRIC</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$NUM_RESULTS</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="k">done</span>
+</code></pre></div>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>This project demonstrates fundamental concepts in computer vision and pattern recognition:</p>
+<h3 id="1-feature-extraction-fundamentals">1. Feature Extraction Fundamentals<a class="headerlink" href="#1-feature-extraction-fundamentals" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Color Representation</strong>: Understanding RGB, rg chromaticity, and color spaces</li>
+<li><strong>Histogram Techniques</strong>: Building and normalizing multi-dimensional histograms</li>
+<li><strong>Texture Analysis</strong>: Gradient magnitude, Sobel filters, Laplacian edge detection</li>
+<li><strong>Spatial Encoding</strong>: Preserving layout information through region-based features</li>
+</ul>
+<h3 id="2-distance-metrics-and-similarity">2. Distance Metrics and Similarity<a class="headerlink" href="#2-distance-metrics-and-similarity" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Euclidean Distance</strong>: SSE and MSE for vector comparison</li>
+<li><strong>Histogram Comparison</strong>: Intersection, entropy, and weighted methods</li>
+<li><strong>Metric Selection</strong>: Matching distance functions to feature types</li>
+<li><strong>Normalization</strong>: Handling features with different scales and ranges</li>
+</ul>
+<h3 id="3-system-design-principles">3. System Design Principles<a class="headerlink" href="#3-system-design-principles" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Caching Strategy</strong>: Trading disk space for computation time (CSV storage)</li>
+<li><strong>Modular Architecture</strong>: Separating feature extraction from distance computation</li>
+<li><strong>Interface Design</strong>: Supporting both interactive (GUI) and automated (CLI) workflows</li>
+<li><strong>Scalability</strong>: Handling databases from tens to thousands of images</li>
+</ul>
+<h3 id="4-computer-vision-concepts">4. Computer Vision Concepts<a class="headerlink" href="#4-computer-vision-concepts" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Content-Based Retrieval</strong>: Visual similarity vs semantic similarity</li>
+<li><strong>Feature Trade-offs</strong>: Discriminative power vs computational cost</li>
+<li><strong>Invariance Properties</strong>: Illumination, rotation, scale, and translation robustness</li>
+<li><strong>The Semantic Gap</strong>: Limitations of low-level features for high-level concepts</li>
+</ul>
+<h3 id="5-practical-skills">5. Practical Skills<a class="headerlink" href="#5-practical-skills" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>OpenCV Usage</strong>: Image I/O, color space conversion, filtering operations</li>
+<li><strong>Performance Optimization</strong>: Feature caching, efficient data structures</li>
+<li><strong>Experimental Methodology</strong>: Testing different feature-metric combinations</li>
+<li><strong>Result Analysis</strong>: Interpreting distance scores and ranking quality</li>
+</ul>
+<h3 id="6-algorithm-understanding">6. Algorithm Understanding<a class="headerlink" href="#6-algorithm-understanding" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Convolution Operations</strong>: Sobel and Laplacian filters for edge detection</li>
+<li><strong>Statistical Summaries</strong>: Histograms as probability distributions</li>
+<li><strong>Dimensionality</strong>: Trading feature vector size for discriminative power</li>
+<li><strong>Weighting Schemes</strong>: Combining multiple feature types effectively</li>
+</ul>
+<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
+<h3 id="performance-characteristics">Performance Characteristics<a class="headerlink" href="#performance-characteristics" title="Permanent link">&para;</a></h3>
+<p><strong>Feature Extraction Times</strong> (approximate, 1000 images):</p>
+<ul>
+<li>Baseline: ~30 seconds (simple pixel extraction)</li>
+<li>2D/3D Histogram: ~2-3 minutes (histogram computation)</li>
+<li>Texture features: ~4-5 minutes (gradient computation)</li>
+<li>Multi-region: ~3-4 minutes (multiple histograms)</li>
+</ul>
+<p><strong>Query Times with Caching:</strong></p>
+<ul>
+<li>Feature loading from CSV: &lt;2 seconds</li>
+<li>Distance computation (1000 images): &lt;1 second</li>
+<li>Total cached query time: &lt;3 seconds</li>
+<li><strong>Speedup factor</strong>: ~100x faster than recomputation</li>
+</ul>
+<p><strong>Memory Usage:</strong></p>
+<ul>
+<li>3D Histogram (512 features): ~4KB per image</li>
+<li>1000 images: ~4MB feature storage</li>
+<li>Multi-region techniques: ~8MB for 1000 images</li>
+</ul>
+<h3 id="feature-vector-dimensions">Feature Vector Dimensions<a class="headerlink" href="#feature-vector-dimensions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature Technique</th>
+<th>Vector Size</th>
+<th>Storage per Image</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline (9×9)</td>
+<td>243</td>
+<td>~1 KB</td>
+</tr>
+<tr>
+<td>2D Histogram (16×16)</td>
+<td>256</td>
+<td>~1 KB</td>
+</tr>
+<tr>
+<td>3D Histogram (8×8×8)</td>
+<td>512</td>
+<td>~2 KB</td>
+</tr>
+<tr>
+<td>Upper-Bottom Split</td>
+<td>1024</td>
+<td>~4 KB</td>
+</tr>
+<tr>
+<td>Left-Right Split</td>
+<td>1024</td>
+<td>~4 KB</td>
+</tr>
+<tr>
+<td>TAC (Texture + Color)</td>
+<td>~600-800</td>
+<td>~3 KB</td>
+</tr>
+<tr>
+<td>Q4 Texture</td>
+<td>~2100</td>
+<td>~8 KB</td>
+</tr>
+<tr>
+<td>Custom (Center + Texture)</td>
+<td>Variable</td>
+<td>~2-3 KB</td>
+</tr>
+</tbody>
+</table>
+<h3 id="csv-cache-format">CSV Cache Format<a class="headerlink" href="#csv-cache-format" title="Permanent link">&para;</a></h3>
+<p>Features are stored in CSV format for efficient reuse:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>filename,feature_0,feature_1,feature_2,...,feature_N
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>data/olympus/pic.0001.jpg,0.124,0.089,0.201,...,0.156
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>data/olympus/pic.0002.jpg,0.098,0.156,0.087,...,0.234
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>data/olympus/pic.0003.jpg,0.201,0.045,0.178,...,0.092
+</code></pre></div>
+<p>Each feature technique maintains its own CSV file:
+- <code>3DHistogram.csv</code> - RGB histogram features
+- <code>2DHistogram.csv</code> - rg chromaticity features
+- <code>Baseline.csv</code> - Center pixel features
+- And so on...</p>
+<h3 id="error-codes">Error Codes<a class="headerlink" href="#error-codes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Error -100</strong>: Insufficient command-line arguments</li>
+<li><strong>Error -400</strong>: Image too small for baseline technique (requires &gt;9×9)</li>
+<li><strong>Error -1000</strong>: Fewer images found in database than requested</li>
+<li><strong>Error -200</strong>: Cannot open/read target image file</li>
+<li><strong>Error -300</strong>: Invalid feature technique or distance metric specified</li>
+</ul>
+<h2 id="build-and-requirements">Build and Requirements<a class="headerlink" href="#build-and-requirements" title="Permanent link">&para;</a></h2>
+<h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>OpenCV 4.x</strong> - Core image processing library</li>
+<li><strong>C++11 or later</strong> - Standard library features</li>
+<li><strong>CVUI library</strong> - Simple OpenCV-based GUI components</li>
+</ul>
+<h3 id="building-the-project">Building the Project<a class="headerlink" href="#building-the-project" title="Permanent link">&para;</a></h3>
+<p>For detailed build instructions, dependency installation, and troubleshooting, refer to:</p>
+<p><strong><a href="/Users/prapsama/Documents/Personal/CS-5330-Pattern-Recognition-and-Computer-Vision/Assignment2/Assignment2/DEVELOPMENT.md">Assignment 2 DEVELOPMENT.md</a></strong></p>
+<p>Quick build overview:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Navigate to project directory</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nb">cd</span><span class="w"> </span>Assignment2/Assignment2
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Compile GUI version</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>g++<span class="w"> </span>-o<span class="w"> </span>guiMain<span class="w"> </span>guiMain.cpp<span class="w"> </span>features.cpp<span class="w"> </span>distance.cpp<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span><span class="sb">`</span>pkg-config<span class="w"> </span>--cflags<span class="w"> </span>--libs<span class="w"> </span>opencv4<span class="sb">`</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="c1"># Compile command-line version</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>g++<span class="w"> </span>-o<span class="w"> </span>cmdMain<span class="w"> </span>cmdMain.cpp<span class="w"> </span>features.cpp<span class="w"> </span>distance.cpp<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="w">    </span><span class="sb">`</span>pkg-config<span class="w"> </span>--cflags<span class="w"> </span>--libs<span class="w"> </span>opencv4<span class="sb">`</span>
+</code></pre></div></p>
+<h3 id="supported-image-formats">Supported Image Formats<a class="headerlink" href="#supported-image-formats" title="Permanent link">&para;</a></h3>
+<p>The system supports all image formats handled by OpenCV:
+- JPEG (.jpg, .jpeg)
+- PNG (.png)
+- BMP (.bmp)
+- TIFF (.tif, .tiff)
+- WebP (.webp)</p>
+<p>Images of varying sizes are supported - the system handles resizing and normalization internally.</p>
+<h2 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h2>
+<p>Potential improvements and research directions:</p>
+<p><strong>Deep Learning Integration</strong>
+- CNN-based feature extraction (VGG, ResNet features)
+- Learned distance metrics
+- Transfer learning from pre-trained models</p>
+<p><strong>Advanced Querying</strong>
+- Relevance feedback and query refinement
+- Multi-modal queries (combining multiple target images)
+- Weighted region-of-interest selection
+- Partial image matching</p>
+<p><strong>Performance Optimization</strong>
+- GPU acceleration for feature extraction
+- Approximate nearest neighbor search (LSH, FAISS)
+- Incremental database updates
+- Parallel batch processing</p>
+<p><strong>Additional Features</strong>
+- Real-time video query support
+- Web-based interface with REST API
+- Mobile application integration
+- Cloud-based deployment</p>
+<p><strong>Enhanced Techniques</strong>
+- SIFT/SURF keypoint-based matching
+- Object segmentation integration
+- Multi-scale feature pyramids
+- Attention-based feature weighting</p>
+<hr />
+<p><a href="../">← Back to Home</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024-2026
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/PraphulSamavedam" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
