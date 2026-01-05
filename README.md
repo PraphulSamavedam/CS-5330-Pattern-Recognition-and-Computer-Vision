@@ -2,6 +2,8 @@
 
 This repository contains projects developed for CS-5330 Pattern Recognition and Computer Vision course. Each assignment explores fundamental computer vision concepts through practical implementations.
 
+📚 **[View Website](https://praphulsamavedam.github.io/CS-5330-Pattern-Recognition-and-Computer-Vision/)**
+
 ## Projects
 
 ### 1. Assignment 1: Real-Time Filtering
