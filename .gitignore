@@ -69,3 +69,7 @@ CMakeFiles
 
 # Binary files
 **/x64/*
+
+# MkDocs
+site/
+.cache/
