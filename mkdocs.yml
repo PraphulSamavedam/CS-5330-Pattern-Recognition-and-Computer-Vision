@@ -1,0 +1,103 @@
+site_name: CS-5330 Pattern Recognition and Computer Vision
+site_description: Projects executed for CS-5330 Pattern Recognition and Computer Vision
+site_author: Praphul Samavedam
+site_url: https://PraphulSamavedam.github.io/CS-5330-Pattern-Recognition-and-Computer-Vision/
+
+# Repository
+repo_name: CS-5330-Pattern-Recognition-and-Computer-Vision
+repo_url: https://github.com/PraphulSamavedam/CS-5330-Pattern-Recognition-and-Computer-Vision
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2024-2026
+
+# Configuration
+theme:
+  name: material
+  language: en
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-5
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-2
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+
+# Page tree
+nav:
+  - Home: index.md
+  - Real-Time Filtering: real-time-filtering.md
+  - Image Retrieval (Content based): image-retrieval.md
+  - Real Time 2D Object Recognition: object-recognition.md
+  - Augemented Reality with Camera Calibration: camera-calibration-ar.md
+  - Character Recognition (Deep Learning): character-recognition.md
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/PraphulSamavedam
